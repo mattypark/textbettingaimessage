@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:integration": "vitest run --dir tests/integration",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
     "typecheck": "tsc --noEmit",
     "webhooks:dev": "linq webhooks listen --forward-to http://localhost:3000/api/webhooks/linq --events message.received,reaction.added,reaction.removed,participant.added,chat.created"
   },
