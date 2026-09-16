@@ -117,6 +117,12 @@ export function transition(bet: Bet, event: BetEvent, now: Date): Transition {
   const nowMs = now.getTime();
   const bump = (patch: Partial<Bet>): Bet => ({ ...bet, ...patch, version: bet.version + 1 });
 
+  // A repeated 👍 from someone who already accepted carries no information,
+  // whatever state the bet is in (late tapbacks arrive after the lock).
+  if (event.type === "ACCEPT" && participant(bet, event.userId)?.acceptedAt) {
+    return { next: bet, effects: [] };
+  }
+
   switch (bet.status) {
     case "proposed": {
       if (event.type === "ACCEPT") {

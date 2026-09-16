@@ -4,7 +4,7 @@
  *
  *   SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY=... npm run test:integration
  */
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { beforeAll, describe, expect, it } from "vitest";
 import { PointsLedger } from "@/src/ledger/points-ledger";
 import { LedgerError } from "@/src/ledger/types";
@@ -16,12 +16,14 @@ const enabled = Boolean(url && key);
 const uuid = () => crypto.randomUUID();
 
 describe.skipIf(!enabled)("post_ledger_txn (Postgres)", () => {
-  const db = createClient(url ?? "", key ?? "", { auth: { persistSession: false } });
-  const ledger = new PointsLedger(db);
+  let db: SupabaseClient;
+  let ledger: PointsLedger;
   const a = uuid();
   const b = uuid();
 
   beforeAll(async () => {
+    db = createClient(url ?? "", key ?? "", { auth: { persistSession: false } });
+    ledger = new PointsLedger(db);
     await ledger.grant({ userId: a, amount: 100n, idem: `grant:${a}` });
     await ledger.grant({ userId: b, amount: 100n, idem: `grant:${b}` });
   });

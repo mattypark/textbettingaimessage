@@ -226,9 +226,17 @@ describe("every (state, event) pair is either handled or IllegalTransition — n
     }
   }
 
-  it("terminal states accept nothing", () => {
+  it("terminal states accept nothing (a redundant ACCEPT is a silent no-op everywhere)", () => {
     for (const status of ["settled", "expired", "cancelled", "voided"] as const) {
-      for (const event of allEvents) expect(() => transition(fixtures[status], event, at(200))).toThrow(IllegalTransition);
+      for (const event of allEvents) {
+        if (event.type === "ACCEPT") {
+          // matt accepted at creation in every fixture; a stranger never can.
+          expect(transition(fixtures[status], { type: "ACCEPT", userId: "matt" }, at(200)).effects).toEqual([]);
+          expect(() => transition(fixtures[status], { type: "ACCEPT", userId: "nobody" }, at(200))).toThrow(IllegalTransition);
+          continue;
+        }
+        expect(() => transition(fixtures[status], event, at(200))).toThrow(IllegalTransition);
+      }
     }
   });
 });
