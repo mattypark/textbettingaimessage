@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { InboundEvent, OutboundMessage } from "@/src/transport/types";
-import type { ChatRow, MemberRow, OutboxRow, Store, UserRow } from "./store";
+import type { ChatRow, MemberRow, OutboxRow, Store, StuckInboundRow, UserRow } from "./store";
 
 function fail(context: string, error: { message: string } | null): never {
   throw new Error(`${context}: ${error?.message ?? "unknown error"}`);
@@ -143,12 +143,46 @@ export class SupabaseStore implements Store {
       })
       .eq("id", id);
     if (dbError) fail("markOutbound", dbError);
+    await this.db.rpc("bump_outbound_attempt", { p_id: id });
   }
 
   async chatProviderId(chatId: string): Promise<{ provider: string; providerChatId: string } | null> {
     const { data, error } = await this.db.from("chats").select("provider, provider_chat_id").eq("id", chatId).maybeSingle();
     if (error) fail("chatProviderId", error);
     return data ? { provider: data.provider, providerChatId: data.provider_chat_id } : null;
+  }
+
+  async queuedOutbound(limit: number, maxAttempts: number): Promise<OutboxRow[]> {
+    const { data, error } = await this.db
+      .from("outbound_messages")
+      .select("id, chat_id, body, idempotency_key")
+      .in("status", ["queued", "failed"])
+      .lt("attempts", maxAttempts)
+      .lte("not_before", new Date().toISOString())
+      .order("created_at", { ascending: true })
+      .limit(limit);
+    if (error) fail("queuedOutbound", error);
+    return (data ?? []).map((row) => ({ id: row.id, chatId: row.chat_id, body: row.body as OutboundMessage, idempotencyKey: row.idempotency_key }));
+  }
+
+  async stuckInbound(staleMs: number, limit: number, maxAttempts: number): Promise<StuckInboundRow[]> {
+    const { data, error } = await this.db
+      .from("provider_messages")
+      .select("id, chat_id, normalized, raw, attempts")
+      .in("status", ["pending", "processing"])
+      .lt("attempts", maxAttempts)
+      .lte("received_at", new Date(Date.now() - staleMs).toISOString())
+      .order("received_at", { ascending: true })
+      .limit(limit);
+    if (error) fail("stuckInbound", error);
+    return (data ?? [])
+      .filter((row) => row.normalized)
+      .map((row) => ({ id: row.id, chatId: row.chat_id, event: { ...(row.normalized as InboundEvent), raw: row.raw }, attempts: row.attempts }));
+  }
+
+  async bumpInboundAttempt(id: string): Promise<void> {
+    const { error } = await this.db.rpc("bump_inbound_attempt", { p_id: id });
+    if (error) fail("bumpInboundAttempt", error);
   }
 
   async recentOutboundIds(chatId: string, limit: number): Promise<string[]> {

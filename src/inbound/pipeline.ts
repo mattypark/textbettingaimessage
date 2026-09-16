@@ -49,7 +49,7 @@ export class InboundPipeline {
   }
 
   async handle(rawBody: string, headers: Record<string, string>): Promise<PipelineResult> {
-    const { store, transport, handler, botNames, log = () => undefined } = this.deps;
+    const { store, transport } = this.deps;
 
     if (!transport.verify({ rawBody, headers })) return { outcome: "unauthorized" };
 
@@ -59,6 +59,12 @@ export class InboundPipeline {
     const inboxId = await store.claimInbound(event);
     if (!inboxId) return { outcome: "duplicate" };
 
+    return this.process(inboxId, event);
+  }
+
+  /** Steps after the inbox claim. The cron tick re-runs this for rows that never finished. */
+  async process(inboxId: string, event: InboundEvent): Promise<PipelineResult> {
+    const { store, handler, botNames, log = () => undefined } = this.deps;
     try {
       await store.markInbound(inboxId, "processing");
 

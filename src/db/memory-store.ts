@@ -1,15 +1,16 @@
 import type { InboundEvent, OutboundMessage } from "@/src/transport/types";
-import type { ChatRow, MemberRow, OutboxRow, Store, UserRow } from "./store";
+import type { ChatRow, MemberRow, OutboxRow, Store, StuckInboundRow, UserRow } from "./store";
 
 /** In-memory Store for unit tests and the replay harness. */
 export class MemoryStore implements Store {
-  readonly inbox = new Map<string, { id: string; status: string; error?: string; chatId?: string; event: InboundEvent }>();
+  readonly inbox = new Map<string, { id: string; status: string; error?: string; chatId?: string; event: InboundEvent; attempts: number; at: number }>();
   readonly chats = new Map<string, ChatRow>();
   readonly users = new Map<string, UserRow>();
   readonly members = new Set<string>();
   readonly terms = new Set<string>();
+  readonly termsVia = new Map<string, string>();
   readonly termsMessages = new Map<string, string>();
-  readonly outbox: Array<OutboxRow & { status: string; providerMessageId?: string; error?: string }> = [];
+  readonly outbox: Array<OutboxRow & { status: string; providerMessageId?: string; error?: string; attempts: number }> = [];
   private seq = 0;
 
   private nextId(prefix: string): string {
@@ -20,7 +21,7 @@ export class MemoryStore implements Store {
     const key = `${event.provider}:${event.providerMessageId}`;
     if (this.inbox.has(key)) return null;
     const id = this.nextId("in");
-    this.inbox.set(key, { id, status: "pending", event });
+    this.inbox.set(key, { id, status: "pending", event, attempts: 0, at: Date.now() });
     return id;
   }
 
@@ -73,8 +74,9 @@ export class MemoryStore implements Store {
     return this.terms.has(`${userId}:${version}`);
   }
 
-  async recordTermsAcceptance(userId: string, version: number, _via?: "imessage" | "web", _providerMessageId?: string): Promise<void> {
+  async recordTermsAcceptance(userId: string, version: number, via: "imessage" | "web" = "imessage"): Promise<void> {
     this.terms.add(`${userId}:${version}`);
+    this.termsVia.set(`${userId}:${version}`, via);
   }
 
   async termsMessageId(chatId: string): Promise<string | null> {
@@ -99,7 +101,7 @@ export class MemoryStore implements Store {
 
   async enqueueOutbound(chatId: string, body: OutboundMessage, idempotencyKey: string): Promise<OutboxRow | null> {
     if (this.outbox.some((row) => row.idempotencyKey === idempotencyKey)) return null;
-    const row = { id: this.nextId("out"), chatId, body, idempotencyKey, status: "queued" };
+    const row = { id: this.nextId("out"), chatId, body, idempotencyKey, status: "queued", attempts: 0 };
     this.outbox.push(row);
     return row;
   }
@@ -110,6 +112,23 @@ export class MemoryStore implements Store {
     row.status = status;
     row.providerMessageId = providerMessageId;
     row.error = error;
+    row.attempts += 1;
+  }
+
+  async queuedOutbound(limit: number, maxAttempts: number): Promise<OutboxRow[]> {
+    return this.outbox.filter((r) => (r.status === "queued" || r.status === "failed") && r.attempts < maxAttempts).slice(0, limit);
+  }
+
+  async stuckInbound(staleMs: number, limit: number, maxAttempts: number): Promise<StuckInboundRow[]> {
+    const cutoff = Date.now() - staleMs;
+    return [...this.inbox.values()]
+      .filter((r) => (r.status === "pending" || r.status === "processing") && r.at <= cutoff && r.attempts < maxAttempts)
+      .slice(0, limit)
+      .map((r) => ({ id: r.id, chatId: r.chatId ?? null, event: r.event, attempts: r.attempts }));
+  }
+
+  async bumpInboundAttempt(id: string): Promise<void> {
+    this.inboxById(id).attempts += 1;
   }
 
   async chatProviderId(chatId: string): Promise<{ provider: string; providerChatId: string } | null> {

@@ -34,7 +34,28 @@ export function defaultBetStore(): BetStore {
 
 const names = (userId: string) => userId.slice(0, 8);
 
+interface Wiring {
+  store: Store;
+  betStore: BetStore;
+  outbox: Outbox;
+  engine: BetEngine;
+  pipeline: InboundPipeline;
+}
+
+const wirings = new Map<TransportName, Wiring>();
+
+export function tickDeps() {
+  const w = wire(env().TRANSPORT);
+  return { store: w.store, betStore: w.betStore, engine: w.engine, outbox: w.outbox, pipeline: w.pipeline };
+}
+
 export function pipelineFor(transportName: TransportName): InboundPipeline {
+  return wire(transportName).pipeline;
+}
+
+function wire(transportName: TransportName): Wiring {
+  const existing = wirings.get(transportName);
+  if (existing) return existing;
   const store = defaultStore();
   const betStore = defaultBetStore();
   const transport = createTransport(transportName);
@@ -49,7 +70,7 @@ export function pipelineFor(transportName: TransportName): InboundPipeline {
   const ledger = createLedger();
   const client = env().ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env().ANTHROPIC_API_KEY }) : undefined;
   const botName = botNames()[0] ?? "bookie";
-  return new InboundPipeline({
+  const pipeline = new InboundPipeline({
     store,
     transport,
     handler: agentHandler({
@@ -69,6 +90,9 @@ export function pipelineFor(transportName: TransportName): InboundPipeline {
       (await betStore.openBetsInChat(chatId)).some((b) => b.status === "locked" && b.participants.some((p) => p.userId === userId)),
     log: (line, extra) => console.info(`[inbound:${transportName}] ${line}`, extra ?? ""),
   });
+  const wiring = { store, betStore, outbox, engine, pipeline };
+  wirings.set(transportName, wiring);
+  return wiring;
 }
 
 export function isTransportEnabled(name: TransportName): boolean {

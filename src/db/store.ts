@@ -30,6 +30,13 @@ export interface OutboxRow {
   idempotencyKey: string;
 }
 
+export interface StuckInboundRow {
+  id: string;
+  chatId: string | null;
+  event: InboundEvent;
+  attempts: number;
+}
+
 export interface Store {
   /** Returns the inbox row id, or null if this provider message was already claimed. */
   claimInbound(event: InboundEvent): Promise<string | null>;
@@ -50,4 +57,9 @@ export interface Store {
   chatProviderId(chatId: string): Promise<{ provider: string; providerChatId: string } | null>;
   /** Provider ids of messages we sent into a chat, newest first. */
   recentOutboundIds(chatId: string, limit: number): Promise<string[]>;
+  /** Outbox rows still queued (or failed under the retry cap) whose not_before has passed. */
+  queuedOutbound(limit: number, maxAttempts: number): Promise<OutboxRow[]>;
+  /** Inbox rows stuck in pending/processing longer than `staleMs`, under the retry cap. */
+  stuckInbound(staleMs: number, limit: number, maxAttempts: number): Promise<StuckInboundRow[]>;
+  bumpInboundAttempt(id: string): Promise<void>;
 }
