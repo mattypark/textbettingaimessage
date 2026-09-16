@@ -101,15 +101,15 @@ export function Phone({ messages = HERO_THREAD, name = "Bookie", className = "" 
             <li className="flex justify-start" aria-label={`${name} is typing`}>
               <span className="bubble-in flex items-center gap-1 rounded-[18px] bg-[#e9e9eb] px-3.5 py-3">
                 {[0, 1, 2].map((d) => (
-                  <span key={d} className="typing-dot h-2 w-2 rounded-full bg-[#8a8f96]" style={{ "--delay": `${d * 0.15}s` } as React.CSSProperties} />
+                  <span key={d} className="typing-dot h-2 w-2 rounded-full bg-[#6b7079]" style={{ "--delay": `${d * 0.15}s` } as React.CSSProperties} />
                 ))}
               </span>
             </li>
           )}
         </ol>
         <div className="mx-3 mb-4 flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eef0f3] text-lg text-[#8a8f96]">+</span>
-          <span className="flex h-8 flex-1 items-center rounded-full border border-[#dfe2e6] px-3 text-[13px] text-[#8a8f96]">iMessage</span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eef0f3] text-lg text-[#6b7079]">+</span>
+          <span className="flex h-8 flex-1 items-center rounded-full border border-[#dfe2e6] px-3 text-[13px] text-[#6b7079]">iMessage</span>
         </div>
       </div>
     </div>

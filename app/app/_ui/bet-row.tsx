@@ -18,7 +18,7 @@ export function BetRow({ bet, chatName, viewerId }: { bet: Bet; chatName: string
         </GlassBall>
         <div className="min-w-0 flex-1 font-round">
           <p className="line-clamp-2 text-[16px] font-semibold leading-snug text-sky-ink">{bet.claim}</p>
-          <p className="mt-1 truncate text-[13px] text-sky-ink/60">
+          <p className="mt-1 truncate text-[13px] text-sky-ink/70">
             {chatName ?? "group"} · {dueIn(bet.deadlineAt)}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">

@@ -17,7 +17,7 @@ export function VerdictFace({ bet, verdict }: { bet: Bet; verdict?: VerdictView 
       <article className="card-soft flex flex-col items-center justify-center p-8 text-center sm:p-12">
         <Mascot mood="zen" size={120} />
         <p className="mt-4 text-[20px] font-bold">no verdict yet</p>
-        <p className="mt-1 max-w-xs text-[14px] text-sky-ink/60">
+        <p className="mt-1 max-w-xs text-[14px] text-sky-ink/70">
           {bet.status === "proposed" ? "the bet has to lock first." : bet.status === "locked" ? "waiting on proof in the thread." : "bookie is looking at the proof."}
         </p>
       </article>
@@ -47,7 +47,7 @@ export function VerdictFace({ bet, verdict }: { bet: Bet; verdict?: VerdictView 
             </span>
             <span className="min-w-0">
               <span className="block text-[15px] font-semibold">{c.criterion}</span>
-              <span className="block text-[13px] text-sky-ink/60">{c.evidence}</span>
+              <span className="block text-[13px] text-sky-ink/70">{c.evidence}</span>
             </span>
           </li>
         ))}
@@ -55,7 +55,7 @@ export function VerdictFace({ bet, verdict }: { bet: Bet; verdict?: VerdictView 
 
       <p className="mt-5 rounded-[18px] bg-sky-ink/5 p-4 text-[14px] leading-relaxed text-sky-ink/80">{verdict.reasoning}</p>
 
-      <p className="mt-4 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-sky-ink/55">
+      <p className="mt-4 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-sky-ink/70">
         <span>
           pass {verdict.pass} · <LocalTime iso={verdict.createdAt} initial={when(verdict.createdAt)} />
         </span>
@@ -78,7 +78,7 @@ function ConfidenceRing({ pct, className }: { pct: number; className: string }) 
           {pct}
         </text>
       </svg>
-      <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-sky-ink/55">
+      <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-sky-ink/70">
         %<br />sure
       </span>
     </div>

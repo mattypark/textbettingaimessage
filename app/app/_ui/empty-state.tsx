@@ -10,7 +10,7 @@ export function EmptyState({ mood, title, body, cta }: { mood: Mood; title: stri
         <Mascot mood={mood} size={70} />
       </GlassBall>
       <p className="mt-5 text-[18px] font-semibold text-sky-ink">{title}</p>
-      {body && <p className="mt-1 max-w-xs text-[14px] text-sky-ink/60">{body}</p>}
+      {body && <p className="mt-1 max-w-xs text-[14px] text-sky-ink/70">{body}</p>}
       {cta && (
         <Link href={cta.href} className="pill-blue mt-6 flex min-h-12 items-center px-6 text-[15px] font-semibold">
           {cta.label}

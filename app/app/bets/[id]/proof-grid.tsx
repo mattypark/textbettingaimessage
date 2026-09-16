@@ -21,7 +21,7 @@ export function ProofGrid({ proofs }: { proofs: ProofView[] }) {
                 </span>
               )}
             </a>
-            <p className="mt-2 px-1 text-sky-ink/60">
+            <p className="mt-2 px-1 text-sky-ink/70">
               <span className="font-semibold text-sky-ink">{p.submitterName}</span> · <LocalTime iso={p.receivedAt} initial={when(p.receivedAt)} /> · {p.status.replace("_", " ")}
             </p>
           </li>

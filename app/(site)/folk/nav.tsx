@@ -5,13 +5,12 @@ import { useEffect, useState } from "react";
 import { Avatar } from "./mascot";
 
 /**
- * Fixed glass nav. Hides while scrolling down, returns on scroll up; once
- * past the hero the wordmark turns dark and a small "text bookie" pill
- * takes the nav's place in the corner, like folk's.
+ * Fixed glass nav. Hides while scrolling down, returns on scroll up; while
+ * hidden a small "text bookie" pill takes its place in the corner, like folk's.
  */
 export function FolkNav({ dark = false }: { dark?: boolean }) {
+  void dark; // kept for call-site compatibility; the wordmark is dark everywhere now
   const [hidden, setHidden] = useState(false);
-  const [past, setPast] = useState(false);
 
   useEffect(() => {
     let last = window.scrollY;
@@ -22,7 +21,6 @@ export function FolkNav({ dark = false }: { dark?: boolean }) {
       requestAnimationFrame(() => {
         const y = window.scrollY;
         setHidden(y > 80 && y > last);
-        setPast(y > 420);
         last = y;
         ticking = false;
       });
@@ -32,7 +30,8 @@ export function FolkNav({ dark = false }: { dark?: boolean }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const ink = dark || past ? "text-sky-ink" : "text-white";
+  // Dark wordmark on the sky too (like folk): white on the mid-gradient is under 3:1.
+  const ink = "text-sky-ink";
   const move = "transition-transform duration-[380ms] ease-[var(--ease-soft)] motion-reduce:transition-none";
 
   return (

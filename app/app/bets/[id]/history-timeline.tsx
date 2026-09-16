@@ -30,7 +30,7 @@ export function HistoryTimeline({ events }: { events: EventView[] }) {
               <span className={`relative mt-1 h-4 w-4 shrink-0 rounded-full ring-4 ring-white ${ACCENT_DOT[accent]}`} aria-hidden="true" />
               <div className="min-w-0 text-[14px]">
                 <p className="font-semibold">{VERB[e.type] ?? e.type.toLowerCase().replace(/_/g, " ")}</p>
-                <p className="text-[13px] text-sky-ink/55">
+                <p className="text-[13px] text-sky-ink/70">
                   {STATUS_LABEL[e.toStatus]} · <LocalTime iso={e.createdAt} initial={when(e.createdAt)} />
                 </p>
               </div>

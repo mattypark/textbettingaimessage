@@ -11,9 +11,9 @@ export default function NotFound() {
         <GlassBall size={140}>
           <Mascot mood="sleep" size={100} />
         </GlassBall>
-        <p className="mt-8 text-[13px] font-semibold uppercase tracking-[0.18em] text-sky-ink/50">404</p>
+        <p className="mt-8 text-[13px] font-semibold uppercase tracking-[0.18em] text-sky-ink/70">404</p>
         <h1 className="mt-2 text-[34px] font-bold leading-tight sm:text-[44px]">no bet at this address.</h1>
-        <p className="mt-3 max-w-sm text-[15px] text-sky-ink/60">bookie looked everywhere. nothing was ever locked here.</p>
+        <p className="mt-3 max-w-sm text-[15px] text-sky-ink/70">bookie looked everywhere. nothing was ever locked here.</p>
         <Link href="/" className="btn-dark mt-8 flex min-h-12 items-center px-6 text-[15px] font-semibold">
           back to the start
         </Link>

@@ -13,7 +13,7 @@ export default function SignInPage() {
         <Mascot mood="cheer" size={120} />
         <span className="-mt-2 rounded-2xl bg-sky-ink px-4 py-2 text-[15px] font-semibold text-white">demo mode</span>
         <h1 className="mt-8 text-[32px] font-semibold leading-tight">no sign-in needed.</h1>
-        <p className="mt-3 max-w-sm text-[15px] text-sky-ink/60">the app is running on seeded data. sign-in comes back the moment Supabase is configured.</p>
+        <p className="mt-3 max-w-sm text-[15px] text-sky-ink/70">the app is running on seeded data. sign-in comes back the moment Supabase is configured.</p>
         <Link href="/app" className="pill-blue mt-8 flex min-h-14 w-full max-w-sm items-center justify-center text-[18px] font-semibold">
           enter the demo
         </Link>

@@ -22,7 +22,7 @@ export function SlipFace({ bet, chatName, names, viewerId }: { bet: Bet; chatNam
       <Mascot mood={theme.mood} size={110} className="pointer-events-none absolute right-2 top-2 hidden sm:block" />
       <div className="relative flex flex-wrap items-center gap-2 pr-20 sm:pr-28">
         <StatusChip status={bet.status} outcome={outcome} />
-        <span className="text-[13px] text-sky-ink/55">{chatName ?? "group"}</span>
+        <span className="text-[13px] text-sky-ink/70">{chatName ?? "group"}</span>
       </div>
       <h1 className="relative mt-4 max-w-[26ch] pr-14 text-[28px] font-bold leading-[1.08] sm:pr-24 sm:text-[36px]">&ldquo;{bet.claim}&rdquo;</h1>
 
@@ -44,7 +44,7 @@ export function SlipFace({ bet, chatName, names, viewerId }: { bet: Bet; chatNam
       <div className="mt-6 rounded-[18px] bg-sky-ink/5 p-4">
         <div className="flex items-center gap-2">
           <StickerCamera className="h-6 w-6" />
-          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-sky-ink/55">proof must show</p>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-sky-ink/70">proof must show</p>
         </div>
         <p className="mt-2 text-[15px] font-medium">{bet.proofCriteria.summary}</p>
         <ul className="mt-2 space-y-1 text-[14px] text-sky-ink/70">
@@ -55,7 +55,7 @@ export function SlipFace({ bet, chatName, names, viewerId }: { bet: Bet; chatNam
             </li>
           ))}
         </ul>
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-sky-ink/60">
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-sky-ink/70">
           <span>judged by {judge}</span>
           {bet.challengeToken && (
             <span className="chip bg-white text-sky-ink">
@@ -71,14 +71,14 @@ export function SlipFace({ bet, chatName, names, viewerId }: { bet: Bet; chatNam
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="min-w-0">
-      <dt className="text-[12px] font-semibold uppercase tracking-[0.14em] text-sky-ink/55">{label}</dt>
+      <dt className="text-[12px] font-semibold uppercase tracking-[0.14em] text-sky-ink/70">{label}</dt>
       <dd className="mt-1 text-[15px]">{children}</dd>
     </div>
   );
 }
 
 function People({ ids, pending, name }: { ids: string[]; pending: string[]; name: (id: string) => string }) {
-  if (ids.length === 0) return <span className="text-sky-ink/40">open seat</span>;
+  if (ids.length === 0) return <span className="text-sky-ink/70">open seat</span>;
   return (
     <div className="flex flex-col gap-1.5">
       {ids.map((id) => (

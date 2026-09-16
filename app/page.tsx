@@ -154,7 +154,7 @@ export default function Landing() {
             </Link>
             <Link
               href="/app"
-              className="font-round text-[13px] font-medium text-white/80 hover:text-white"
+              className="font-round text-[13px] font-semibold text-sky-ink/80 hover:text-sky-ink"
             >
               already a member? log in
             </Link>
@@ -169,10 +169,12 @@ export default function Landing() {
         </div>
       </section>
 
-      <BetsSection />
-      <StatementSection />
-      <MoreSection />
-      <MoneySection />
+      <main>
+        <BetsSection />
+        <StatementSection />
+        <MoreSection />
+        <MoneySection />
+      </main>
       <FooterCta />
     </div>
   );

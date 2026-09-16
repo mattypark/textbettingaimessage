@@ -20,7 +20,7 @@ export function FlipCard({ front, back, hasBack, defaultFace = "slip" }: { front
   }
 
   const tab = (active: boolean, disabled = false) =>
-    `min-h-11 rounded-full px-5 text-[14px] font-semibold transition-colors ${active ? "bg-white text-sky-ink shadow-sm" : "text-sky-ink/55 hover:text-sky-ink"} ${disabled ? "cursor-not-allowed opacity-40 hover:text-sky-ink/55" : ""}`;
+    `min-h-11 rounded-full px-5 text-[14px] font-semibold transition-colors ${active ? "bg-white text-sky-ink shadow-sm" : "text-sky-ink/70 hover:text-sky-ink"} ${disabled ? "cursor-not-allowed opacity-40 hover:text-sky-ink/70" : ""}`;
 
   return (
     <div>

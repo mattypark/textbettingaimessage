@@ -35,7 +35,7 @@ export default async function AppHome() {
           <Mascot mood={mood} size={66} />
         </GlassBall>
         <div className="min-w-0 pb-2">
-          <p className="text-[13px] font-medium text-sky-ink/60">{greeting(open.length, mood)}</p>
+          <p className="text-[13px] font-medium text-sky-ink/70">{greeting(open.length, mood)}</p>
           <h1 className="truncate text-[34px] font-bold leading-none">hey {viewer.name.toLowerCase()}</h1>
         </div>
       </section>
@@ -50,12 +50,12 @@ export default async function AppHome() {
 
       {chats.length > 0 && (
         <section className="mt-6" aria-label="your chats">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-sky-ink/55">leaderboards</p>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-sky-ink/70">leaderboards</p>
           <ul className="mt-2 flex flex-wrap gap-2">
             {chats.map((c) => (
               <li key={c.id}>
                 <Link href={`/app/chats/${c.id}`} className="flex min-h-11 items-center rounded-full bg-white px-4 text-[14px] font-semibold text-sky-ink shadow-sm transition-transform hover:-translate-y-0.5">
-                  {c.name ?? "group"} <span className="ml-1.5 text-sky-ink/40">›</span>
+                  {c.name ?? "group"} <span className="ml-1.5 text-sky-ink/70">›</span>
                 </Link>
               </li>
             ))}

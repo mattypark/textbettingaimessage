@@ -51,7 +51,7 @@ export function SignInForm() {
       {stage === "phone" ? (
         <form onSubmit={sendCode} className="flex w-full max-w-sm flex-1 flex-col items-center" noValidate>
           <h1 className="mt-8 text-[32px] font-semibold leading-tight">your number is your account.</h1>
-          <p className="mt-3 text-[15px] text-sky-ink/60">the code shows up as a text from the bot&apos;s own line.</p>
+          <p className="mt-3 text-[15px] text-sky-ink/70">the code shows up as a text from the bot&apos;s own line.</p>
           <label className="sr-only" htmlFor="phone">phone</label>
           <input
             id="phone"
@@ -61,7 +61,7 @@ export function SignInForm() {
             onChange={(e) => setPhone(e.target.value)}
             aria-invalid={Boolean(error)}
             aria-describedby={errorId}
-            className="tnum mt-10 w-full border-b-2 border-sky-ink bg-transparent pb-3 text-center text-[36px] font-semibold outline-none placeholder:text-sky-ink/30"
+            className="tnum mt-10 w-full border-b-2 border-sky-ink bg-transparent pb-3 text-center text-[36px] font-semibold outline-none placeholder:text-sky-ink/55"
             placeholder="+1 555 555 5555"
           />
           {error && <p id={errorId} role="alert" className="mt-4 text-[14px] text-sticker-red">{error}</p>}
@@ -82,14 +82,14 @@ export function SignInForm() {
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             aria-invalid={Boolean(error)}
             aria-describedby={errorId}
-            className="tnum mt-10 w-full border-b-2 border-sky-ink bg-transparent pb-3 text-center text-[40px] font-semibold tracking-[0.4em] outline-none placeholder:tracking-[0.4em] placeholder:text-sky-ink/20"
+            className="tnum mt-10 w-full border-b-2 border-sky-ink bg-transparent pb-3 text-center text-[40px] font-semibold tracking-[0.4em] outline-none placeholder:tracking-[0.4em] placeholder:text-sky-ink/45"
             placeholder="······"
           />
           {error && <p id={errorId} role="alert" className="mt-4 text-[14px] text-sticker-red">{error}</p>}
           <button type="submit" disabled={busy} className="pill-blue mt-10 min-h-14 w-full text-[18px] font-semibold disabled:opacity-60">
             {busy ? "…" : "sign in"}
           </button>
-          <button type="button" onClick={() => setStage("phone")} className="mt-4 min-h-11 text-[14px] font-medium text-sky-ink/60 underline-offset-2 hover:underline">
+          <button type="button" onClick={() => setStage("phone")} className="mt-4 min-h-11 text-[14px] font-medium text-sky-ink/70 underline-offset-2 hover:underline">
             different number
           </button>
         </form>

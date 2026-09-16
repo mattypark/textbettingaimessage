@@ -39,7 +39,7 @@ export function LiveStatus({ betId, live }: { betId: string; live: boolean }) {
 
   if (!subscribed) return null;
   return (
-    <span className="chip bg-sticker-green/20 text-[#1d8a44]">
+    <span className="chip bg-sticker-green/20 text-[#14703a]">
       <span className="h-2 w-2 rounded-full bg-sticker-green" aria-hidden="true" />
       live
     </span>

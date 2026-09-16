@@ -20,13 +20,14 @@ export interface StatusTheme {
 }
 
 /** Tailwind classes per accent. Full literal strings so the v4 scanner picks them up. */
+/* Text tones are darkened versions of each sticker colour so every chip clears 4.5:1 on its tint. */
 export const ACCENT_CLASS: Record<Accent, string> = {
-  blue: "bg-sticker-blue/15 text-sticker-blue",
-  green: "bg-sticker-green/20 text-[#1d8a44]",
-  yellow: "bg-sticker-yellow/35 text-[#8a6a00]",
-  red: "bg-sticker-red/15 text-sticker-red",
-  orange: "bg-sticker-orange/20 text-[#b8500f]",
-  mist: "bg-sky-ink/8 text-sky-ink/60",
+  blue: "bg-sticker-blue/15 text-[#0f4fc2]",
+  green: "bg-sticker-green/20 text-[#14703a]",
+  yellow: "bg-sticker-yellow/35 text-[#6b5200]",
+  red: "bg-sticker-red/15 text-[#b8203a]",
+  orange: "bg-sticker-orange/20 text-[#9a3f08]",
+  mist: "bg-sky-ink/8 text-sky-ink/75",
 };
 
 export const ACCENT_DOT: Record<Accent, string> = {

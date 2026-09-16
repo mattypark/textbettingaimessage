@@ -92,7 +92,7 @@ export function BetsSection() {
       className="relative mx-auto max-w-6xl px-5 pb-6 pt-14 sm:pt-20"
     >
       <Reveal>
-        <p className="text-center font-round text-[13px] font-semibold uppercase tracking-[0.18em] text-[#1f2a2f]/45">
+        <p className="text-center font-round text-[13px] font-semibold uppercase tracking-[0.18em] text-[#1f2a2f]/70">
           bets
         </p>
         <h2 className="mt-3 text-center font-round text-4xl font-semibold text-[#1f2a2f] sm:text-[38px]">
@@ -105,13 +105,13 @@ export function BetsSection() {
           {tabs.map((t, i) => (
             <span
               key={t}
-              className={`rounded-full px-3.5 py-2 ${i === 0 ? "bg-white text-[#1f2a2f] shadow-sm" : "text-[#1f2a2f]/55"}`}
+              className={`rounded-full px-3.5 py-2 ${i === 0 ? "bg-white text-[#1f2a2f] shadow-sm" : "text-[#1f2a2f]/70"}`}
             >
               {t}
             </span>
           ))}
         </div>
-        <span className="rounded-full bg-white/70 px-4 py-2.5 font-round text-[13.5px] text-[#1f2a2f]/50 shadow-sm">
+        <span className="rounded-full bg-white/70 px-4 py-2.5 font-round text-[13.5px] text-[#1f2a2f]/70 shadow-sm">
           🔍 search bets
         </span>
       </div>
@@ -126,7 +126,7 @@ export function BetsSection() {
                   <h3 className="font-round text-[15px] font-semibold text-[#1f2a2f]">
                     {c.title}
                   </h3>
-                  <p className="text-[13px] text-[#1f2a2f]/55">
+                  <p className="text-[13px] text-[#1f2a2f]/70">
                     by {c.by} <span className="text-[#1a8cff]">✓</span>
                   </p>
                   <p className="mt-2 text-[14px] leading-snug text-[#1f2a2f]/75">
@@ -163,7 +163,7 @@ export function BetsSection() {
                   <p className="truncate text-[15px] font-semibold text-[#1f2a2f]">
                     {a}
                   </p>
-                  <p className="truncate text-[12.5px] text-[#1f2a2f]/55">
+                  <p className="truncate text-[12.5px] text-[#1f2a2f]/70">
                     {b}
                   </p>
                 </div>
@@ -187,7 +187,7 @@ export function BetsSection() {
                   <h3 className="font-round text-[15px] font-semibold text-[#1f2a2f]">
                     {c.title}
                   </h3>
-                  <p className="text-[13px] text-[#1f2a2f]/55">by {c.by}</p>
+                  <p className="text-[13px] text-[#1f2a2f]/70">by {c.by}</p>
                   <p className="mt-2 text-[14px] leading-snug text-[#1f2a2f]/75">
                     {c.desc}
                   </p>
@@ -200,13 +200,13 @@ export function BetsSection() {
               href="/join"
               className="flex min-h-[180px] flex-col items-center justify-center rounded-[22px] border-2 border-dashed border-[#1f2a2f]/20 p-5 text-center font-round"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl text-[#1f2a2f]/60 shadow">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl text-[#1f2a2f]/70 shadow">
                 +
               </span>
               <span className="mt-3 text-[15px] font-semibold text-[#1f2a2f]">
                 make your own
               </span>
-              <span className="text-[12.5px] text-[#1f2a2f]/50">
+              <span className="text-[12.5px] text-[#1f2a2f]/70">
                 any bet, any stakes
               </span>
             </Link>
@@ -234,12 +234,12 @@ function Row({
         <h3 className="text-[17px] font-semibold text-[#1f2a2f]">
           {title}{" "}
           {sub && (
-            <span className="ml-2 text-[13px] font-normal text-[#1f2a2f]/50">
+            <span className="ml-2 text-[13px] font-normal text-[#1f2a2f]/70">
               {sub}
             </span>
           )}
         </h3>
-        <span className="text-[12.5px] font-medium text-[#1f2a2f]/55">
+        <span className="text-[12.5px] font-medium text-[#1f2a2f]/70">
           {more}
         </span>
       </div>
@@ -254,7 +254,7 @@ export function StatementSection() {
       <Reveal y={24} amount={0.4}>
         <h2 className="text-center font-round text-4xl font-semibold leading-[1.08] text-[#1f2a2f] sm:text-6xl lg:text-[74px] lg:leading-[1.1]">
           meet bookie,{" "}
-          <span className="text-[#1f2a2f]/45">
+          <span className="text-[#1f2a2f]/70">
             the friend in your group chat
           </span>
           <span className="mx-3 inline-flex align-middle">
@@ -268,7 +268,7 @@ export function StatementSection() {
               <Mascot mood="money" size={42} />
             </GlassBall>
           </span>
-          <span className="text-[#1f2a2f]/45">
+          <span className="text-[#1f2a2f]/70">
             {" "}
             that keeps score around the clock.
           </span>
@@ -301,7 +301,7 @@ export function MoreSection() {
           <div className="relative h-56">
             <div className="absolute left-4 top-2 w-64 rotate-[-6deg] rounded-2xl bg-white/90 p-3 font-round text-[13px] shadow-lg">
               <p className="font-semibold">🏀 half-court shot</p>
-              <p className="text-[#1f2a2f]/60">
+              <p className="text-[#1f2a2f]/70">
                 Matt vs Jake · 20 pts · due Fri
               </p>
               <div className="mt-2 flex gap-2 text-[11px]">
@@ -315,14 +315,14 @@ export function MoreSection() {
             </div>
             <div className="absolute right-2 top-16 w-60 rotate-[4deg] rounded-2xl bg-white/90 p-3 font-round text-[13px] shadow-lg">
               <p className="font-semibold">📸 proof due 11:59 pm</p>
-              <p className="text-[#1f2a2f]/60">show “walrus-42” in frame</p>
+              <p className="text-[#1f2a2f]/70">show “walrus-42” in frame</p>
               <p className="mt-2 rounded-full bg-[#1f2a2f] px-3 py-1 text-center text-[11px] text-white">
                 remind everyone
               </p>
             </div>
           </div>
           <p className="font-round text-3xl font-semibold leading-tight text-[#1f2a2f] sm:text-[40px]">
-            the <span className="text-[#1f2a2f]/45">friend</span> that
+            the <span className="text-[#1f2a2f]/70">friend</span> that
             <br />
             keeps the bet honest.
           </p>
@@ -435,7 +435,7 @@ export function MoneySection() {
         <h2 className="mt-2 text-center font-round text-4xl font-semibold text-[#1f2a2f] sm:text-[48px]">
           it settles the bet.
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-center font-round text-[17px] leading-relaxed text-[#1f2a2f]/60">
+        <p className="mx-auto mt-4 max-w-2xl text-center font-round text-[17px] leading-relaxed text-[#1f2a2f]/70">
           group chats count on nobody following up. bookie remembers every bet,
           chases the proof, and posts the verdict where everyone can see it. you
           just react.
@@ -470,7 +470,7 @@ export function MoneySection() {
             >
               see everything bookie enforces →
             </Link>
-            <p className="mt-6 max-w-sm text-[13px] text-[#1f2a2f]/50">
+            <p className="mt-6 max-w-sm text-[13px] text-[#1f2a2f]/70">
               🔒 points have no cash value and can&apos;t be bought. social
               stakes are between you and your friends — bookie only keeps score.
             </p>
@@ -490,19 +490,13 @@ export function MoneySection() {
                 "bold",
               ],
             ].map(([side, text, bold], i) => (
-              <Reveal key={i} delay={0.15 + i * 0.12} y={10} amount={0.6}>
-                <li
-                  className={`flex ${side === "out" ? "justify-end" : "justify-start"}`}
-                >
-                  <span
-                    className={`max-w-[85%] rounded-[18px] px-4 py-2.5 shadow ${side === "out" ? "bg-[#1a8cff] text-white" : "bg-white text-[#1f2a2f]"} ${bold ? "font-semibold" : ""}`}
-                  >
-                    {text}
-                  </span>
-                </li>
+            <li key={i} className={`flex ${side === "out" ? "justify-end" : "justify-start"}`}>
+              <Reveal delay={0.15 + i * 0.12} y={10} amount={0.6} className={`flex max-w-[85%] ${side === "out" ? "justify-end" : "justify-start"}`}>
+                <span className={`rounded-[18px] px-4 py-2.5 shadow ${side === "out" ? "bg-[#1a8cff] text-white" : "bg-white text-[#1f2a2f]"} ${bold ? "font-semibold" : ""}`}>{text}</span>
               </Reveal>
-            ))}
-          </ol>
+            </li>
+          ))}
+        </ol>
         </div>
       </Reveal>
     </section>
@@ -520,7 +514,7 @@ export function FooterCta() {
           <h2 className="mx-auto mt-2 max-w-3xl font-round text-4xl font-semibold leading-[1.02] text-[#1f2a2f] sm:text-6xl lg:text-[74px]">
             meet the bookie that keeps you honest.
           </h2>
-          <p className="mx-auto mt-5 max-w-md font-round text-[17px] text-[#1f2a2f]/60">
+          <p className="mx-auto mt-5 max-w-md font-round text-[17px] text-[#1f2a2f]/70">
             bookie lives in your group chat, remembers every bet, and calls it
             so nobody has to.
           </p>
@@ -535,7 +529,7 @@ export function FooterCta() {
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 font-round sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <p className="text-2xl font-bold text-[#1f2a2f]">bookie</p>
-          <p className="mt-2 max-w-xs text-[14px] text-[#1f2a2f]/60">
+          <p className="mt-2 max-w-xs text-[14px] text-[#1f2a2f]/70">
             a bookie that lives in your group chat. on iMessage today.
           </p>
         </div>
@@ -564,7 +558,7 @@ export function FooterCta() {
           ]}
         />
       </div>
-      <p className="pb-10 text-center font-round text-[13px] text-[#1f2a2f]/50">
+      <p className="pb-10 text-center font-round text-[13px] text-[#1f2a2f]/70">
         © 2026 bookie. points, not money.
       </p>
     </footer>
@@ -581,7 +575,7 @@ function FooterCol({
   return (
     <div>
       <h3 className="text-[16px] font-bold text-[#1f2a2f]">{title}</h3>
-      <ul className="mt-4 space-y-2.5 text-[14px] text-[#1f2a2f]/65">
+      <ul className="mt-4 space-y-2.5 text-[14px] text-[#1f2a2f]/70">
         {links.map(([label, href]) => (
           <li key={label}>
             <Link href={href} className="hover:text-[#1f2a2f]">

@@ -28,9 +28,9 @@ export function Podium({ rows }: { rows: LeaderboardRow[] }) {
             </div>
             <p className="mt-4 text-[17px] font-bold">
               {row.name}
-              {row.isViewer && <span className="ml-1 text-[12px] font-semibold text-sky-ink/50">(you)</span>}
+              {row.isViewer && <span className="ml-1 text-[12px] font-semibold text-sky-ink/70">(you)</span>}
             </p>
-            <p className="tnum text-[13px] text-sky-ink/60">
+            <p className="tnum text-[13px] text-sky-ink/70">
               {row.netPoints > 0n ? `+${row.netPoints}` : `${row.netPoints}`} pts · honor {row.honor}
             </p>
           </li>

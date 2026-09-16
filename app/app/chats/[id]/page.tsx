@@ -24,9 +24,9 @@ export default async function ChatPage({ params }: PageProps<"/app/chats/[id]">)
       </Link>
 
       <section className="card-soft mt-4 px-5 pb-8 pt-7 sm:px-8">
-        <p className="text-center text-[12px] font-semibold uppercase tracking-[0.14em] text-sky-ink/55">leaderboard</p>
+        <p className="text-center text-[12px] font-semibold uppercase tracking-[0.14em] text-sky-ink/70">leaderboard</p>
         <h1 className="mt-1 text-center text-[30px] font-bold leading-tight sm:text-[36px]">{chat.name ?? "group"}</h1>
-        <p className="tnum mt-1 text-center text-[14px] text-sky-ink/60">
+        <p className="tnum mt-1 text-center text-[14px] text-sky-ink/70">
           {rows.length} {rows.length === 1 ? "member" : "members"}
         </p>
         <div className="mt-8">
@@ -48,7 +48,7 @@ export default async function ChatPage({ params }: PageProps<"/app/chats/[id]">)
         </div>
       )}
 
-      <p className="mt-4 px-2 text-center text-[12.5px] text-sky-ink/50">honor is public in the chat. points here are net from bets settled in this chat.</p>
+      <p className="mt-4 px-2 text-center text-[12.5px] text-sky-ink/70">honor is public in the chat. points here are net from bets settled in this chat.</p>
     </main>
   );
 }
