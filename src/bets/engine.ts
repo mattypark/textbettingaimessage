@@ -65,6 +65,10 @@ export class BetEngine {
     return finalBet;
   }
 
+  wallet(userId: string) {
+    return this.deps.ledger.wallet(userId);
+  }
+
   /** Re-run effects for transitions that were written but never completed. */
   async replayIncomplete(limit = 20): Promise<number> {
     const pending = await this.deps.store.incompleteTransitions(limit);

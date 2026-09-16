@@ -62,6 +62,10 @@ export interface Bet {
   proofCriteria: ProofCriteria;
   judgeKind: "bot" | "referee";
   refereeUserId?: string;
+  /** Open bets let anyone in the chat take the other side by reacting. */
+  open?: boolean;
+  /** Provider id of the card message whose tapbacks count as accepts. */
+  cardProviderMessageId?: string;
   /** ISO timestamps */
   createdAt: string;
   acceptByAt: string;

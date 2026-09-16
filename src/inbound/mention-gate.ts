@@ -13,7 +13,7 @@ export interface GateInput {
 }
 
 export type GateDecision =
-  | { act: true; reason: "dm" | "named" | "reply_to_bot" | "reaction_on_bot" | "proof_attachment" | "membership" }
+  | { act: true; reason: "dm" | "named" | "command" | "reply_to_bot" | "reaction_on_bot" | "proof_attachment" | "membership" }
   | { act: "maybe"; reason: "stake_grammar" }
   | { act: false; reason: "silent" };
 
@@ -24,6 +24,7 @@ export type GateDecision =
 export function gate({ event, botNames, recentBotMessageIds, senderHasOpenBet }: GateInput): GateDecision {
   if (event.participantAdded) return { act: true, reason: "membership" };
   if (!event.isGroup) return { act: true, reason: "dm" };
+  if (/^!\w+/.test(event.text.trim())) return { act: true, reason: "command" };
 
   if (event.reaction) {
     return recentBotMessageIds.includes(event.reaction.targetProviderMessageId) ||

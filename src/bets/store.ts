@@ -30,6 +30,9 @@ export interface BetStore {
   applyTransition(expectedVersion: number, next: Bet, record: Omit<TransitionRecord, "version">): Promise<void>;
   markEffectsDone(betId: string, version: number): Promise<void>;
   setChallengeToken(betId: string, token: string): Promise<void>;
+  setCardMessageId(betId: string, providerMessageId: string): Promise<void>;
+  /** Bet whose card was reacted to; falls back to the newest proposed bet in the chat when the target is unknown. */
+  findByCard(chatId: string, providerMessageId: string | ""): Promise<Bet | null>;
   openBetsInChat(chatId: string): Promise<Bet[]>;
   /** Bets whose status could be time-advanced, for the cron tick. */
   betsWithPendingTimeouts(limit: number): Promise<Bet[]>;
@@ -69,6 +72,17 @@ export class MemoryBetStore implements BetStore {
   async setChallengeToken(betId: string, token: string): Promise<void> {
     const bet = this.bets.get(betId);
     if (bet) this.bets.set(betId, { ...bet, challengeToken: token });
+  }
+
+  async setCardMessageId(betId: string, providerMessageId: string): Promise<void> {
+    const bet = this.bets.get(betId);
+    if (bet) this.bets.set(betId, { ...bet, cardProviderMessageId: providerMessageId });
+  }
+
+  async findByCard(chatId: string, providerMessageId: string | ""): Promise<Bet | null> {
+    const inChat = [...this.bets.values()].filter((b) => b.chatId === chatId);
+    if (providerMessageId) return inChat.find((b) => b.cardProviderMessageId === providerMessageId) ?? null;
+    return inChat.filter((b) => b.status === "proposed").sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ?? null;
   }
 
   async openBetsInChat(chatId: string): Promise<Bet[]> {

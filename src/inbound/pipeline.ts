@@ -21,6 +21,8 @@ export interface PipelineDeps {
   botNames: string[];
   /** Hook for Stage 3+: does this sender have a bet awaiting proof in this chat? */
   senderHasOpenBet?: (chatId: string, userId: string) => Promise<boolean>;
+  /** Called with (betId, providerMessageId) after a bet card lands, so tapbacks can be resolved. */
+  onCardPosted?: (betId: string, providerMessageId: string) => Promise<void>;
   /** Hook for Stage 5: the intro + terms message posted once per chat. */
   introMessage?: () => OutboundMessage | null;
   log?: (line: string, extra?: Record<string, unknown>) => void;
@@ -92,7 +94,11 @@ export class InboundPipeline {
 
       const messages = await handler({ event, chatId: chat.id, userId: user.id, decision, firstContact });
       for (const [index, message] of messages.entries()) {
-        await this.outbox.send(chat.id, message, `${event.provider}:${event.providerMessageId}:${index}`);
+        const key = message.idempotencyKey ?? `${event.provider}:${event.providerMessageId}:${index}`;
+        const providerMessageId = await this.outbox.send(chat.id, message, key);
+        if (providerMessageId && message.idempotencyKey?.startsWith("card:")) {
+          await this.deps.onCardPosted?.(message.idempotencyKey.slice(5), providerMessageId);
+        }
         replies += 1;
       }
 

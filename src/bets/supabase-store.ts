@@ -97,6 +97,25 @@ export class SupabaseBetStore implements BetStore {
     if (error) fail("bets.setChallengeToken", error);
   }
 
+  async setCardMessageId(betId: string, providerMessageId: string): Promise<void> {
+    const bet = await this.get(betId);
+    if (!bet) return;
+    const { error } = await this.db
+      .from("bets")
+      .update({ card_provider_message_id: providerMessageId, state: serialize({ ...bet, cardProviderMessageId: providerMessageId }) })
+      .eq("id", betId);
+    if (error) fail("bets.setCardMessageId", error);
+  }
+
+  async findByCard(chatId: string, providerMessageId: string | ""): Promise<Bet | null> {
+    const query = this.db.from("bets").select("state").eq("chat_id", chatId);
+    const { data, error } = providerMessageId
+      ? await query.eq("card_provider_message_id", providerMessageId).maybeSingle()
+      : await query.eq("status", "proposed").order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (error) fail("bets.findByCard", error);
+    return data ? deserialize(data.state as Record<string, unknown>) : null;
+  }
+
   async openBetsInChat(chatId: string): Promise<Bet[]> {
     const { data, error } = await this.db.from("bets").select("state").eq("chat_id", chatId).in("status", OPEN);
     if (error) fail("bets.openBetsInChat", error);

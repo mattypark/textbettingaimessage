@@ -12,6 +12,7 @@ import {
 /** Events the engine feeds the machine. Each names who/what triggered it. */
 export type BetEvent =
   | { type: "ACCEPT"; userId: string }
+  | { type: "JOIN"; userId: string; side: Side }
   | { type: "DECLINE"; userId: string }
   | { type: "CANCEL"; userId: string }
   | { type: "TIMEOUT_ACCEPT" }
@@ -125,6 +126,12 @@ export function transition(bet: Bet, event: BetEvent, now: Date): Transition {
 
   switch (bet.status) {
     case "proposed": {
+      if (event.type === "JOIN") {
+        if (participant(bet, event.userId)) throw new IllegalTransition(bet.status, event.type, "already in");
+        if (!bet.open) throw new IllegalTransition(bet.status, event.type, "bet is not open");
+        const joined: Bet = { ...bet, participants: [...bet.participants, { userId: event.userId, side: event.side, required: true }] };
+        return transition(joined, { type: "ACCEPT", userId: event.userId }, now);
+      }
       if (event.type === "ACCEPT") {
         const p = participant(bet, event.userId);
         if (!p) throw new IllegalTransition(bet.status, event.type, "not a participant");
