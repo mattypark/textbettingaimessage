@@ -39,7 +39,7 @@ export interface BetStore {
   /** Transitions whose effects never finished (crash between write and execute). */
   incompleteTransitions(limit: number): Promise<Array<TransitionRecord & { bet: Bet }>>;
   addHonor(userId: string, betId: string, delta: number, reason: string): Promise<void>;
-  enqueueJudge(betId: string, proofId: string, pass: 1 | 2): Promise<void>;
+  enqueueJudge(betId: string, proofId: string, pass: 1 | 2, reason?: string): Promise<void>;
 }
 
 export class MemoryBetStore implements BetStore {
@@ -95,7 +95,7 @@ export class MemoryBetStore implements BetStore {
 
   async betsWithPendingTimeouts(limit: number): Promise<Bet[]> {
     return [...this.bets.values()]
-      .filter((b) => ["proposed", "locked", "verdict_posted"].includes(b.status))
+      .filter((b) => ["proposed", "locked", "verdict_posted", "disputed"].includes(b.status))
       .slice(0, limit);
   }
 
@@ -110,8 +110,8 @@ export class MemoryBetStore implements BetStore {
     this.honor.push({ userId, betId, delta, reason });
   }
 
-  async enqueueJudge(betId: string, proofId: string, pass: 1 | 2): Promise<void> {
+  async enqueueJudge(betId: string, proofId: string, pass: 1 | 2, reason?: string): Promise<void> {
     this.judgeQueue.push({ betId, proofId, pass });
-    this.jobSink?.("judge", { betId, proofId, pass });
+    this.jobSink?.("judge", { betId, proofId, pass, ...(reason ? { disputeReason: reason } : {}) });
   }
 }

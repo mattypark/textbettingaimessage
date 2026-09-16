@@ -24,7 +24,9 @@ export type GateDecision =
 export function gate({ event, botNames, recentBotMessageIds, senderHasOpenBet }: GateInput): GateDecision {
   if (event.participantAdded) return { act: true, reason: "membership" };
   if (!event.isGroup) return { act: true, reason: "dm" };
-  if (/^!\w+/.test(event.text.trim())) return { act: true, reason: "command" };
+  if (/^!\w+/.test(event.text.trim()) || /^call\s+#?[0-9a-f]{6,}\s+(yes|no|stands|fails)\b/i.test(event.text.trim())) {
+    return { act: true, reason: "command" };
+  }
 
   if (event.reaction) {
     return recentBotMessageIds.includes(event.reaction.targetProviderMessageId) ||

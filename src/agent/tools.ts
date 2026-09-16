@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { betaZodTool } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { betCard } from "@/src/bets/card";
+import { disputeBet, refereeDecide } from "@/src/bets/decisions";
 import { parseDeadline } from "@/src/bets/commands";
 import type { BetEngine } from "@/src/bets/engine";
 import { IllegalTransition } from "@/src/bets/state-machine";
@@ -175,5 +176,19 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
-  return [createBet, acceptBet, declineBet, getBalance, leaderboard, explainTerms, setName];
+  const dispute = betaZodTool({
+    name: "dispute_bet",
+    description: "The sender disputes a posted verdict on a bet they lost. Costs a points bond that is forfeited if the verdict stands. Include their stated reason.",
+    inputSchema: z.object({ bet_id: z.string(), reason: z.string().max(300).optional() }),
+    run: async ({ bet_id, reason }) => (await disputeBet(betStore, engine, bet_id, ctx.userId, reason)).text,
+  });
+
+  const refereeCall = betaZodTool({
+    name: "referee_decide",
+    description: "The sender is the named referee of a bet and is calling it: claim_stands=true means the 'for' side wins.",
+    inputSchema: z.object({ bet_id: z.string(), claim_stands: z.boolean() }),
+    run: async ({ bet_id, claim_stands }) => (await refereeDecide(betStore, engine, bet_id, ctx.userId, claim_stands)).text,
+  });
+
+  return [createBet, acceptBet, declineBet, dispute, refereeCall, getBalance, leaderboard, explainTerms, setName];
 }

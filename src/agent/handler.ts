@@ -42,7 +42,7 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     if (await gate.tryAcceptFrom(event, ctx.chatId, ctx.userId)) {
       return event.reaction ? [] : [{ text: `👍 got you, ${name}. you're in.` }];
     }
-    if (event.reaction || /^!\w+/.test(event.text.trim())) return commands(ctx);
+    if (event.reaction || /^!\w+/.test(event.text.trim()) || decision.reason === "command") return commands(ctx);
 
     if (event.participantAdded && !event.text) return [];
 

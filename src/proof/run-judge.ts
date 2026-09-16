@@ -23,6 +23,12 @@ export async function runJudgeJob(deps: JudgeJobDeps, payload: { betId: string; 
   const proof = await deps.proofStore.getProof(payload.proofId);
   if (!bet || !proof) return;
 
+  if (bet.judgeKind === "referee") {
+    // The named human decides via referee_decide; the job only moves the bet into judging.
+    if (payload.pass === 1) await deps.engine.apply(bet.id, { type: "JUDGE_START" }).catch(() => undefined);
+    return;
+  }
+
   if (payload.pass === 1) {
     try {
       await deps.engine.apply(bet.id, { type: "JUDGE_START" });

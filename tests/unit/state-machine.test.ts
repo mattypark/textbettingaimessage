@@ -38,7 +38,7 @@ const posted = (outcome: "for" | "against" = "for") => ({
   verdict: { outcome, confidence: 0.9, pass: 1 as const, proofId: "proof1" },
   disputeWindowEndsAt: at(60).toISOString(),
 });
-const disputed = () => ({ ...posted("for"), status: "disputed" as const, dispute: { id: "d1", disputerId: "jake", challenged: "for" as const } });
+const disputed = () => ({ ...posted("for"), status: "disputed" as const, dispute: { id: "d1", disputerId: "jake", challenged: "for" as const, openedAt: at(30).toISOString() } });
 
 const kinds = (effects: { kind: string }[]) => effects.map((e) => e.kind);
 

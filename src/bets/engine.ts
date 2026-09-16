@@ -115,7 +115,7 @@ export class BetEngine {
           await this.deps.store.addHonor(effect.userId, bet.id, effect.delta, effect.reason);
           break;
         case "enqueue_judge":
-          await this.deps.store.enqueueJudge(bet.id, effect.proofId, effect.pass);
+          await this.deps.store.enqueueJudge(bet.id, effect.proofId, effect.pass, effect.reason);
           break;
       }
       this.log("effect", { betId: bet.id, version: bet.version, effect: effect.kind });

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { TurnContext, TurnHandler } from "@/src/inbound/pipeline";
 import type { OutboundMessage } from "@/src/transport/types";
 import { betCard, type Names } from "./card";
+import { disputeBet, findBetByPrefix, refereeDecide } from "./decisions";
 import type { BetEngine } from "./engine";
 import { IllegalTransition } from "./state-machine";
 import type { BetStore } from "./store";
@@ -163,6 +164,22 @@ export function commandHandler({ store, engine, names, clock = () => new Date(),
       const open = (await store.openBetsInChat(ctx.chatId)).filter((b) => b.creatorId === ctx.userId && b.status === "proposed");
       for (const bet of open) await engine.apply(bet.id, { type: "CANCEL", userId: ctx.userId });
       return [{ text: open.length ? `cancelled ${open.length} open bet(s)` : "nothing to cancel" }];
+    }
+
+    const disputeMatch = text.match(/^!dispute\s+#?([0-9a-f]{6,})\s*(.*)$/i);
+    if (disputeMatch) {
+      const bet = await findBetByPrefix(store, ctx.chatId, disputeMatch[1]);
+      if (!bet) return [{ text: "no open bet with that id here" }];
+      const result = await disputeBet(store, engine, bet.id, ctx.userId, disputeMatch[2] || undefined);
+      return result.ok ? [] : [{ text: `❓ ${result.text}` }];
+    }
+
+    const callMatch = text.match(/^!?call\s+#?([0-9a-f]{6,})\s+(yes|no|stands|fails)\b/i);
+    if (callMatch) {
+      const bet = await findBetByPrefix(store, ctx.chatId, callMatch[1]);
+      if (!bet) return [{ text: "no open bet with that id here" }];
+      const result = await refereeDecide(store, engine, bet.id, ctx.userId, /^(yes|stands)$/i.test(callMatch[2]));
+      return result.ok ? [] : [{ text: `❓ ${result.text}` }];
     }
 
     if (/^!(balance|bal)\b/i.test(text)) {

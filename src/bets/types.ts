@@ -49,6 +49,8 @@ export interface Dispute {
   disputerId: string;
   /** Verdict the disputer is challenging. */
   challenged: Exclude<Outcome, "inconclusive">;
+  reason?: string;
+  openedAt: string;
 }
 
 export interface Bet {

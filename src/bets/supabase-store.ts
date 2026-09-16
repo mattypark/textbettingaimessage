@@ -127,7 +127,7 @@ export class SupabaseBetStore implements BetStore {
     const { data, error } = await this.db
       .from("bets")
       .select("state")
-      .or(`and(status.eq.proposed,accept_by_at.lt.${now}),and(status.eq.locked,deadline_at.lt.${now}),and(status.eq.verdict_posted,dispute_window_ends_at.lt.${now})`)
+      .or(`and(status.eq.proposed,accept_by_at.lt.${now}),and(status.eq.locked,deadline_at.lt.${now}),and(status.eq.verdict_posted,dispute_window_ends_at.lt.${now}),and(status.eq.disputed,judge_kind.eq.referee)`)
       .limit(limit);
     if (error) fail("bets.betsWithPendingTimeouts", error);
     return (data ?? []).map((row) => deserialize(row.state as Record<string, unknown>));
@@ -164,8 +164,8 @@ export class SupabaseBetStore implements BetStore {
     if (uError) fail("bump_honor", uError);
   }
 
-  async enqueueJudge(betId: string, proofId: string, pass: 1 | 2): Promise<void> {
-    const { error } = await this.db.from("jobs").insert({ kind: "judge", payload: { betId, proofId, pass } });
+  async enqueueJudge(betId: string, proofId: string, pass: 1 | 2, reason?: string): Promise<void> {
+    const { error } = await this.db.from("jobs").insert({ kind: "judge", payload: { betId, proofId, pass, ...(reason ? { disputeReason: reason } : {}) } });
     if (error) fail("jobs.insert", error);
   }
 }

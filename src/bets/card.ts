@@ -59,7 +59,9 @@ export function postText(kind: PostKind, bet: Bet, name: Names): string {
     case "expired":
       return `⌛ ${short} expired — not everyone accepted in 24h.`;
     case "proof_received":
-      return `📸 Proof received for ${short}. Judging…`;
+      return bet.judgeKind === "referee" && bet.refereeUserId
+        ? `📸 Proof in for ${short}. ${name(bet.refereeUserId)}, you're the ref — reply "call ${short} yes" if the claim stands or "call ${short} no" if it fails.`
+        : `📸 Proof received for ${short}. Judging…`;
     case "need_better_proof":
       return `🤔 Couldn't verify ${short} from that. Send clearer proof: ${bet.proofCriteria.required.join("; ")}.`;
     case "verdict": {
@@ -75,7 +77,9 @@ export function postText(kind: PostKind, bet: Bet, name: Names): string {
     case "voided":
       return `↩️ ${short} voided — everyone refunded.`;
     case "disputed":
-      return `🚩 ${short} disputed by ${name(bet.dispute?.disputerId ?? "")}. Bond posted. Second look in progress.`;
+      return bet.judgeKind === "referee" && bet.refereeUserId
+        ? `🚩 ${short} disputed by ${name(bet.dispute?.disputerId ?? "")}${bet.dispute?.reason ? ` ("${bet.dispute.reason}")` : ""}. Bond posted. ${name(bet.refereeUserId)}, final call: "call ${short} yes" or "call ${short} no". 48h or it voids.`
+        : `🚩 ${short} disputed by ${name(bet.dispute?.disputerId ?? "")}${bet.dispute?.reason ? ` ("${bet.dispute.reason}")` : ""}. Bond posted. Second look in progress.`;
     case "settled": {
       const v = bet.verdict!;
       const winners = bet.participants.filter((p) => p.side === v.outcome).map((p) => name(p.userId)).join(", ");

@@ -2,6 +2,7 @@ import type { Payout } from "@/src/ledger/types";
 import {
   DISPUTE_WINDOW_HOURS,
   MIN_JUDGE_CONFIDENCE,
+  REFEREE_SILENCE_HOURS,
   type Bet,
   type BetStatus,
   type Outcome,
@@ -22,7 +23,7 @@ export type BetEvent =
   | { type: "JUDGE_START" }
   | { type: "VERDICT"; outcome: Outcome; confidence: number; proofId: string }
   | { type: "JUDGE_FAILED" }
-  | { type: "DISPUTE"; userId: string; disputeId: string }
+  | { type: "DISPUTE"; userId: string; disputeId: string; reason?: string }
   | { type: "TIMEOUT_DISPUTE" }
   | { type: "DISPUTE_DECISION"; result: "upheld" | "overturned"; decidedBy: "referee" | "ai" }
   | { type: "UNRESOLVABLE" };
@@ -37,7 +38,7 @@ export type Effect =
   | { kind: "issue_challenge_token" }
   | { kind: "post"; message: PostKind }
   | { kind: "honor"; userId: string; delta: number; reason: string }
-  | { kind: "enqueue_judge"; proofId: string; pass: 1 | 2 };
+  | { kind: "enqueue_judge"; proofId: string; pass: 1 | 2; reason?: string };
 
 export type PostKind =
   | "accepted_partial"
@@ -243,11 +244,14 @@ export function transition(bet: Bet, event: BetEvent, now: Date): Transition {
           throw new IllegalTransition(bet.status, event.type, "dispute window closed");
         }
         return {
-          next: bump({ status: "disputed", dispute: { id: event.disputeId, disputerId: event.userId, challenged: verdict.outcome } }),
+          next: bump({
+            status: "disputed",
+            dispute: { id: event.disputeId, disputerId: event.userId, challenged: verdict.outcome, reason: event.reason, openedAt: now.toISOString() },
+          }),
           effects: [
             { kind: "bond", userId: event.userId, disputeId: event.disputeId, amount: bondAmount(bet) },
             { kind: "post", message: "disputed" },
-            ...(bet.latestProofId ? [{ kind: "enqueue_judge", proofId: bet.latestProofId, pass: 2 } as Effect] : []),
+            ...(bet.latestProofId ? [{ kind: "enqueue_judge", proofId: bet.latestProofId, pass: 2, reason: event.reason } as Effect] : []),
           ],
         };
       }
@@ -316,6 +320,10 @@ export function dueTimeout(bet: Bet, now: Date): BetEvent | null {
   if (bet.status === "locked" && nowMs > proofDeadlineMs(bet)) return { type: "TIMEOUT_DEADLINE" };
   if (bet.status === "verdict_posted" && bet.disputeWindowEndsAt && nowMs > Date.parse(bet.disputeWindowEndsAt)) {
     return { type: "TIMEOUT_DISPUTE" };
+  }
+  // A human referee who never answers must not hold stakes forever.
+  if (bet.status === "disputed" && bet.judgeKind === "referee" && bet.dispute && nowMs > Date.parse(bet.dispute.openedAt) + hours(REFEREE_SILENCE_HOURS)) {
+    return { type: "UNRESOLVABLE" };
   }
   return null;
 }
