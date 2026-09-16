@@ -181,3 +181,11 @@ create policy "members read bet events" on bet_events
 
 create policy "users read own honor" on honor_events
   for select using (exists (select 1 from users u where u.id = honor_events.user_id and u.auth_user_id = auth.uid()));
+
+create or replace function bump_honor(p_user_id uuid, p_delta integer) returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update users set honor_score = greatest(0, honor_score + p_delta) where id = p_user_id;
+$$;
