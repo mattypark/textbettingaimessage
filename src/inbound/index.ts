@@ -13,6 +13,7 @@ import { createLedger } from "@/src/ledger";
 import { awaitsProof } from "@/src/proof/intake";
 import { claudeJudge } from "@/src/proof/judge";
 import { MemoryMediaStore, SupabaseMediaStore, type MediaStore } from "@/src/proof/media-store";
+import { renderVideoFrames } from "@/src/proof/frames";
 import { runJudgeJob } from "@/src/proof/run-judge";
 import { MemoryProofStore, SupabaseProofStore, type ProofStore } from "@/src/proof/store";
 import { introMessage } from "@/src/onboarding/terms";
@@ -121,7 +122,7 @@ function wire(transportName: TransportName): Wiring {
   });
   const judge = client ? claudeJudge(client) : undefined;
   const jobRunners: Wiring["jobRunners"] = judge
-    ? { judge: (payload: Record<string, unknown>) => runJudgeJob({ betStore, proofStore, media, engine, judge }, payload as { betId: string; proofId: string; pass: 1 | 2 }) }
+    ? { judge: (payload: Record<string, unknown>) => runJudgeJob({ betStore, proofStore, media, engine, judge, renderVideo: renderVideoFrames }, payload as { betId: string; proofId: string; pass: 1 | 2 }) }
     : {};
   const wiring = { store, betStore, proofStore, media, outbox, engine, pipeline, jobRunners };
   wirings.set(transportName, wiring);
