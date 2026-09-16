@@ -1,23 +1,19 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { supabaseServer } from "@/src/db/server";
+import { notFound } from "next/navigation";
+import { webData } from "@/src/web/data";
 import { STATUS_LABEL, shortId, stakeText, when } from "@/src/web/format";
-import { betDetail } from "@/src/web/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function BetPage({ params }: PageProps<"/app/bets/[id]">) {
   const { id } = await params;
-  const supabase = await supabaseServer();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) redirect("/app/sign-in");
-  const detail = await betDetail(supabase, id);
+  const { data } = await webData();
+  const detail = await data.betDetail(id);
   if (!detail) notFound();
-  const { bet, proofs, verdicts, events, names } = detail;
+  const { bet, proofs, verdict, events, names } = detail;
   const name = (userId: string) => names.get(userId) ?? "someone";
   const forSide = bet.participants.filter((p) => p.side === "for");
   const against = bet.participants.filter((p) => p.side === "against");
-  const verdict = verdicts.at(-1);
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 pb-24">
@@ -46,10 +42,10 @@ export default async function BetPage({ params }: PageProps<"/app/bets/[id]">) {
             <p>
               <span className="stamp text-stamp mr-3">{verdict.outcome === "for" ? "claim stands" : verdict.outcome === "against" ? "claim fails" : "inconclusive"}</span>
               <span className="num">{Math.round(Number(verdict.confidence) * 100)}%</span>
-              <span className="text-ink-soft"> · pass {verdict.pass} · {when(verdict.created_at)}</span>
+              <span className="text-ink-soft"> · pass {verdict.pass} · {when(verdict.createdAt)}</span>
             </p>
             <ul className="mt-3 space-y-1">
-              {(verdict.criteria_checks as Array<{ criterion: string; met: boolean; evidence: string }>).map((c) => (
+              {verdict.checks.map((c) => (
                 <li key={c.criterion} className="grid grid-cols-[1.5rem_1fr] gap-2">
                   <span>{c.met ? "✅" : "❌"}</span>
                   <span>{c.criterion}<span className="block text-xs text-ink-soft">{c.evidence}</span></span>
@@ -67,15 +63,15 @@ export default async function BetPage({ params }: PageProps<"/app/bets/[id]">) {
           <ul className="rule mt-3 grid grid-cols-2 gap-3 pt-4 sm:grid-cols-3">
             {proofs.map((p) => (
               <li key={p.id} className="border border-rule bg-white p-2 text-xs">
-                <a href={`/api/media/${p.id}`} target="_blank" rel="noreferrer" className="block aspect-square bg-paper-deep" aria-label={`open proof from ${name(p.submitter_id)}`}>
+                <a href={p.mediaUrl} target="_blank" rel="noreferrer" className="block aspect-square bg-paper-deep" aria-label={`open proof from ${p.submitterName}`}>
                   {p.mime.startsWith("image/") ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={`/api/media/${p.id}`} alt={`proof from ${name(p.submitter_id)}`} width={400} height={400} className="h-full w-full object-cover" loading="lazy" />
+                    <img src={p.mediaUrl} alt={`proof from ${p.submitterName}`} width={400} height={400} className="h-full w-full object-cover" loading="lazy" />
                   ) : (
                     <span className="flex h-full items-center justify-center text-ink-soft">▶ video</span>
                   )}
                 </a>
-                <p className="mt-2 text-ink-soft">{name(p.submitter_id)} · {when(p.received_at)} · {p.status.replace("_", " ")}</p>
+                <p className="mt-2 text-ink-soft">{p.submitterName} · {when(p.receivedAt)} · {p.status.replace("_", " ")}</p>
               </li>
             ))}
           </ul>
@@ -87,8 +83,8 @@ export default async function BetPage({ params }: PageProps<"/app/bets/[id]">) {
         <ol className="rule mt-3 pt-2 text-sm">
           {events.map((e) => (
             <li key={e.version} className="grid grid-cols-[auto_1fr] gap-4 border-b border-rule py-2">
-              <span className="num text-xs text-ink-soft">{when(e.created_at)}</span>
-              <span>{String((e.event as { type: string }).type).toLowerCase().replace(/_/g, " ")} → {STATUS_LABEL[e.to_status as keyof typeof STATUS_LABEL]}</span>
+              <span className="num text-xs text-ink-soft">{when(e.createdAt)}</span>
+              <span>{e.type.toLowerCase().replace(/_/g, " ")} → {STATUS_LABEL[e.toStatus]}</span>
             </li>
           ))}
         </ol>

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { isSupabaseWebConfigured, supabaseServer } from "@/src/db/server";
+import { isWebDemo } from "@/src/web/demo/flag";
 
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
-  let signedIn = false;
-  if (isSupabaseWebConfigured()) {
+  const demo = isWebDemo();
+  let signedIn = demo;
+  if (!demo && isSupabaseWebConfigured()) {
     const { data } = await (await supabaseServer()).auth.getUser();
     signedIn = Boolean(data.user);
   }

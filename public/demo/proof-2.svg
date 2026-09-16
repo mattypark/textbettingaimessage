@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="demo proof photo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff8a4c" />
+      <stop offset="1" stop-color="#f7d94a" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="28" fill="url(#g)" />
+  <circle cx="300" cy="96" r="44" fill="#fff" opacity="0.9" />
+  <rect x="40" y="250" width="320" height="92" rx="20" fill="#fff" opacity="0.92" />
+  <text x="200" y="292" text-anchor="middle" font-family="ui-rounded, system-ui, sans-serif" font-size="34" font-weight="800" fill="#1f2a2f">koala-63</text>
+  <text x="200" y="322" text-anchor="middle" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="600" fill="#1f2a2f" opacity="0.6">demo proof · screen time</text>
+</svg>

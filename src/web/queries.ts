@@ -49,3 +49,28 @@ export async function betDetail(db: SupabaseClient, betId: string) {
   const names = new Map((members ?? []).map((m) => [m.id, m.display_name ?? `…${String(m.phone).slice(-4)}`]));
   return { bet: deserialize(betRow.state as Record<string, unknown>), proofs: proofs ?? [], verdicts: verdicts ?? [], events: events ?? [], names };
 }
+
+export async function myChats(db: SupabaseClient): Promise<Array<{ id: string; name: string | null }>> {
+  const { data, error } = await db.from("chats").select("id, name").order("created_at", { ascending: false });
+  if (error) throw new Error(`chats: ${error.message}`);
+  return (data ?? []).map((c) => ({ id: c.id as string, name: (c.name as string | null) ?? null }));
+}
+
+export async function chatById(db: SupabaseClient, chatId: string): Promise<{ id: string; name: string | null } | null> {
+  const { data, error } = await db.from("chats").select("id, name").eq("id", chatId).maybeSingle();
+  if (error) throw new Error(`chat: ${error.message}`);
+  return data ? { id: data.id as string, name: (data.name as string | null) ?? null } : null;
+}
+
+export async function chatBets(db: SupabaseClient, chatId: string): Promise<Bet[]> {
+  const { data, error } = await db.from("bets").select("state").eq("chat_id", chatId).order("created_at", { ascending: false }).limit(500);
+  if (error) throw new Error(`chat bets: ${error.message}`);
+  return (data ?? []).map((row) => deserialize(row.state as Record<string, unknown>));
+}
+
+/** Everyone RLS lets this member see (self + co-members), with honor. */
+export async function coMembers(db: SupabaseClient): Promise<Array<{ id: string; displayName: string | null; phone: string; honorScore: number }>> {
+  const { data, error } = await db.from("users").select("id, phone, display_name, honor_score");
+  if (error) throw new Error(`users: ${error.message}`);
+  return (data ?? []).map((u) => ({ id: u.id as string, displayName: (u.display_name as string | null) ?? null, phone: String(u.phone), honorScore: Number(u.honor_score ?? 100) }));
+}

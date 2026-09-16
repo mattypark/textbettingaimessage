@@ -1,23 +1,16 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { linkAuthUser } from "@/src/auth/link-user";
-import { supabaseServer } from "@/src/db/server";
 import { TERMS_VERSION } from "@/src/onboarding/terms";
+import { webData } from "@/src/web/data";
 import { STATUS_LABEL, TERMINAL, shortId, stakeText, when } from "@/src/web/format";
-import { myBets, myWallet } from "@/src/web/queries";
+import type { BetListItem } from "@/src/web/data/types";
 import { AcceptTerms } from "./accept-terms";
 import { InvitePanel } from "./invite-panel";
-import { defaultAccessStore } from "@/src/inbound";
 
 export const dynamic = "force-dynamic";
 
 export default async function AppHome() {
-  const supabase = await supabaseServer();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user?.phone) redirect("/app/sign-in");
-  const userId = await linkAuthUser(auth.user.id, `+${auth.user.phone.replace(/^\+/, "")}`);
-
-  const [wallet, bets, invite] = await Promise.all([myWallet(supabase), myBets(supabase), defaultAccessStore().myInvite(userId)]);
+  const { data } = await webData();
+  const [wallet, bets, invite] = await Promise.all([data.wallet(), data.bets(), data.invite()]);
   const open = bets.filter((b) => !TERMINAL.has(b.bet.status));
   const done = bets.filter((b) => TERMINAL.has(b.bet.status));
   const needsTerms = (wallet?.termsVersionAccepted ?? 0) < TERMS_VERSION;
@@ -51,7 +44,7 @@ function Stat({ label, value, unit }: { label: string; value: string; unit?: str
   );
 }
 
-function BetList({ title, items, empty }: { title: string; items: Awaited<ReturnType<typeof myBets>>; empty: string }) {
+function BetList({ title, items, empty }: { title: string; items: BetListItem[]; empty: string }) {
   return (
     <section className="mt-10">
       <h2 className="font-display text-2xl">{title}</h2>
