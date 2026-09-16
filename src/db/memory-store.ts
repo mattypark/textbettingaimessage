@@ -1,5 +1,5 @@
 import type { InboundEvent, OutboundMessage } from "@/src/transport/types";
-import type { ChatRow, OutboxRow, Store, UserRow } from "./store";
+import type { ChatRow, MemberRow, OutboxRow, Store, UserRow } from "./store";
 
 /** In-memory Store for unit tests and the replay harness. */
 export class MemoryStore implements Store {
@@ -64,6 +64,15 @@ export class MemoryStore implements Store {
 
   async upsertMember(chatId: string, userId: string): Promise<void> {
     this.members.add(`${chatId}:${userId}`);
+  }
+
+  async setDisplayName(userId: string, name: string): Promise<void> {
+    for (const user of this.users.values()) if (user.id === userId) user.displayName = name;
+  }
+
+  async chatMembers(chatId: string): Promise<MemberRow[]> {
+    const ids = [...this.members].filter((m) => m.startsWith(`${chatId}:`)).map((m) => m.slice(chatId.length + 1));
+    return [...this.users.values()].filter((u) => ids.includes(u.id)).map((u) => ({ ...u, honorScore: 100 }));
   }
 
   async markIntroduced(chatId: string): Promise<void> {

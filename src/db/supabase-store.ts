@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { InboundEvent, OutboundMessage } from "@/src/transport/types";
-import type { ChatRow, OutboxRow, Store, UserRow } from "./store";
+import type { ChatRow, MemberRow, OutboxRow, Store, UserRow } from "./store";
 
 function fail(context: string, error: { message: string } | null): never {
   throw new Error(`${context}: ${error?.message ?? "unknown error"}`);
@@ -75,6 +75,23 @@ export class SupabaseStore implements Store {
         { onConflict: "chat_id,user_id" }
       );
     if (error) fail("upsertMember", error);
+  }
+
+  async setDisplayName(userId: string, name: string): Promise<void> {
+    const { error } = await this.db.from("users").update({ display_name: name }).eq("id", userId);
+    if (error) fail("setDisplayName", error);
+  }
+
+  async chatMembers(chatId: string): Promise<MemberRow[]> {
+    const { data, error } = await this.db
+      .from("chat_members")
+      .select("user_id, handle, users(id, phone, display_name, honor_score)")
+      .eq("chat_id", chatId);
+    if (error) fail("chatMembers", error);
+    return (data ?? []).map((row) => {
+      const u = (Array.isArray(row.users) ? row.users[0] : row.users) as { id: string; phone: string; display_name: string | null; honor_score: number };
+      return { id: u.id, phone: u.phone, displayName: u.display_name, honorScore: u.honor_score };
+    });
   }
 
   async markIntroduced(chatId: string, providerMessageId: string | null): Promise<void> {

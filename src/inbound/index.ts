@@ -1,5 +1,7 @@
+import Anthropic from "@anthropic-ai/sdk";
+import { agentHandler } from "@/src/agent/handler";
+import { claudeClassifier } from "@/src/agent/classifier";
 import { BetEngine } from "@/src/bets/engine";
-import { commandHandler } from "@/src/bets/commands";
 import { MemoryBetStore, type BetStore } from "@/src/bets/store";
 import { SupabaseBetStore } from "@/src/bets/supabase-store";
 import { botNames, env } from "@/src/config/env";
@@ -8,6 +10,7 @@ import { MemoryStore } from "@/src/db/memory-store";
 import type { Store } from "@/src/db/store";
 import { SupabaseStore } from "@/src/db/supabase-store";
 import { createLedger } from "@/src/ledger";
+import { introMessage } from "@/src/onboarding/terms";
 import { createTransport } from "@/src/transport";
 import { Outbox } from "@/src/transport/outbox";
 import type { TransportName } from "@/src/transport/types";
@@ -43,10 +46,23 @@ export function pipelineFor(transportName: TransportName): InboundPipeline {
     names,
     log: (line, extra) => console.info(`[engine] ${line}`, extra ?? ""),
   });
+  const ledger = createLedger();
+  const client = env().ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env().ANTHROPIC_API_KEY }) : undefined;
+  const botName = botNames()[0] ?? "bookie";
   return new InboundPipeline({
     store,
     transport,
-    handler: commandHandler({ store: betStore, engine, names }),
+    handler: agentHandler({
+      store,
+      betStore,
+      engine,
+      ledger,
+      siteUrl: env().NEXT_PUBLIC_SITE_URL,
+      botName,
+      client,
+      classifier: client ? claudeClassifier(client) : undefined,
+    }),
+    introMessage: () => ({ text: introMessage(botName, env().NEXT_PUBLIC_SITE_URL) }),
     botNames: botNames(),
     onCardPosted: (betId, providerMessageId) => betStore.setCardMessageId(betId, providerMessageId),
     senderHasOpenBet: async (chatId, userId) =>

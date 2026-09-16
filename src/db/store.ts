@@ -19,6 +19,10 @@ export interface UserRow {
   displayName: string | null;
 }
 
+export interface MemberRow extends UserRow {
+  honorScore: number;
+}
+
 export interface OutboxRow {
   id: string;
   chatId: string;
@@ -34,6 +38,8 @@ export interface Store {
   upsertChat(event: InboundEvent): Promise<ChatRow>;
   upsertUser(handle: string): Promise<UserRow>;
   upsertMember(chatId: string, userId: string, handle: string): Promise<void>;
+  setDisplayName(userId: string, name: string): Promise<void>;
+  chatMembers(chatId: string): Promise<MemberRow[]>;
   markIntroduced(chatId: string, providerMessageId: string | null): Promise<void>;
   enqueueOutbound(chatId: string, body: OutboundMessage, idempotencyKey: string): Promise<OutboxRow | null>;
   markOutbound(id: string, status: "sent" | "failed", providerMessageId?: string, error?: string): Promise<void>;
