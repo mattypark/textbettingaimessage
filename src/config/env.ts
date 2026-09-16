@@ -12,6 +12,8 @@ const schema = z.object({
   LEGAL_CLEARANCE: z.string().optional(),
   CASH_PARTNER: z.string().optional(),
   BOT_NAMES: z.string().default("bookie"),
+  /** "0" opens the bot to anyone (dev). Default: invite-only. */
+  INVITE_ONLY: z.string().default("1"),
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
 
   // Linq

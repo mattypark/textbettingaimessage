@@ -25,6 +25,8 @@ export interface PipelineDeps {
   botNames: string[];
   /** Hook for Stage 3+: does this sender have a bet awaiting proof in this chat? */
   senderHasOpenBet?: (chatId: string, userId: string) => Promise<boolean>;
+  /** Invite-only gate: runs after identity, before anything else. Absent = open access. */
+  accessGate?: (chatId: string, userId: string, phone: string, text: string) => Promise<{ allowed: boolean; reply?: string }>;
   /** Durable home for proof media; attachments are downloaded before the 200 when present. */
   media?: MediaStore;
   fetcher?: Fetcher;
@@ -93,6 +95,23 @@ export class InboundPipeline {
 
       const firstContact = chat.botIntroducedAt === null;
       let replies = 0;
+
+      if (this.deps.accessGate) {
+        const gate = await this.deps.accessGate(chat.id, user.id, event.senderHandle, event.text);
+        if (gate.reply) {
+          await this.outbox.send(chat.id, { text: gate.reply }, `${event.provider}:${event.providerMessageId}:gate`);
+          replies += 1;
+        }
+        if (!gate.allowed) {
+          await store.markInbound(inboxId, "ignored", "not_invited");
+          return { outcome: "ignored", inboxId, reason: "not_invited" };
+        }
+        if (gate.reply) {
+          // Just redeemed a code in-thread: the intro can follow next message.
+          await store.markInbound(inboxId, "processed");
+          return { outcome: "processed", inboxId, replies };
+        }
+      }
 
       if (firstContact) {
         const intro = this.deps.introMessage?.();

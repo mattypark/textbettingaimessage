@@ -1,4 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { accessGate } from "@/src/access/gate";
+import { MemoryAccessStore, SupabaseAccessStore, type AccessStore } from "@/src/access/store";
 import { agentHandler } from "@/src/agent/handler";
 import { claudeClassifier } from "@/src/agent/classifier";
 import { BetEngine } from "@/src/bets/engine";
@@ -25,6 +27,13 @@ import { InboundPipeline } from "./pipeline";
 let memoryStore: MemoryStore | undefined;
 let memoryBetStore: MemoryBetStore | undefined;
 let memoryProofStore: MemoryProofStore | undefined;
+let memoryAccess: MemoryAccessStore | undefined;
+
+export function defaultAccessStore(): AccessStore {
+  if (isSupabaseAdminConfigured()) return new SupabaseAccessStore(supabaseAdmin());
+  memoryAccess ??= new MemoryAccessStore();
+  return memoryAccess;
+}
 let memoryMedia: MemoryMediaStore | undefined;
 
 export function defaultProofStore(): ProofStore {
@@ -73,7 +82,7 @@ const wirings = new Map<TransportName, Wiring>();
 
 export function tickDeps() {
   const w = wire(env().TRANSPORT);
-  return { store: w.store, betStore: w.betStore, engine: w.engine, outbox: w.outbox, pipeline: w.pipeline, proofStore: w.proofStore, jobRunners: w.jobRunners };
+  return { store: w.store, betStore: w.betStore, engine: w.engine, outbox: w.outbox, pipeline: w.pipeline, proofStore: w.proofStore, jobRunners: w.jobRunners, promote: () => defaultAccessStore().promote(3) };
 }
 
 export function pipelineFor(transportName: TransportName): InboundPipeline {
@@ -115,6 +124,7 @@ function wire(transportName: TransportName): Wiring {
     }),
     media,
     introMessage: () => ({ text: introMessage(botName, env().NEXT_PUBLIC_SITE_URL) }),
+    accessGate: env().INVITE_ONLY === "0" ? undefined : accessGate(defaultAccessStore(), env().NEXT_PUBLIC_SITE_URL),
     botNames: botNames(),
     onCardPosted: (betId, providerMessageId) => betStore.setCardMessageId(betId, providerMessageId),
     senderHasOpenBet: (chatId, userId) => awaitsProof(betStore, chatId, userId),
