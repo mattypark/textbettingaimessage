@@ -18,12 +18,13 @@ export function SlipFace({ bet, chatName, names, viewerId }: { bet: Bet; chatNam
 
   return (
     <article className="card-soft relative overflow-hidden p-5 sm:p-7">
-      <Mascot mood={theme.mood} size={110} className="pointer-events-none absolute -right-4 -top-3 opacity-90 sm:right-2 sm:top-2" />
-      <div className="relative flex flex-wrap items-center gap-2 pr-24">
+      <Mascot mood={theme.mood} size={72} className="pointer-events-none absolute right-1 top-1 sm:hidden" />
+      <Mascot mood={theme.mood} size={110} className="pointer-events-none absolute right-2 top-2 hidden sm:block" />
+      <div className="relative flex flex-wrap items-center gap-2 pr-20 sm:pr-28">
         <StatusChip status={bet.status} outcome={outcome} />
         <span className="text-[13px] text-sky-ink/55">{chatName ?? "group"}</span>
       </div>
-      <h1 className="relative mt-4 max-w-[26ch] text-[28px] font-bold leading-[1.08] sm:text-[36px]">&ldquo;{bet.claim}&rdquo;</h1>
+      <h1 className="relative mt-4 max-w-[26ch] pr-14 text-[28px] font-bold leading-[1.08] sm:pr-24 sm:text-[36px]">&ldquo;{bet.claim}&rdquo;</h1>
 
       <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4">
         <Field label="stake">
