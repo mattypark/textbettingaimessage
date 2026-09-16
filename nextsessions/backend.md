@@ -9,3 +9,8 @@ Do, in order:
 4. Record an e2e cassette (FakeModel) for create-and-lock and proof-and-verdict scenarios in tests/e2e.
 
 Never wire a cash rail. Commit as Matthew Park after each real unit; do not push.
+
+Added 2026-09-16 by the frontend lane:
+5. `alter publication supabase_realtime add table bets;` — the bet page subscribes to its row (`app/app/bets/[id]/live-status.tsx`) and refreshes on UPDATE; RLS already scopes rows to chat members. Until this runs the hook subscribes and never fires.
+6. Optional `chat_leaderboard(p_chat_id uuid)` RPC returning members with honor and available balance; today the web derives net points from settled bets because `ledger_accounts` has no member-readable policy. Swap in `src/web/data/supabase-data.ts` → `leaderboard()`.
+7. Rate-limit `POST /api/join` (per IP and per phone) and confirm Supabase Auth OTP throttling; the frontend only has a honeypot.

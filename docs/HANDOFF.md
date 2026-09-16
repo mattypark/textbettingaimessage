@@ -20,7 +20,10 @@ Project: **Bookie** — an iMessage bot you add to a friend group chat; text it 
 | Proof: media store, hash/EXIF, video frames (ffmpeg), vision judge, disputes, referee | `src/proof/`, migrations 0007 | done |
 | Invite-only: invites (3 uses), waitlist + referral ranks, `code XXXXXXXX` in-thread, `/api/join` | `src/access/`, migration 0009 | done |
 | Web: phone OTP via bot line, `/app` dashboard + invite panel, bet detail, media route | `app/app/`, `src/web/`, migration 0008 | done |
-| Landing (folk.com layout), `/join` onboarding, terms/privacy/404/OG/sitemap | `app/page.tsx`, `app/(site)/folk/*`, `app/join/` | done, verified 375/1440 |
+| Landing (folk.com layout + motion), `/join` onboarding, terms/privacy/404/OG/sitemap/icon | `app/page.tsx`, `app/(site)/folk/*`, `app/(site)/legal-shell.tsx`, `app/join/` | done, verified 375/768/1440, Lighthouse 100/100/100 |
+| `/app` on the folk system: dashboard, bet flip card, leaderboard `/app/chats/[id]`, Realtime hook | `app/app/**`, `src/web/data/`, `src/web/status-theme.ts` | done; only ever run in demo mode |
+| `WEB_DEMO=1` seeded mode (8 bets, proofs, verdicts, 5 members) — refuses on Vercel or with Supabase set | `src/web/demo/` | done |
+| Launch checklist walk (web) | `docs/LAUNCH-CHECKLIST.md` | 16 done, 2 n/a, spam rate limit + analytics open |
 | Docs | `docs/DEPLOY.md`, `docs/SESSION-*.md`, `docs/legal-status.md`, `docs/providers.md`, `nextsessions/*.md` | done |
 
 ## What has NOT happened (needs Matthew's hands)
@@ -31,6 +34,8 @@ Project: **Bookie** — an iMessage bot you add to a friend group chat; text it 
 4. **Seed invite codes**: `insert into invites (code, max_uses) values ('MATT0001', 50);` then share `/join?ref=MATT0001`. Set `INVITE_ONLY=0` locally to bypass the gate.
 5. **Vercel deploy** (Matthew deploys; not the "old projects" Vercel account).
 6. `/repo-describe-one` on the repo (standing rule after a push) — not run yet.
+7. **Real-Supabase pass of `/app`**: sign in with a phone, dashboard shows a real bet, second account can't see it, leaderboard ranks the chat. Then `alter publication supabase_realtime add table bets;` so `LiveStatus` on the bet page fires.
+8. Decide: uninstall `gsap`/`lenis`? No — the landing now uses both (`app/(site)/folk/motion.tsx`). Decide on analytics (`@vercel/analytics` = new dep) and a rate limit on `/api/join`.
 
 ## Decisions worth not re-litigating
 
@@ -46,4 +51,4 @@ Project: **Bookie** — an iMessage bot you add to a friend group chat; text it 
 ## Suggested next-session prompts
 
 - Backend lane: `nextsessions/backend.md`
-- Frontend lane: `nextsessions/frontend.md` (add: mobile pass on `/app`, restyle `/app` to the folk system if Matthew wants one look everywhere — today `/app` still uses the earlier betting-slip tokens)
+- Frontend lane: `nextsessions/frontend.md` (`/app` is on the folk system as of 2026-09-16; what's left is the live run and polish)
