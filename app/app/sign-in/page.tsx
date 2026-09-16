@@ -1,90 +1,24 @@
-"use client";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { isWebDemo } from "@/src/web/demo/flag";
+import { Mascot } from "@/app/(site)/folk/mascot";
+import { SignInForm } from "./sign-in-form";
 
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
-import { supabaseBrowser } from "@/src/db/browser";
+export const metadata: Metadata = { title: "Sign in", robots: { index: false, follow: false } };
 
-const E164 = /^\+[1-9]\d{7,14}$/;
-
-/** Phone OTP. The code arrives as an iMessage from the bot's own line. */
 export default function SignInPage() {
-  const router = useRouter();
-  const [phone, setPhone] = useState("+1");
-  const [code, setCode] = useState("");
-  const [stage, setStage] = useState<"phone" | "code">("phone");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function sendCode(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    const normalized = phone.replace(/[^\d+]/g, "");
-    if (!E164.test(normalized)) return setError("Use your full number with country code, like +15125550123.");
-    setBusy(true);
-    const { error: otpError } = await supabaseBrowser().auth.signInWithOtp({ phone: normalized });
-    setBusy(false);
-    if (otpError) return setError(otpError.message);
-    setPhone(normalized);
-    setStage("code");
+  if (isWebDemo()) {
+    return (
+      <main className="flex flex-1 flex-col items-center px-5 pb-24 pt-6 text-center">
+        <Mascot mood="cheer" size={120} />
+        <span className="-mt-2 rounded-2xl bg-sky-ink px-4 py-2 text-[15px] font-semibold text-white">demo mode</span>
+        <h1 className="mt-8 text-[32px] font-semibold leading-tight">no sign-in needed.</h1>
+        <p className="mt-3 max-w-sm text-[15px] text-sky-ink/60">the app is running on seeded data. sign-in comes back the moment Supabase is configured.</p>
+        <Link href="/app" className="pill-blue mt-8 flex min-h-14 w-full max-w-sm items-center justify-center text-[18px] font-semibold">
+          enter the demo
+        </Link>
+      </main>
+    );
   }
-
-  async function verify(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    if (!/^\d{6}$/.test(code)) return setError("Six digits.");
-    setBusy(true);
-    const { error: verifyError } = await supabaseBrowser().auth.verifyOtp({ phone, token: code, type: "sms" });
-    setBusy(false);
-    if (verifyError) return setError(verifyError.message);
-    router.replace("/app");
-    router.refresh();
-  }
-
-  return (
-    <main className="flex flex-1 items-center justify-center px-6 py-16">
-      <div className="slip w-full max-w-sm px-6 py-8">
-        <p className="font-display text-3xl">Sign in</p>
-        <p className="mt-2 text-sm text-ink-soft">Your number is your account. The code shows up as a text from the bot.</p>
-
-        {stage === "phone" ? (
-          <form onSubmit={sendCode} className="mt-6 space-y-3" noValidate>
-            <label className="block text-xs uppercase tracking-wider text-ink-soft" htmlFor="phone">Phone</label>
-            <input
-              id="phone"
-              inputMode="tel"
-              autoComplete="tel"
-              className="num w-full border-b border-ink bg-transparent py-2 text-lg outline-none focus:border-bubble"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              aria-invalid={Boolean(error)}
-            />
-            <button type="submit" disabled={busy} className="mt-4 w-full bg-ink py-3 text-sm font-medium text-paper transition-transform duration-150 ease-[var(--ease-out)] active:scale-[0.99] disabled:opacity-50">
-              {busy ? "Sending…" : "Text me a code"}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={verify} className="mt-6 space-y-3" noValidate>
-            <label className="block text-xs uppercase tracking-wider text-ink-soft" htmlFor="code">Code sent to {phone}</label>
-            <input
-              id="code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              className="num w-full border-b border-ink bg-transparent py-2 text-2xl tracking-[0.4em] outline-none focus:border-bubble"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-            />
-            <button type="submit" disabled={busy} className="mt-4 w-full bg-ink py-3 text-sm font-medium text-paper disabled:opacity-50">
-              {busy ? "Checking…" : "Sign in"}
-            </button>
-            <button type="button" onClick={() => setStage("phone")} className="w-full py-2 text-xs text-ink-soft underline-offset-2 hover:underline">
-              Different number
-            </button>
-          </form>
-        )}
-
-        {error && <p role="alert" className="mt-4 text-sm text-stamp">{error}</p>}
-      </div>
-    </main>
-  );
+  return <SignInForm />;
 }
