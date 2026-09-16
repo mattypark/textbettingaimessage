@@ -1,0 +1,17 @@
+{
+  "api_version": "v3",
+  "created_at": "2026-09-16T15:06:00Z",
+  "event_id": "evt_msg_003",
+  "event_type": "message.received",
+  "partner_id": "partner_1",
+  "trace_id": "trace_3",
+  "webhook_version": "2026-02-03",
+  "data": {
+    "id": "msg_003",
+    "direction": "outbound",
+    "service": "iMessage",
+    "chat": { "id": "chat_group_1", "is_group": true, "health_status": { "status": "HEALTHY", "doc_url": "x", "updated_at": "2026-09-16T15:00:00Z" } },
+    "sender_handle": { "id": "h_bot", "handle": "+12053968556", "joined_at": "2026-09-16T14:00:00Z", "service": "iMessage", "is_me": true },
+    "parts": [ { "type": "text", "value": "Locked. 🔒" } ]
+  }
+}

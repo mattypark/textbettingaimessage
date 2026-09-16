@@ -1,0 +1,67 @@
+import { z } from "zod";
+
+/**
+ * Validated process environment. Import `env` instead of touching
+ * `process.env` so a missing key fails at boot with a readable message rather
+ * than as an `undefined` deep inside a webhook.
+ */
+const schema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  TRANSPORT: z.enum(["linq", "sendblue", "fake"]).default("fake"),
+  STAKE_MODE: z.enum(["points", "cash"]).default("points"),
+  LEGAL_CLEARANCE: z.string().optional(),
+  CASH_PARTNER: z.string().optional(),
+  BOT_NAMES: z.string().default("bookie"),
+  NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
+
+  // Linq
+  LINQ_API_KEY: z.string().optional(),
+  LINQ_WEBHOOK_SECRET: z.string().optional(),
+  LINQ_FROM_NUMBER: z.string().optional(),
+
+  // Sendblue
+  SENDBLUE_API_KEY: z.string().optional(),
+  SENDBLUE_API_SECRET: z.string().optional(),
+  SENDBLUE_FROM_NUMBER: z.string().optional(),
+  SENDBLUE_SIGNING_SECRET: z.string().optional(),
+
+  // Supabase
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+
+  // Claude
+  ANTHROPIC_API_KEY: z.string().optional(),
+
+  // Internal
+  CRON_SECRET: z.string().optional(),
+});
+
+export type Env = z.infer<typeof schema>;
+
+let cached: Env | undefined;
+
+export function env(): Env {
+  if (cached) return cached;
+  const parsed = schema.safeParse(process.env);
+  if (!parsed.success) {
+    const issues = parsed.error.issues
+      .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+      .join("; ");
+    throw new Error(`Invalid environment: ${issues}`);
+  }
+  cached = parsed.data;
+  return cached;
+}
+
+/** Test hook — drop the cache so a spec can swap env vars. */
+export function resetEnvCache(): void {
+  cached = undefined;
+}
+
+export function botNames(): string[] {
+  return env()
+    .BOT_NAMES.split(",")
+    .map((name) => name.trim().toLowerCase())
+    .filter(Boolean);
+}

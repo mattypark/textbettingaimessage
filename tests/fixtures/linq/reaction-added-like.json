@@ -1,0 +1,18 @@
+{
+  "api_version": "v3",
+  "created_at": "2026-09-16T15:01:00Z",
+  "event_id": "evt_rx_001",
+  "event_type": "reaction.added",
+  "partner_id": "partner_1",
+  "trace_id": "trace_4",
+  "webhook_version": "2026-02-03",
+  "data": {
+    "is_from_me": false,
+    "reaction_type": "like",
+    "chat_id": "chat_group_1",
+    "message_id": "msg_bot_card_1",
+    "from_handle": { "id": "h_jake", "handle": "+17135550101", "joined_at": "2026-09-16T14:00:00Z", "service": "iMessage" },
+    "reacted_at": "2026-09-16T15:01:00Z",
+    "service": "iMessage"
+  }
+}

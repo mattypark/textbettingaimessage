@@ -1,0 +1,26 @@
+{
+  "api_version": "v3",
+  "created_at": "2026-09-16T15:05:00Z",
+  "event_id": "evt_msg_002",
+  "event_type": "message.received",
+  "partner_id": "partner_1",
+  "trace_id": "trace_2",
+  "webhook_version": "2026-02-03",
+  "data": {
+    "id": "msg_002",
+    "direction": "inbound",
+    "service": "iMessage",
+    "sent_at": "2026-09-16T15:05:00Z",
+    "reply_to": { "message_id": "msg_bot_card_1", "part_index": 0 },
+    "chat": {
+      "id": "chat_group_1",
+      "is_group": true,
+      "health_status": { "status": "HEALTHY", "doc_url": "https://docs.linqapp.com/x", "updated_at": "2026-09-16T15:00:00Z" }
+    },
+    "sender_handle": { "id": "h_matt", "handle": "+15029998282", "joined_at": "2026-09-16T14:00:00Z", "service": "iMessage" },
+    "parts": [
+      { "type": "text", "value": "proof" },
+      { "type": "media", "id": "att_1", "filename": "IMG_0001.MOV", "mime_type": "video/quicktime", "size_bytes": 4200000, "url": "https://cdn.linqapp.com/eph/att_1?sig=abc" }
+    ]
+  }
+}

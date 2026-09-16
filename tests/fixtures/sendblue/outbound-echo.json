@@ -1,0 +1,11 @@
+{
+  "content": "Locked. 🔒",
+  "is_outbound": true,
+  "status": "SENT",
+  "message_handle": "sb_msg_003",
+  "from_number": "+12053968556",
+  "to_number": "+15029998282",
+  "message_type": "group",
+  "group_id": "sb_group_1",
+  "service": "iMessage"
+}

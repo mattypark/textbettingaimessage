@@ -1,0 +1,19 @@
+{
+  "accountEmail": "matthew@example.com",
+  "content": "$20 says I make this half-court shot by Friday",
+  "is_outbound": false,
+  "status": "RECEIVED",
+  "message_handle": "sb_msg_001",
+  "date_sent": "2026-09-16T15:00:00Z",
+  "date_updated": "2026-09-16T15:00:00Z",
+  "from_number": "+15029998282",
+  "number": "+15029998282",
+  "to_number": "+12053968556",
+  "was_downgraded": false,
+  "media_url": "",
+  "message_type": "group",
+  "group_id": "sb_group_1",
+  "participants": ["+15029998282", "+17135550101", "+17135550102"],
+  "group_display_name": "the boys",
+  "service": "iMessage"
+}

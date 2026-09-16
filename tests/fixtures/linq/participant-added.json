@@ -1,0 +1,15 @@
+{
+  "api_version": "v3",
+  "created_at": "2026-09-16T14:00:00Z",
+  "event_id": "evt_pa_001",
+  "event_type": "participant.added",
+  "partner_id": "partner_1",
+  "trace_id": "trace_6",
+  "webhook_version": "2026-02-03",
+  "data": {
+    "handle": "+12053968556",
+    "chat_id": "chat_group_1",
+    "added_at": "2026-09-16T14:00:00Z",
+    "participant": { "id": "h_bot", "handle": "+12053968556", "joined_at": "2026-09-16T14:00:00Z", "service": "iMessage", "is_me": true }
+  }
+}

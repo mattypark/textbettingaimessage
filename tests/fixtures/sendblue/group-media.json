@@ -1,0 +1,15 @@
+{
+  "content": "",
+  "is_outbound": false,
+  "status": "RECEIVED",
+  "message_handle": "sb_msg_002",
+  "date_sent": "2026-09-16T15:05:00Z",
+  "from_number": "+15029998282",
+  "to_number": "+12053968556",
+  "media_url": "https://storage.googleapis.com/sendblue/abc/IMG_0001.jpeg",
+  "media_urls": ["https://storage.googleapis.com/sendblue/abc/IMG_0001.jpeg", "https://storage.googleapis.com/sendblue/abc/IMG_0002.MOV"],
+  "message_type": "group",
+  "group_id": "sb_group_1",
+  "participants": ["+15029998282", "+17135550101", "+17135550102"],
+  "service": "iMessage"
+}
