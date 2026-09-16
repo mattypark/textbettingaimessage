@@ -1,4 +1,6 @@
 import type { Store } from "@/src/db/store";
+import type { MediaStore } from "@/src/proof/media-store";
+import { storeAttachments, type Fetcher, type StoredAttachment } from "@/src/transport/attachments";
 import { Outbox } from "@/src/transport/outbox";
 import type { InboundEvent, MessageTransport, OutboundMessage } from "@/src/transport/types";
 import { gate, type GateDecision } from "./mention-gate";
@@ -9,6 +11,8 @@ export interface TurnContext {
   userId: string;
   decision: GateDecision;
   firstContact: boolean;
+  /** Attachments already copied into durable storage (empty when no media store is configured). */
+  attachments: StoredAttachment[];
 }
 
 /** Produces the bot's replies for one inbound event. Stage 1 echoes; later stages run the agent. */
@@ -21,6 +25,9 @@ export interface PipelineDeps {
   botNames: string[];
   /** Hook for Stage 3+: does this sender have a bet awaiting proof in this chat? */
   senderHasOpenBet?: (chatId: string, userId: string) => Promise<boolean>;
+  /** Durable home for proof media; attachments are downloaded before the 200 when present. */
+  media?: MediaStore;
+  fetcher?: Fetcher;
   /** Called with (betId, providerMessageId) after a bet card lands, so tapbacks can be resolved. */
   onCardPosted?: (betId: string, providerMessageId: string) => Promise<void>;
   /** Hook for Stage 5: the intro + terms message posted once per chat. */
@@ -59,7 +66,18 @@ export class InboundPipeline {
     const inboxId = await store.claimInbound(event);
     if (!inboxId) return { outcome: "duplicate" };
 
-    return this.process(inboxId, event);
+    // Provider media URLs expire in minutes: copy them before anything slow.
+    let stored: StoredAttachment[] = [];
+    if (this.deps.media && event.attachments.length) {
+      try {
+        stored = await storeAttachments(event, this.deps.media, this.deps.fetcher);
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        await store.markInbound(inboxId, "failed", detail);
+        return { outcome: "failed", inboxId, error: detail };
+      }
+    }
+    return this.process(inboxId, { ...event, attachments: stored.length ? stored : event.attachments });
   }
 
   /** Steps after the inbox claim. The cron tick re-runs this for rows that never finished. */
@@ -98,7 +116,8 @@ export class InboundPipeline {
         return { outcome: "ignored", inboxId, reason: decision.reason };
       }
 
-      const messages = await handler({ event, chatId: chat.id, userId: user.id, decision, firstContact });
+      const attachments = event.attachments.filter((a): a is StoredAttachment => "storagePath" in a && typeof a.storagePath === "string");
+      const messages = await handler({ event, chatId: chat.id, userId: user.id, decision, firstContact, attachments });
       for (const [index, message] of messages.entries()) {
         const key = message.idempotencyKey ?? `${event.provider}:${event.providerMessageId}:${index}`;
         const providerMessageId = await this.outbox.send(chat.id, message, key);

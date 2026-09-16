@@ -47,6 +47,8 @@ export class MemoryBetStore implements BetStore {
   readonly records: TransitionRecord[] = [];
   readonly honor: Array<{ userId: string; betId: string; delta: number; reason: string }> = [];
   readonly judgeQueue: Array<{ betId: string; proofId: string; pass: 1 | 2 }> = [];
+  /** Wired in memory mode so enqueueJudge lands where the tick looks. */
+  jobSink?: (kind: string, payload: Record<string, unknown>) => void;
 
   async create(bet: Bet): Promise<Bet> {
     this.bets.set(bet.id, bet);
@@ -110,5 +112,6 @@ export class MemoryBetStore implements BetStore {
 
   async enqueueJudge(betId: string, proofId: string, pass: 1 | 2): Promise<void> {
     this.judgeQueue.push({ betId, proofId, pass });
+    this.jobSink?.("judge", { betId, proofId, pass });
   }
 }

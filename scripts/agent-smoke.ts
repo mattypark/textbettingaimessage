@@ -38,6 +38,7 @@ const replies = await runAgentTurn(
     userId: ids.Matt,
     decision: { act: true, reason: "named" },
     firstContact: false,
+    attachments: [],
   },
   { store, betStore, engine, ledger, siteUrl: "https://example.test", botName: "bookie", client: new Anthropic() }
 );

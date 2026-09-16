@@ -7,12 +7,15 @@ import { TermsGate } from "@/src/onboarding/gate";
 import { TERMS_VERSION } from "@/src/onboarding/terms";
 import type { Classifier } from "./classifier";
 import { runAgentTurn, type RunTurnDeps } from "./run-turn";
+import { intakeProof, type IntakeDeps } from "@/src/proof/intake";
 
 export interface AgentHandlerDeps extends Omit<RunTurnDeps, "client"> {
   client?: Anthropic;
   classifier?: Classifier;
   /** Test seam: replaces the Claude call. */
   runTurn?: (ctx: TurnContext) => Promise<OutboundMessage[]>;
+  /** Proof intake; absent = attachments are ignored. */
+  intake?: Omit<IntakeDeps, "betStore" | "engine">;
 }
 
 /**
@@ -42,6 +45,19 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     if (event.reaction || /^!\w+/.test(event.text.trim())) return commands(ctx);
 
     if (event.participantAdded && !event.text) return [];
+
+    if (ctx.attachments.length && deps.intake) {
+      const betRef = event.text.match(/#?([0-9a-f]{6})\b/i)?.[1];
+      const proofReplies = await intakeProof(
+        { ...deps.intake, betStore: deps.betStore, engine: deps.engine },
+        event,
+        ctx.attachments,
+        ctx.chatId,
+        ctx.userId,
+        betRef ? (await deps.betStore.openBetsInChat(ctx.chatId)).find((b) => b.id.startsWith(betRef))?.id : undefined
+      );
+      if (proofReplies.length || decision.reason === "proof_attachment") return proofReplies;
+    }
 
     if (decision.act === "maybe") {
       const addressed = deps.classifier ? await deps.classifier(event.text, deps.botName) : false;

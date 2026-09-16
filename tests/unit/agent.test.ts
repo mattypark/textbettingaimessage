@@ -45,6 +45,7 @@ async function world() {
     userId: users[from],
     decision: { act: true, reason: "named" },
     firstContact: false,
+    attachments: [],
   });
   return { store, betStore, ledger, transport, outbox, users, chat, engine, deps, ctx };
 }

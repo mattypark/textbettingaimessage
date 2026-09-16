@@ -10,6 +10,10 @@ import { MemoryStore } from "@/src/db/memory-store";
 import type { Store } from "@/src/db/store";
 import { SupabaseStore } from "@/src/db/supabase-store";
 import { createLedger } from "@/src/ledger";
+import { claudeJudge } from "@/src/proof/judge";
+import { MemoryMediaStore, SupabaseMediaStore, type MediaStore } from "@/src/proof/media-store";
+import { runJudgeJob } from "@/src/proof/run-judge";
+import { MemoryProofStore, SupabaseProofStore, type ProofStore } from "@/src/proof/store";
 import { introMessage } from "@/src/onboarding/terms";
 import { createTransport } from "@/src/transport";
 import { Outbox } from "@/src/transport/outbox";
@@ -18,6 +22,20 @@ import { InboundPipeline } from "./pipeline";
 
 let memoryStore: MemoryStore | undefined;
 let memoryBetStore: MemoryBetStore | undefined;
+let memoryProofStore: MemoryProofStore | undefined;
+let memoryMedia: MemoryMediaStore | undefined;
+
+export function defaultProofStore(): ProofStore {
+  if (isSupabaseAdminConfigured()) return new SupabaseProofStore(supabaseAdmin());
+  memoryProofStore ??= new MemoryProofStore();
+  return memoryProofStore;
+}
+
+export function defaultMediaStore(): MediaStore {
+  if (isSupabaseAdminConfigured()) return new SupabaseMediaStore(supabaseAdmin());
+  memoryMedia ??= new MemoryMediaStore();
+  return memoryMedia;
+}
 
 /** Supabase when configured; in-process memory stores otherwise (dev without a DB). */
 export function defaultStore(): Store {
@@ -28,7 +46,11 @@ export function defaultStore(): Store {
 
 export function defaultBetStore(): BetStore {
   if (isSupabaseAdminConfigured()) return new SupabaseBetStore(supabaseAdmin());
-  memoryBetStore ??= new MemoryBetStore();
+  if (!memoryBetStore) {
+    memoryBetStore = new MemoryBetStore();
+    const proofs = defaultProofStore() as MemoryProofStore;
+    memoryBetStore.jobSink = (kind, payload) => proofs.enqueue(kind, payload);
+  }
   return memoryBetStore;
 }
 
@@ -37,16 +59,19 @@ const names = (userId: string) => userId.slice(0, 8);
 interface Wiring {
   store: Store;
   betStore: BetStore;
+  proofStore: ProofStore;
+  media: MediaStore;
   outbox: Outbox;
   engine: BetEngine;
   pipeline: InboundPipeline;
+  jobRunners: Record<string, (payload: Record<string, unknown>) => Promise<void>>;
 }
 
 const wirings = new Map<TransportName, Wiring>();
 
 export function tickDeps() {
   const w = wire(env().TRANSPORT);
-  return { store: w.store, betStore: w.betStore, engine: w.engine, outbox: w.outbox, pipeline: w.pipeline };
+  return { store: w.store, betStore: w.betStore, engine: w.engine, outbox: w.outbox, pipeline: w.pipeline, proofStore: w.proofStore, jobRunners: w.jobRunners };
 }
 
 export function pipelineFor(transportName: TransportName): InboundPipeline {
@@ -58,6 +83,8 @@ function wire(transportName: TransportName): Wiring {
   if (existing) return existing;
   const store = defaultStore();
   const betStore = defaultBetStore();
+  const proofStore = defaultProofStore();
+  const media = defaultMediaStore();
   const transport = createTransport(transportName);
   const outbox = new Outbox(store, transport);
   const engine = new BetEngine({
@@ -82,7 +109,9 @@ function wire(transportName: TransportName): Wiring {
       botName,
       client,
       classifier: client ? claudeClassifier(client) : undefined,
+      intake: { proofStore, media },
     }),
+    media,
     introMessage: () => ({ text: introMessage(botName, env().NEXT_PUBLIC_SITE_URL) }),
     botNames: botNames(),
     onCardPosted: (betId, providerMessageId) => betStore.setCardMessageId(betId, providerMessageId),
@@ -90,7 +119,11 @@ function wire(transportName: TransportName): Wiring {
       (await betStore.openBetsInChat(chatId)).some((b) => b.status === "locked" && b.participants.some((p) => p.userId === userId)),
     log: (line, extra) => console.info(`[inbound:${transportName}] ${line}`, extra ?? ""),
   });
-  const wiring = { store, betStore, outbox, engine, pipeline };
+  const judge = client ? claudeJudge(client) : undefined;
+  const jobRunners: Wiring["jobRunners"] = judge
+    ? { judge: (payload: Record<string, unknown>) => runJudgeJob({ betStore, proofStore, media, engine, judge }, payload as { betId: string; proofId: string; pass: 1 | 2 }) }
+    : {};
+  const wiring = { store, betStore, proofStore, media, outbox, engine, pipeline, jobRunners };
   wirings.set(transportName, wiring);
   return wiring;
 }
