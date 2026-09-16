@@ -26,6 +26,7 @@ for (const [handle, name] of [["+15550001", "Matt"], ["+15550002", "Jake"], ["+1
   ids[name] = u.id;
   await store.setDisplayName(u.id, name);
   await store.upsertMember(chat.id, u.id, handle);
+  await store.recordTermsAcceptance(u.id, 1, "imessage");
   await ledger.grant({ userId: u.id, amount: 100n, idem: `g:${handle}` });
 }
 const engine = new BetEngine({ store: betStore, ledger, post: (c, m, k) => outbox.send(c, m, k), names: (id) => Object.entries(ids).find(([, v]) => v === id)?.[0] ?? id });

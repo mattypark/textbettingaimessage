@@ -18,6 +18,9 @@ export interface CommandDeps {
   engine: BetEngine;
   names: Names;
   clock?: () => Date;
+  /** Returns true when the user may stake (terms accepted). Absent = no gate (tests, dev). */
+  mayStake?: (userId: string) => Promise<boolean>;
+  needsTermsMessage?: (name: string) => string;
 }
 
 const DAY_MS = 86_400_000;
@@ -121,7 +124,9 @@ export function buildBet(parsed: ParsedBet, ctx: TurnContext, now: Date): Bet {
 }
 
 /** Wraps the engine for the pipeline. Returns replies; the card is posted by the pipeline so its id can be recorded. */
-export function commandHandler({ store, engine, names, clock = () => new Date() }: CommandDeps): TurnHandler {
+export function commandHandler({ store, engine, names, clock = () => new Date(), mayStake, needsTermsMessage }: CommandDeps): TurnHandler {
+  const allowed = async (userId: string) => (mayStake ? mayStake(userId) : true);
+
   return async (ctx): Promise<OutboundMessage[]> => {
     const { event } = ctx;
 
@@ -129,6 +134,9 @@ export function commandHandler({ store, engine, names, clock = () => new Date() 
       if (event.reaction.removed || event.reaction.kind === "other") return [];
       const bet = await store.findByCard(ctx.chatId, event.reaction.targetProviderMessageId);
       if (!bet || bet.status !== "proposed") return [];
+      if (event.reaction.kind === "affirm" && !(await allowed(ctx.userId))) {
+        return needsTermsMessage ? [{ text: needsTermsMessage(names(ctx.userId)) }] : [];
+      }
       try {
         const isParticipant = bet.participants.some((p) => p.userId === ctx.userId);
         if (event.reaction.kind === "decline") {
@@ -144,6 +152,7 @@ export function commandHandler({ store, engine, names, clock = () => new Date() 
 
     const text = event.text.trim();
     if (/^!bet\b/i.test(text)) {
+      if (!(await allowed(ctx.userId))) return needsTermsMessage ? [{ text: needsTermsMessage(names(ctx.userId)) }] : [];
       const parsed = parseBetCommand(text, clock());
       if ("error" in parsed) return [{ text: `❓ ${parsed.error}` }];
       const bet = await store.create(buildBet(parsed, ctx, clock()));

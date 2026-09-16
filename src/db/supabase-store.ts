@@ -77,6 +77,25 @@ export class SupabaseStore implements Store {
     if (error) fail("upsertMember", error);
   }
 
+  async hasAcceptedTerms(userId: string, version: number): Promise<boolean> {
+    const { data, error } = await this.db.from("terms_acceptances").select("id").eq("user_id", userId).eq("terms_version", version).maybeSingle();
+    if (error) fail("hasAcceptedTerms", error);
+    return Boolean(data);
+  }
+
+  async recordTermsAcceptance(userId: string, version: number, via: "imessage" | "web", providerMessageId?: string): Promise<void> {
+    const { error } = await this.db
+      .from("terms_acceptances")
+      .upsert({ user_id: userId, terms_version: version, accepted_via: via, provider_message_id: providerMessageId ?? null }, { onConflict: "user_id,terms_version", ignoreDuplicates: true });
+    if (error) fail("recordTermsAcceptance", error);
+  }
+
+  async termsMessageId(chatId: string): Promise<string | null> {
+    const { data, error } = await this.db.from("chats").select("terms_message_provider_id").eq("id", chatId).maybeSingle();
+    if (error) fail("termsMessageId", error);
+    return data?.terms_message_provider_id ?? null;
+  }
+
   async setDisplayName(userId: string, name: string): Promise<void> {
     const { error } = await this.db.from("users").update({ display_name: name }).eq("id", userId);
     if (error) fail("setDisplayName", error);

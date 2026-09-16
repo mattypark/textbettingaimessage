@@ -3,6 +3,8 @@ import { commandHandler } from "@/src/bets/commands";
 import type { TurnContext, TurnHandler } from "@/src/inbound/pipeline";
 import type { OutboundMessage } from "@/src/transport/types";
 import { displayName } from "./context";
+import { TermsGate } from "@/src/onboarding/gate";
+import { TERMS_VERSION } from "@/src/onboarding/terms";
 import type { Classifier } from "./classifier";
 import { runAgentTurn, type RunTurnDeps } from "./run-turn";
 
@@ -24,10 +26,19 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     engine: deps.engine,
     names: (id) => id,
     clock: deps.clock,
+    mayStake: (userId) => deps.store.hasAcceptedTerms(userId, TERMS_VERSION),
+    needsTermsMessage: (name) => new TermsGate(deps.store, deps.siteUrl).needsTermsMessage(name),
   });
+
+  const gate = new TermsGate(deps.store, deps.siteUrl);
 
   return async (ctx) => {
     const { event, decision } = ctx;
+    const name = displayName({ displayName: null, phone: event.senderHandle });
+
+    if (await gate.tryAcceptFrom(event, ctx.chatId, ctx.userId)) {
+      return event.reaction ? [] : [{ text: `👍 got you, ${name}. you're in.` }];
+    }
     if (event.reaction || /^!\w+/.test(event.text.trim())) return commands(ctx);
 
     if (event.participantAdded && !event.text) return [];
@@ -35,6 +46,10 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     if (decision.act === "maybe") {
       const addressed = deps.classifier ? await deps.classifier(event.text, deps.botName) : false;
       if (!addressed) return [];
+    }
+
+    if (!(await gate.accepted(ctx.userId)) && /\b(bet|says|wager|i'?m in|deal)\b/i.test(event.text)) {
+      return [{ text: gate.needsTermsMessage(name) }];
     }
 
     if (deps.runTurn) return deps.runTurn(ctx);

@@ -7,6 +7,8 @@ export class MemoryStore implements Store {
   readonly chats = new Map<string, ChatRow>();
   readonly users = new Map<string, UserRow>();
   readonly members = new Set<string>();
+  readonly terms = new Set<string>();
+  readonly termsMessages = new Map<string, string>();
   readonly outbox: Array<OutboxRow & { status: string; providerMessageId?: string; error?: string }> = [];
   private seq = 0;
 
@@ -62,8 +64,21 @@ export class MemoryStore implements Store {
     return row;
   }
 
-  async upsertMember(chatId: string, userId: string): Promise<void> {
+  async upsertMember(chatId: string, userId: string, handle: string): Promise<void> {
+    void handle; // memory users are keyed by handle already
     this.members.add(`${chatId}:${userId}`);
+  }
+
+  async hasAcceptedTerms(userId: string, version: number): Promise<boolean> {
+    return this.terms.has(`${userId}:${version}`);
+  }
+
+  async recordTermsAcceptance(userId: string, version: number, _via?: "imessage" | "web", _providerMessageId?: string): Promise<void> {
+    this.terms.add(`${userId}:${version}`);
+  }
+
+  async termsMessageId(chatId: string): Promise<string | null> {
+    return this.termsMessages.get(chatId) ?? null;
   }
 
   async setDisplayName(userId: string, name: string): Promise<void> {
@@ -75,10 +90,11 @@ export class MemoryStore implements Store {
     return [...this.users.values()].filter((u) => ids.includes(u.id)).map((u) => ({ ...u, honorScore: 100 }));
   }
 
-  async markIntroduced(chatId: string): Promise<void> {
+  async markIntroduced(chatId: string, providerMessageId: string | null): Promise<void> {
     for (const chat of this.chats.values()) {
       if (chat.id === chatId) chat.botIntroducedAt = new Date().toISOString();
     }
+    if (providerMessageId) this.termsMessages.set(chatId, providerMessageId);
   }
 
   async enqueueOutbound(chatId: string, body: OutboundMessage, idempotencyKey: string): Promise<OutboxRow | null> {

@@ -39,6 +39,10 @@ export interface Store {
   upsertUser(handle: string): Promise<UserRow>;
   upsertMember(chatId: string, userId: string, handle: string): Promise<void>;
   setDisplayName(userId: string, name: string): Promise<void>;
+  hasAcceptedTerms(userId: string, version: number): Promise<boolean>;
+  recordTermsAcceptance(userId: string, version: number, via: "imessage" | "web", providerMessageId?: string): Promise<void>;
+  /** Provider id of the intro/terms message in a chat, if posted. */
+  termsMessageId(chatId: string): Promise<string | null>;
   chatMembers(chatId: string): Promise<MemberRow[]>;
   markIntroduced(chatId: string, providerMessageId: string | null): Promise<void>;
   enqueueOutbound(chatId: string, body: OutboundMessage, idempotencyKey: string): Promise<OutboxRow | null>;

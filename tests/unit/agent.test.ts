@@ -13,6 +13,13 @@ import { Outbox } from "@/src/transport/outbox";
 
 const NOW = new Date("2026-09-16T12:00:00Z");
 
+type Runnable = { name: string; run: (input: Record<string, unknown>) => Promise<string> };
+const tool = (tools: unknown[], name: string): Runnable => {
+  const found = (tools as Runnable[]).find((t) => t.name === name);
+  if (!found) throw new Error(`no tool ${name}`);
+  return found;
+};
+
 async function world() {
   const store = new MemoryStore();
   const betStore = new MemoryBetStore();
@@ -24,6 +31,7 @@ async function world() {
     const u = await store.upsertUser(handle);
     users[handle] = u.id;
     if (name) await store.setDisplayName(u.id, name);
+    await store.recordTermsAcceptance(u.id, 1, "imessage");
     await ledger.grant({ userId: u.id, amount: 100n, idem: `g:${handle}` });
   }
   const chatEvent = { providerMessageId: "seed", providerChatId: "g1", senderHandle: "+1matt", isGroup: true, text: "", attachments: [], receivedAt: NOW.toISOString(), raw: {}, provider: "fake" as const, providerEventId: "seed" };
@@ -47,8 +55,7 @@ describe("agent tools", () => {
     const c = w.ctx("bookie: 20 says I make this shot by friday, jake you in?");
     const snap = await snapshot(c, w.store, w.betStore, w.ledger, NOW);
     const session = { ctx: c, snap, replies: [] as { text: string; idempotencyKey?: string }[] };
-    const tools = buildTools(w.deps, session);
-    const create = tools.find((t) => t.name === "create_bet")!;
+    const create = tool(buildTools(w.deps, session), "create_bet");
     const result = await create.run({
       claim: "I make a half-court shot",
       stake_points: 20,
@@ -71,7 +78,7 @@ describe("agent tools", () => {
     const w = await world();
     const c = w.ctx("x");
     const session = { ctx: c, snap: await snapshot(c, w.store, w.betStore, w.ledger, NOW), replies: [] };
-    const create = buildTools(w.deps, session).find((t) => t.name === "create_bet")!;
+    const create = tool(buildTools(w.deps, session), "create_bet");
     const base = { claim: "I do it", proof_summary: "p", proof_required: ["p"], against_user_ids: [], no_proof_rule: "auto_loss" as const };
     expect(await create.run({ ...base, stake_points: 500, deadline: "friday" })).toMatch(/only has 100 pts/);
     expect(await create.run({ ...base, stake_points: 5, deadline: "someday" })).toMatch(/deadline/);
@@ -82,7 +89,7 @@ describe("agent tools", () => {
     const w = await world();
     const matt = w.ctx("x");
     const mattSession = { ctx: matt, snap: await snapshot(matt, w.store, w.betStore, w.ledger, NOW), replies: [] };
-    await buildTools(w.deps, mattSession).find((t) => t.name === "create_bet")!.run({
+    await tool(buildTools(w.deps, mattSession), "create_bet").run({
       claim: "I run a 5k", stake_points: 10, deadline: "in 2 days", proof_summary: "watch screenshot", proof_required: ["5.00 km"], against_user_ids: [], no_proof_rule: "void",
     });
     const betId = [...w.betStore.bets.keys()][0];
@@ -90,13 +97,13 @@ describe("agent tools", () => {
     const jake = w.ctx("i'm in", "+1jake");
     const jakeSession = { ctx: jake, snap: await snapshot(jake, w.store, w.betStore, w.ledger, NOW), replies: [] };
     const jakeTools = buildTools(w.deps, jakeSession);
-    expect(await jakeTools.find((t) => t.name === "accept_bet")!.run({ bet_id: betId })).toMatch(/locked/);
+    expect(await tool(jakeTools, "accept_bet").run({ bet_id: betId })).toMatch(/locked/);
     expect((await w.betStore.get(betId))?.status).toBe("locked");
-    expect(await jakeTools.find((t) => t.name === "get_balance")!.run({})).toMatch(/Jake: 90 pts available, 10 held/);
-    expect(await jakeTools.find((t) => t.name === "leaderboard")!.run({})).toMatch(/1\. .* — 100 pts/);
-    expect(await jakeTools.find((t) => t.name === "set_name")!.run({ name: "Jakey" })).toBe("ok, Jakey");
+    expect(await tool(jakeTools, "get_balance").run({})).toMatch(/Jake: 90 pts available, 10 held/);
+    expect(await tool(jakeTools, "leaderboard").run({})).toMatch(/1\. .* — 100 pts/);
+    expect(await tool(jakeTools, "set_name").run({ name: "Jakey" })).toBe("ok, Jakey");
     expect((await w.store.chatMembers(w.chat.id)).find((m) => m.id === w.users["+1jake"])?.displayName).toBe("Jakey");
-    expect(await jakeTools.find((t) => t.name === "explain_terms")!.run({})).toMatch(/terms v1/);
+    expect(await tool(jakeTools, "explain_terms").run({})).toMatch(/terms v1/);
   });
 
   it("contextBlock lists members with ids and open bets with sides", async () => {
@@ -149,5 +156,31 @@ describe("agentHandler routing", () => {
     const res = await pipeline.handle(JSON.stringify({ providerMessageId: "z1", providerChatId: "g1", senderHandle: "+1matt", text: "bookie 20 says i make it", isGroup: true }), {});
     expect(res).toMatchObject({ outcome: "processed", replies: 2 });
     expect(w.transport.transcript("g1")).toEqual(["hi i'm bookie", "sure, card coming"]);
+  });
+});
+
+describe("terms gate", () => {
+  it("nudges an unaccepted user, accepts 'I agree' or a 👍 on the intro, then lets them stake", async () => {
+    const w = await world();
+    const newbie = await w.store.upsertUser("+1newb");
+    await w.store.upsertMember(w.chat.id, newbie.id, "+1newb");
+    await w.ledger.grant({ userId: newbie.id, amount: 50n, idem: "g:newb" });
+    await w.store.markIntroduced(w.chat.id, "intro-msg-1");
+    const handler = agentHandler({ ...w.deps, runTurn: async () => [{ text: "agent ran" }] });
+    const as = (text: string, extra: Partial<TurnContext["event"]> = {}): TurnContext => ({ ...w.ctx(text), userId: newbie.id, event: { ...w.ctx(text).event, senderHandle: "+1newb", ...extra } });
+
+    expect((await handler(as("bookie 10 says i can do 20 pushups")))[0].text).toMatch(/accept the terms/);
+    expect((await handler(as("!bet pushups ; 10 ; friday")))[0].text).toMatch(/accept the terms/);
+    expect(await handler(as("", { reaction: { targetProviderMessageId: "some-other-msg", kind: "affirm", removed: false } }))).toEqual([]);
+
+    expect((await handler(as("I agree")))[0].text).toMatch(/you're in/);
+    expect(await w.store.hasAcceptedTerms(newbie.id, 1)).toBe(true);
+    expect(await handler(as("bookie 10 says i can do 20 pushups"))).toEqual([{ text: "agent ran" }]);
+
+    const other = await w.store.upsertUser("+1other");
+    await w.store.upsertMember(w.chat.id, other.id, "+1other");
+    const asOther = (): TurnContext => ({ ...w.ctx(""), userId: other.id, event: { ...w.ctx("").event, senderHandle: "+1other", reaction: { targetProviderMessageId: "intro-msg-1", kind: "affirm", removed: false } } });
+    expect(await handler(asOther())).toEqual([]);
+    expect(await w.store.hasAcceptedTerms(other.id, 1)).toBe(true);
   });
 });

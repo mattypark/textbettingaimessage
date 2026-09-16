@@ -10,6 +10,7 @@ import { ACCEPT_WINDOW_HOURS, type Bet } from "@/src/bets/types";
 import type { Store } from "@/src/db/store";
 import type { Ledger } from "@/src/ledger/types";
 import { TERMS_SUMMARY, TERMS_VERSION, termsUrl } from "@/src/onboarding/terms";
+import { TermsGate } from "@/src/onboarding/gate";
 import type { OutboundMessage } from "@/src/transport/types";
 import { displayName, type ChatSnapshot } from "./context";
 import type { TurnContext } from "@/src/inbound/pipeline";
@@ -39,6 +40,8 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
   const { store, betStore, engine, ledger, clock = () => new Date() } = deps;
   const { ctx, snap } = session;
   const names = (id: string) => displayName(snap.members.find((m) => m.id === id) ?? { displayName: null, phone: id });
+  const gate = new TermsGate(store, deps.siteUrl);
+  const termsBlock = async () => ((await gate.accepted(ctx.userId)) ? null : `blocked: ${gate.needsTermsMessage(names(ctx.userId))}`);
 
   const createBet = betaZodTool({
     name: "create_bet",
@@ -56,6 +59,8 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
       no_proof_rule: z.enum(["auto_loss", "void"]).default("auto_loss"),
     }),
     run: async (input) => {
+      const blocked = await termsBlock();
+      if (blocked) return blocked;
       const now = clock();
       const deadlineAt = parseDeadline(input.deadline, now);
       if (!deadlineAt) return `couldn't read the deadline "${input.deadline}" — ask for a day or date`;
@@ -100,6 +105,8 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     description: "The sender accepts an open or pending bet in this chat (they said 'I'm in', 'bet', 'deal', etc.). Use the bet id from the open bets list.",
     inputSchema: z.object({ bet_id: z.string() }),
     run: async ({ bet_id }) => {
+      const blocked = await termsBlock();
+      if (blocked) return blocked;
       const bet = await betStore.get(bet_id);
       if (!bet || bet.chatId !== ctx.chatId) return "no such bet in this chat";
       const isParticipant = bet.participants.some((p) => p.userId === ctx.userId);
