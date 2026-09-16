@@ -171,7 +171,7 @@ export function MoreSection() {
         </Bento>
         <Bento label="memory" gradient="linear-gradient(160deg,#eef1f5,#f6efe6)">
           <div className="relative h-40 font-round text-[13px]">
-            <div className="absolute right-0 top-2 rounded-2xl bg-[#1a8cff] px-3 py-2 text-white shadow">who's up this month</div>
+            <div className="absolute right-0 top-2 rounded-2xl bg-[#1a8cff] px-3 py-2 text-white shadow">who&apos;s up this month</div>
             <div className="absolute left-0 top-14 max-w-[85%] rounded-2xl bg-white px-3 py-2 shadow">matt +80, sam +20, jake −60 and owes two dinners 😅</div>
           </div>
           <p className="font-round text-2xl font-semibold text-[#1f2a2f] sm:text-[32px]">it remembers who owes what.</p>
@@ -208,7 +208,7 @@ export function MoneySection() {
             ))}
           </ul>
           <Link href="/terms" className="mt-8 inline-block border-b-2 border-[#1f2a2f]/30 text-[16px] font-semibold text-[#1f2a2f]">see everything bookie enforces →</Link>
-          <p className="mt-6 max-w-sm text-[13px] text-[#1f2a2f]/50">🔒 points have no cash value and can't be bought. social stakes are between you and your friends — bookie only keeps score.</p>
+          <p className="mt-6 max-w-sm text-[13px] text-[#1f2a2f]/50">🔒 points have no cash value and can&apos;t be bought. social stakes are between you and your friends — bookie only keeps score.</p>
         </div>
         <ol className="flex flex-col gap-2 font-round text-[15px]">
           {[

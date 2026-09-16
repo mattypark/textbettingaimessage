@@ -13,8 +13,8 @@ export default function Landing() {
 
         {/* stickers */}
         <StickerLockIn className="float absolute left-[4%] top-[14%] hidden w-40 lg:block" style={{ "--tilt": "-8deg", "--delay": "0s" } as React.CSSProperties} />
-        <StickerBubble className="float absolute right-[6%] top-[12%] w-24 sm:w-32" style={{ "--tilt": "10deg", "--delay": "1s" } as React.CSSProperties} />
-        <StickerSmiley className="float absolute -left-6 top-[38%] w-24 sm:w-32" style={{ "--tilt": "-6deg", "--delay": "2s" } as React.CSSProperties} />
+        <StickerBubble className="float absolute right-[6%] top-[12%] hidden w-32 sm:block" style={{ "--tilt": "10deg", "--delay": "1s" } as React.CSSProperties} />
+        <StickerSmiley className="float absolute -left-6 top-[46%] w-24 sm:top-[38%] sm:w-32" style={{ "--tilt": "-6deg", "--delay": "2s" } as React.CSSProperties} />
         <StickerTarget className="float absolute left-[16%] top-[52%] hidden w-28 sm:block" style={{ "--tilt": "6deg", "--delay": "0.5s" } as React.CSSProperties} />
         <StickerCamera className="float absolute right-[3%] top-[44%] w-28 sm:w-36" style={{ "--tilt": "-10deg", "--delay": "1.5s" } as React.CSSProperties} />
         <StickerBill className="float absolute right-[10%] top-[70%] hidden w-32 lg:block" style={{ "--tilt": "8deg", "--delay": "2.5s" } as React.CSSProperties} />
