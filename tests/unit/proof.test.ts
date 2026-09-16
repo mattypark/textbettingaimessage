@@ -10,6 +10,7 @@ import { tick } from "@/src/jobs/tick";
 import { MemoryLedger } from "@/src/ledger/memory-ledger";
 import { escrowAccount } from "@/src/ledger/types";
 import { averageHash, hamming } from "@/src/proof/hash";
+import { awaitsProof } from "@/src/proof/intake";
 import type { Judge } from "@/src/proof/judge";
 import { MemoryMediaStore } from "@/src/proof/media-store";
 import { runJudgeJob } from "@/src/proof/run-judge";
@@ -80,7 +81,7 @@ async function world(judge: Judge) {
     handler: agentHandler({ store, betStore, engine, ledger, siteUrl: "https://x.test", botName: "bookie", clock: () => now.value, intake: { proofStore, media, clock: () => now.value }, runTurn: async () => [] }),
     botNames: ["bookie"],
     onCardPosted: (betId, id) => betStore.setCardMessageId(betId, id),
-    senderHasOpenBet: async (chatId, userId) => (await betStore.openBetsInChat(chatId)).some((b) => b.status === "locked" && b.participants.some((p) => p.userId === userId)),
+    senderHasOpenBet: (chatId, userId) => awaitsProof(betStore, chatId, userId),
   });
   const msg = (id: string, from: string, text: string, extra: Record<string, unknown> = {}) =>
     JSON.stringify({ providerMessageId: id, providerChatId: "g1", senderHandle: from, text, isGroup: true, ...extra });

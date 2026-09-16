@@ -10,6 +10,7 @@ import { MemoryStore } from "@/src/db/memory-store";
 import type { Store } from "@/src/db/store";
 import { SupabaseStore } from "@/src/db/supabase-store";
 import { createLedger } from "@/src/ledger";
+import { awaitsProof } from "@/src/proof/intake";
 import { claudeJudge } from "@/src/proof/judge";
 import { MemoryMediaStore, SupabaseMediaStore, type MediaStore } from "@/src/proof/media-store";
 import { runJudgeJob } from "@/src/proof/run-judge";
@@ -115,8 +116,7 @@ function wire(transportName: TransportName): Wiring {
     introMessage: () => ({ text: introMessage(botName, env().NEXT_PUBLIC_SITE_URL) }),
     botNames: botNames(),
     onCardPosted: (betId, providerMessageId) => betStore.setCardMessageId(betId, providerMessageId),
-    senderHasOpenBet: async (chatId, userId) =>
-      (await betStore.openBetsInChat(chatId)).some((b) => b.status === "locked" && b.participants.some((p) => p.userId === userId)),
+    senderHasOpenBet: (chatId, userId) => awaitsProof(betStore, chatId, userId),
     log: (line, extra) => console.info(`[inbound:${transportName}] ${line}`, extra ?? ""),
   });
   const judge = client ? claudeJudge(client) : undefined;

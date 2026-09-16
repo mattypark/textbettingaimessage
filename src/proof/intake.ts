@@ -17,6 +17,11 @@ export interface IntakeDeps {
   clock?: () => Date;
 }
 
+/** Gate helper: does this sender have a bet in the chat that can take proof right now? */
+export async function awaitsProof(betStore: BetStore, chatId: string, userId: string): Promise<boolean> {
+  return (await betsAwaitingProof(betStore, chatId, userId)).length > 0;
+}
+
 /** Locked bets in this chat where the sender is a participant, newest first. */
 export async function betsAwaitingProof(betStore: BetStore, chatId: string, userId: string): Promise<Bet[]> {
   return (await betStore.openBetsInChat(chatId))
