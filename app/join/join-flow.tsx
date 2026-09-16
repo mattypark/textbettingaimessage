@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Avatar, Mascot } from "../(site)/folk/mascot";
+import { ShareLink } from "../(site)/folk/share-link";
 
 type Step = "welcome" | "phone" | "done";
 type Result = { status: "active"; ownCode: string } | { status: "waitlist"; referralCode: string; rank: number };
@@ -125,29 +126,5 @@ export function JoinFlow({ botNumber }: { botNumber: string }) {
         </section>
       )}
     </main>
-  );
-}
-
-function ShareLink({ url }: { url: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="mt-2 flex items-center gap-2">
-      <code className="min-w-0 flex-1 truncate text-[14px]">{url}</code>
-      <button
-        type="button"
-        onClick={async () => {
-          try {
-            await navigator.clipboard.writeText(url);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
-          } catch {
-            setCopied(false);
-          }
-        }}
-        className="rounded-full bg-[#1f2a2f] px-3 py-1.5 text-[12px] font-semibold text-white"
-      >
-        {copied ? "copied" : "copy"}
-      </button>
-    </div>
   );
 }

@@ -118,11 +118,64 @@ body {
   display: none;
 }
 
-/* ---------- folk-style landing system ---------- */
+/* ---------- folk-style system (landing, /join, /app) ---------- */
 :root {
   --font-round: ui-rounded, "SF Pro Rounded", "SF Pro Text", -apple-system, system-ui, var(--font-inter), sans-serif;
   --sky-ink: #1f2a2f;
   --sky-mist: #eef1f5;
+  --sky-blue: #1a8cff;
+  --sticker-blue: #1a6cff;
+  --sticker-green: #3ccf63;
+  --sticker-yellow: #f7d94a;
+  --sticker-red: #f0576d;
+  --sticker-orange: #ff8a4c;
+}
+
+/* Registered so new code can write `text-sky-ink/60`, `bg-sticker-yellow/20`, `font-round`. */
+@theme inline {
+  --color-sky-ink: var(--sky-ink);
+  --color-sky-mist: var(--sky-mist);
+  --color-sky-blue: var(--sky-blue);
+  --color-sticker-blue: var(--sticker-blue);
+  --color-sticker-green: var(--sticker-green);
+  --color-sticker-yellow: var(--sticker-yellow);
+  --color-sticker-red: var(--sticker-red);
+  --color-sticker-orange: var(--sticker-orange);
+  --font-round: var(--font-round);
+}
+
+/* Tabular numerals on the round face; stakes and scores line up without a mono font. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Compact sky band for /app headers: the hero gradient, shortened. */
+.sky-band {
+  background: linear-gradient(180deg, #26beff 0%, #6fd2ff 35%, #b4e5ff 70%, #eef1f5 100%);
+}
+
+/* Bet detail flip card. Faces share one grid cell; only transform/opacity animate. */
+.flip-scene {
+  perspective: 1200px;
+}
+.flip-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Small status pill: colour comes from the caller (`bg-sticker-yellow/25 text-sky-ink`). */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  border-radius: 999px;
+  padding: 0.3em 0.7em;
+  font-family: var(--font-round);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .font-round {
