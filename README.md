@@ -26,10 +26,19 @@ npm test                          # unit + transport fixtures + e2e replay
 npm run typecheck
 ```
 
+## Deploy
+
+See `docs/DEPLOY.md` (Supabase, Linq webhook, Vercel, pg_cron settings).
+
 ## Layout
 
 - `src/transport/` — provider adapters (Linq, Sendblue, fake) behind one `MessageTransport`
 - `src/inbound/` — webhook pipeline: verify → claim → normalize → identity → gate → handler → outbox
-- `src/bets/`, `src/ledger/`, `src/proof/`, `src/agent/` — arrive in later stages
+- `src/bets/` — pure state machine, engine with idempotent effects, commands, disputes
+- `src/ledger/` — double-entry points ledger (Postgres-enforced invariants), cash stub
+- `src/agent/` — Claude tools, turn runner, classifier, routing
+- `src/proof/` — media store, hashing/EXIF, video frames, vision judge, job runner
+- `src/jobs/tick.ts` — the once-a-minute sweep (timeouts, outbox, stuck inbox, judge jobs)
+- `app/app/` + `src/web/` — phone-OTP web app
 - `supabase/migrations/` — schema; money invariants live in Postgres
 - `tests/fixtures/{linq,sendblue}/` — captured webhook payloads
