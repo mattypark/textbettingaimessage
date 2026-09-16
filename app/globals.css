@@ -117,3 +117,95 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* ---------- folk-style landing system ---------- */
+:root {
+  --font-round: ui-rounded, "SF Pro Rounded", "SF Pro Text", -apple-system, system-ui, var(--font-inter), sans-serif;
+  --sky-ink: #1f2a2f;
+  --sky-mist: #eef1f5;
+}
+
+.font-round {
+  font-family: var(--font-round);
+  letter-spacing: -0.02em;
+}
+
+.sky-hero {
+  background: linear-gradient(180deg, #0399bd 0%, #04a6e8 9%, #26beff 44%, #6fd2ff 57%, #b4e5ff 80%, #eef1f5 100%);
+}
+
+/* 3D pill like folk's "text folk" */
+.pill-3d {
+  background: linear-gradient(180deg, #ffffff, #efeae0);
+  color: #1a1712;
+  border-radius: 17px;
+  box-shadow: 0 6px 0 #c9c2b3, 0 14px 30px rgba(0, 40, 80, 0.25);
+  transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
+}
+.pill-3d:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #c9c2b3, 0 8px 18px rgba(0, 40, 80, 0.2);
+}
+
+.pill-blue {
+  background: linear-gradient(180deg, #5fb8ff, #1a8cff);
+  color: #fff;
+  border-radius: 999px;
+  box-shadow: 0 8px 0 #0f5fb8, 0 18px 36px rgba(26, 140, 255, 0.35);
+}
+.pill-blue:active {
+  transform: translateY(5px);
+  box-shadow: 0 3px 0 #0f5fb8, 0 10px 20px rgba(26, 140, 255, 0.3);
+}
+
+.nav-pill {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 10px 30px rgba(0, 30, 60, 0.12);
+}
+
+.btn-dark {
+  background: #1f2a2f;
+  color: #f5f6f8;
+  border-radius: 10px;
+}
+
+.card-soft {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 12px 34px rgba(20, 40, 80, 0.08);
+  border-radius: 22px;
+}
+
+.tab-pill {
+  background: rgba(220, 226, 234, 0.7);
+  border-radius: 999px;
+}
+
+.phone-shell {
+  border-radius: 54px;
+  background: #101114;
+  padding: 10px;
+  box-shadow: 0 30px 80px rgba(0, 20, 60, 0.35), 0 0 0 2px #5b5f66 inset;
+}
+.phone-screen {
+  border-radius: 46px;
+  background: #fff;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50% { transform: translateY(-10px) rotate(var(--tilt, 0deg)); }
+}
+.float {
+  animation: bob 6s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@media (prefers-reduced-motion: reduce) {
+  .float { animation: none; transform: rotate(var(--tilt, 0deg)); }
+}
+
+.dome {
+  background: radial-gradient(ellipse 70% 100% at 50% 100%, #dbe9f7 0%, #e6eef7 55%, transparent 56%);
+}

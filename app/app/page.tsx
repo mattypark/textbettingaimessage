@@ -6,6 +6,8 @@ import { TERMS_VERSION } from "@/src/onboarding/terms";
 import { STATUS_LABEL, TERMINAL, shortId, stakeText, when } from "@/src/web/format";
 import { myBets, myWallet } from "@/src/web/queries";
 import { AcceptTerms } from "./accept-terms";
+import { InvitePanel } from "./invite-panel";
+import { defaultAccessStore } from "@/src/inbound";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +15,9 @@ export default async function AppHome() {
   const supabase = await supabaseServer();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user?.phone) redirect("/app/sign-in");
-  await linkAuthUser(auth.user.id, `+${auth.user.phone.replace(/^\+/, "")}`);
+  const userId = await linkAuthUser(auth.user.id, `+${auth.user.phone.replace(/^\+/, "")}`);
 
-  const [wallet, bets] = await Promise.all([myWallet(supabase), myBets(supabase)]);
+  const [wallet, bets, invite] = await Promise.all([myWallet(supabase), myBets(supabase), defaultAccessStore().myInvite(userId)]);
   const open = bets.filter((b) => !TERMINAL.has(b.bet.status));
   const done = bets.filter((b) => TERMINAL.has(b.bet.status));
   const needsTerms = (wallet?.termsVersionAccepted ?? 0) < TERMS_VERSION;
@@ -23,6 +25,7 @@ export default async function AppHome() {
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 pb-24">
       {needsTerms && <AcceptTerms version={TERMS_VERSION} />}
+      {invite && <InvitePanel code={invite.code} uses={invite.uses} maxUses={invite.maxUses} siteUrl={process.env.NEXT_PUBLIC_SITE_URL ?? ""} />}
 
       <section className="slip mt-6 grid grid-cols-3 divide-x divide-rule px-2 py-6 text-center">
         <Stat label="available" value={`${wallet?.available ?? 0n}`} unit="pts" />

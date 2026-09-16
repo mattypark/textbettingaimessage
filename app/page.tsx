@@ -1,100 +1,57 @@
 import Link from "next/link";
-import { ScrollThread } from "./(site)/thread";
-
-const BOT_NUMBER = process.env.NEXT_PUBLIC_BOT_NUMBER ?? "+12053968556";
-const smsHref = `sms:${BOT_NUMBER}&body=${encodeURIComponent("hey bookie")}`;
-const pretty = BOT_NUMBER.replace(/^\+1(\d{3})(\d{3})(\d{4})$/, "($1) $2-$3");
+import { FolkNav } from "./(site)/folk/nav";
+import { Mascot } from "./(site)/folk/mascot";
+import { Phone } from "./(site)/folk/phone";
+import { BetsSection, FooterCta, MoneySection, MoreSection, StatementSection } from "./(site)/folk/sections";
+import { FloatingBubble, GlassBall, StickerBill, StickerBubble, StickerCamera, StickerLock, StickerLockIn, StickerSmiley, StickerTarget } from "./(site)/folk/stickers";
 
 export default function Landing() {
   return (
-    <>
-      <header className="mx-auto flex w-full max-w-6xl items-baseline justify-between px-6 py-5">
-        <span className="font-display text-2xl">Bookie</span>
-        <nav className="flex gap-5 text-xs uppercase tracking-wider text-ink-soft">
-          <a href="#how" className="hover:text-ink">How</a>
-          <Link href="/app" className="hover:text-ink">Sign in</Link>
-        </nav>
-      </header>
+    <div className="bg-[#eef1f5] text-[#1f2a2f]">
+      <section className="sky-hero relative overflow-hidden px-5 pb-10 pt-[104px] sm:pt-[128px] lg:pb-16 lg:pt-[140px]">
+        <FolkNav />
 
-      <main className="flex-1">
-        <section data-thread-stage className="mx-auto grid w-full max-w-6xl gap-10 px-6 pb-16 pt-6 lg:grid-cols-[1fr_minmax(320px,440px)] lg:items-start lg:pt-10">
-          <div className="lg:sticky lg:top-24">
-            <p className="text-xs uppercase tracking-[0.2em] text-ink-soft">a number for your group chat</p>
-            <h1 className="font-display mt-3 max-w-xl text-5xl leading-[0.95] sm:text-7xl">
-              Bets between friends, <em>settled</em>.
-            </h1>
-            <p className="mt-6 max-w-md text-lg text-ink-soft">
-              Add one number to the chat. Say the bet. Everyone 👍. Send proof in the thread, and it calls it — points, never money.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <a href={smsHref} className="inline-flex items-center gap-3 bg-ink px-5 py-3 text-paper transition-transform duration-150 ease-[var(--ease-out)] hover:-translate-y-0.5 active:translate-y-0">
-                <span className="text-sm">Text</span>
-                <span className="num text-base">{pretty}</span>
-              </a>
-              <span className="text-sm text-ink-soft">then add it to any group</span>
-            </div>
-            <ol className="rule mt-10 grid max-w-md grid-cols-3 gap-4 pt-5 text-sm">
-              <li><span className="num block text-xs text-ink-soft">01</span>say the bet</li>
-              <li><span className="num block text-xs text-ink-soft">02</span>👍 to lock</li>
-              <li><span className="num block text-xs text-ink-soft">03</span>proof in thread</li>
-            </ol>
+        {/* stickers */}
+        <StickerLockIn className="float absolute left-[4%] top-[14%] hidden w-40 lg:block" style={{ "--tilt": "-8deg", "--delay": "0s" } as React.CSSProperties} />
+        <StickerBubble className="float absolute right-[6%] top-[12%] w-24 sm:w-32" style={{ "--tilt": "10deg", "--delay": "1s" } as React.CSSProperties} />
+        <StickerSmiley className="float absolute -left-6 top-[38%] w-24 sm:w-32" style={{ "--tilt": "-6deg", "--delay": "2s" } as React.CSSProperties} />
+        <StickerTarget className="float absolute left-[16%] top-[52%] hidden w-28 sm:block" style={{ "--tilt": "6deg", "--delay": "0.5s" } as React.CSSProperties} />
+        <StickerCamera className="float absolute right-[3%] top-[44%] w-28 sm:w-36" style={{ "--tilt": "-10deg", "--delay": "1.5s" } as React.CSSProperties} />
+        <StickerBill className="float absolute right-[10%] top-[70%] hidden w-32 lg:block" style={{ "--tilt": "8deg", "--delay": "2.5s" } as React.CSSProperties} />
+        <StickerLock className="float absolute right-[8%] bottom-[10%] w-24 sm:w-32" style={{ "--tilt": "-6deg", "--delay": "3s" } as React.CSSProperties} />
+
+        {/* glass mascots */}
+        <div className="float absolute left-[26%] top-[62%] hidden lg:block" style={{ "--delay": "0.8s" } as React.CSSProperties}><GlassBall size={130}><Mascot mood="sleep" size={92} /></GlassBall></div>
+        <div className="float absolute right-[24%] top-[54%] hidden lg:block" style={{ "--delay": "2.2s" } as React.CSSProperties}><GlassBall size={110}><Mascot mood="ref" size={78} /></GlassBall></div>
+        <div className="float absolute left-[8%] bottom-[8%] hidden md:block" style={{ "--delay": "1.4s" } as React.CSSProperties}><GlassBall size={120}><Mascot mood="money" size={84} /></GlassBall></div>
+
+        {/* floating bubbles */}
+        <FloatingBubble side="in" text="u said no doordash this week 🤨" className="float absolute left-[12%] top-[74%] hidden w-56 rotate-[-4deg] lg:block" />
+        <FloatingBubble side="out" text="bro it's been a day" className="float absolute left-[24%] top-[82%] hidden rotate-[4deg] lg:block" />
+        <FloatingBubble side="in" text="fine. 20 pts says you cave by friday. 👍 to lock" className="float absolute left-[13%] top-[88%] hidden w-60 rotate-[-2deg] lg:block" />
+
+        <div className="relative mx-auto max-w-4xl text-center">
+          <h1 className="font-round text-[44px] font-semibold leading-[1.02] text-white sm:text-6xl lg:text-[75px] lg:leading-[1.08]" style={{ textShadow: "0 8px 30px rgba(0,60,120,0.25)" }}>
+            the <span className="text-white/70">bookie</span>
+            <span className="mx-2 inline-block -translate-y-2 align-middle"><Mascot mood="wave" size={72} /></span>
+            that actually settles the bet.
+          </h1>
+          <div className="mt-9 flex flex-col items-center gap-3">
+            <Link href="/join" className="pill-3d px-8 py-3 font-round text-[15px] font-semibold">text bookie</Link>
+            <Link href="/app" className="font-round text-[13px] font-medium text-white/80 hover:text-white">already a member? log in</Link>
           </div>
+        </div>
 
-          <div className="slip">
-            <div className="flex items-center gap-3 border-b border-rule px-4 py-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink font-display text-lg text-paper">B</span>
-              <div className="leading-tight">
-                <p className="text-sm">the boys 🏀</p>
-                <p className="text-[11px] text-ink-soft">Matt, Jake, Sam, Bookie</p>
-              </div>
-            </div>
-            <ScrollThread />
-          </div>
-        </section>
+        <div className="relative mx-auto mt-16 flex justify-center sm:mt-20">
+          <Phone />
+        </div>
+      </section>
 
-        <section id="how" className="mx-auto w-full max-w-6xl px-6 py-16">
-          <h2 className="font-display text-4xl">How a bet gets called</h2>
-          <div className="rule mt-6 grid gap-8 pt-8 md:grid-cols-3">
-            <Step n="1" title="Terms lock before points move">
-              The bot turns what you said into a card: claim, stake, deadline, what the proof must show, who judges. Nothing is held until everyone taps 👍.
-            </Step>
-            <Step n="2" title="The bettors never vote">
-              Proof goes to the bot (or a referee you named), judged only against the locked criteria. A random word has to be in frame. Losers can’t gang up.
-            </Step>
-            <Step n="3" title="24 hours to dispute">
-              Think it got it wrong? Post a small bond and it takes a second look with your reason. Bond comes back if you were right.
-            </Step>
-          </div>
-        </section>
-
-        <section className="mx-auto w-full max-w-6xl px-6 pb-20">
-          <div className="slip grid gap-6 px-6 py-8 md:grid-cols-[auto_1fr] md:items-center">
-            <span className="stamp text-stamp">points, not money</span>
-            <p className="max-w-2xl text-ink-soft">
-              Points can’t be bought, sold, or cashed out — they keep score. “Loser buys dinner” is between you and your friends; we just remember who owes. Real-money stakes between friends aren’t legal for a service like this to hold, so we don’t. <Link href="/terms" className="text-ink underline underline-offset-2">Terms</Link>.
-            </p>
-          </div>
-        </section>
-      </main>
-
-      <footer className="mx-auto flex w-full max-w-6xl flex-wrap items-baseline justify-between gap-4 px-6 py-8 text-xs text-ink-soft">
-        <span className="font-display text-lg text-ink">Bookie</span>
-        <nav className="flex gap-5">
-          <Link href="/terms" className="hover:text-ink">Terms</Link>
-          <Link href="/privacy" className="hover:text-ink">Privacy</Link>
-          <a href={smsHref} className="hover:text-ink">Text the bot</a>
-        </nav>
-      </footer>
-    </>
-  );
-}
-
-function Step({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <span className="num text-xs text-ink-soft">0{n}</span>
-      <h3 className="mt-1 text-lg">{title}</h3>
-      <p className="mt-2 text-sm text-ink-soft">{children}</p>
+      <BetsSection />
+      <StatementSection />
+      <MoreSection />
+      <MoneySection />
+      <FooterCta />
     </div>
   );
 }

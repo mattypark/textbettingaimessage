@@ -47,6 +47,7 @@ describe("pipeline access gate", () => {
     const access = new MemoryAccessStore();
     await access.mint("FRIEND01", 3);
     const handled: string[] = [];
+    const gate = accessGate(access, "https://bookie.test");
     const pipeline = new InboundPipeline({
       store,
       transport,
@@ -59,7 +60,7 @@ describe("pipeline access gate", () => {
       accessGate: async (chatId, userId, phone, text) => {
         // Memory store learns users as the pipeline creates them.
         if (!access.users.has(userId)) access.registerUser(userId, phone);
-        return accessGate(access, "https://bookie.test")(chatId, userId, phone, text);
+        return gate(chatId, userId, phone, text);
       },
     });
     return { pipeline, transport, access, handled };
