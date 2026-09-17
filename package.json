@@ -16,7 +16,8 @@
     "tick:dev": "node --env-file=.env.local node_modules/.bin/tsx scripts/tick-loop.ts",
     "linq:capture": "node --env-file=.env.local node_modules/.bin/tsx scripts/linq-capture.ts",
     "inbox:tail": "node --env-file=.env.local node_modules/.bin/tsx scripts/inbox-tail.ts",
-    "seed:invite": "node --env-file=.env.local node_modules/.bin/tsx scripts/seed-invite.ts"
+    "seed:invite": "node --env-file=.env.local node_modules/.bin/tsx scripts/seed-invite.ts",
+    "contact-card:check": "node --env-file=.env.local node_modules/.bin/tsx scripts/contact-card-check.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
