@@ -21,7 +21,7 @@ Twenty items, each marked **done**, **n/a** (with the reason), or **backend/depl
 | 15 | Custom 404 | **done** | `app/not-found.tsx` (mascot asleep, back-to-start) |
 | 16 | Broken links | **done** | Crawler over all internal hrefs: 22 URLs, 0 non-2xx; nav anchors now `/#bets`, `/#more` so they work off the landing |
 | 17 | Form validation | **done** | Sign-in: E.164 + 6 digits; join: E.164 + code; errors `role="alert"` and wired with `aria-describedby` / `aria-invalid` |
-| 18 | Spam protection on forms | **partial** | Honeypot field on `/join` (frontend). **Backend:** `/api/join` has no rate limit and Supabase OTP throttling is not configured — see `nextsessions/backend.md` |
+| 18 | Spam protection on forms | done | Honeypot on `/join` (frontend). `/api/join` rate-limited 5/hour per address and per phone (`src/access/rate-limit.ts`, migration 0010, 429 + Retry-After). OTP: local `max_frequency = 60s`; cloud values (30 SMS/hour, 60 s per phone) to be read off Auth → Rate Limits during the live pass |
 | 19 | Analytics | **open (owner call)** | Nothing wired. `@vercel/analytics` is a new dependency; adding it flips #5 to "disclose in privacy" |
 | 20 | One clear call to action | **done** | Landing: "text mushy" / "Start now" → `/join`; `/join` one button per step; `/app` empty state → text the bot |
 

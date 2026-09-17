@@ -262,7 +262,7 @@ enable_confirmations = false
 # Template for sending OTP to users
 template = "Your code is {{ `{{ .Code }}` }}"
 # Controls the minimum amount of time that must pass before sending another sms otp.
-max_frequency = "5s"
+max_frequency = "60s"
 
 # Use pre-defined map of phone number to OTP for testing.
 # [auth.sms.test_otp]
@@ -309,7 +309,7 @@ enroll_enabled = false
 verify_enabled = false
 otp_length = 6
 template = "Your code is {{ `{{ .Code }}` }}"
-max_frequency = "5s"
+max_frequency = "60s"
 
 # Configure MFA via WebAuthn
 # [auth.mfa.web_authn]

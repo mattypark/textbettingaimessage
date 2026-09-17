@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { accessGate } from "@/src/access/gate";
+import { MemoryRateLimiter, SupabaseRateLimiter, type RateLimiter } from "@/src/access/rate-limit";
 import { MemoryAccessStore, SupabaseAccessStore, type AccessStore } from "@/src/access/store";
 import { agentHandler } from "@/src/agent/handler";
 import { claudeClassifier } from "@/src/agent/classifier";
@@ -33,6 +34,14 @@ export function defaultAccessStore(): AccessStore {
   if (isSupabaseAdminConfigured()) return new SupabaseAccessStore(supabaseAdmin());
   memoryAccess ??= new MemoryAccessStore();
   return memoryAccess;
+}
+let memoryRateLimiter: MemoryRateLimiter | undefined;
+
+/** Shared counters in Postgres when configured; per-process otherwise. */
+export function defaultRateLimiter(): RateLimiter {
+  if (isSupabaseAdminConfigured()) return new SupabaseRateLimiter(supabaseAdmin());
+  memoryRateLimiter ??= new MemoryRateLimiter();
+  return memoryRateLimiter;
 }
 let memoryMedia: MemoryMediaStore | undefined;
 
