@@ -43,9 +43,26 @@ export class LinqTransport implements MessageTransport {
   }
 
   async send(providerChatId: string, message: OutboundMessage): Promise<SendResult> {
-    const parts: Array<{ type: "text"; value: string } | { type: "link"; value: string } | { type: "media"; url: string } | { type: "media"; attachment_id: string }> = message.link
-      ? [{ type: "link", value: message.link }]
-      : [{ type: "text", value: message.text }];
+    const bundleId = env().LINQ_IMESSAGE_APP_BUNDLE_ID;
+    const parts: Array<Record<string, unknown>> =
+      message.link && message.card && bundleId
+        ? [
+            {
+              type: "imessage_app",
+              app: { bundle_id: bundleId },
+              layout: {
+                caption: message.card.caption,
+                ...(message.card.subcaption ? { subcaption: message.card.subcaption } : {}),
+                ...(message.card.trailing ? { trailing_caption: message.card.trailing } : {}),
+                ...(message.card.imageUrl ? { image_url: message.card.imageUrl } : {}),
+              },
+              url: message.link,
+              fallback_text: message.text || message.link,
+            },
+          ]
+        : message.link
+          ? [{ type: "link", value: message.link }]
+          : [{ type: "text", value: message.text }];
     for (const attachment of message.link ? [] : (message.attachments ?? [])) {
       if ("contactCard" in attachment) {
         const name = botNames()[0] ?? "mushy";

@@ -27,6 +27,7 @@ export function settleUpFor(store: Store, siteUrl: string): (bet: Bet) => Promis
     const text = bet.funding?.confirmedAt ? await fundingPayoutText(input) : await settleUpText(input);
     if (!text) return [];
     const link = payPageLink(siteUrl, bet.id);
-    return link ? [text, { text: link, link }] : [text];
+    const card = { caption: "pay up", subcaption: bet.claim.slice(0, 60), trailing: "settled", imageUrl: `${link}/opengraph-image` };
+    return link ? [text, { text: link, link, card }] : [text];
   };
 }

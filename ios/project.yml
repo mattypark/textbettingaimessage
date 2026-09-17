@@ -1,0 +1,63 @@
+name: Mushy
+options:
+  bundleIdPrefix: com.mushy
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  xcodeVersion: "26.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ${DEVELOPMENT_TEAM}
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
+targets:
+  Mushy:
+    type: application
+    platform: iOS
+    sources: [Mushy]
+    info:
+      path: Mushy/Info.plist
+      properties:
+        CFBundleDisplayName: Mushy
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        NSAppTransportSecurity: { NSAllowsArbitraryLoads: false }
+        MUSHY_SITE_URL: $(MUSHY_SITE_URL)
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mushy.app
+        MUSHY_SITE_URL: https://textbettingaimessage.vercel.app
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+    dependencies:
+      - target: MushyMessages
+        embed: true
+  MushyMessages:
+    type: app-extension.messages
+    platform: iOS
+    sources: [MushyMessages]
+    info:
+      path: MushyMessages/Info.plist
+      properties:
+        CFBundleDisplayName: Mushy
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.message-payload-provider
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).MessagesViewController
+        MUSHY_SITE_URL: $(MUSHY_SITE_URL)
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mushy.app.MushyMessages
+        MUSHY_SITE_URL: https://textbettingaimessage.vercel.app
+        APPLICATION_EXTENSION_API_ONLY: YES
+schemes:
+  Mushy:
+    build:
+      targets:
+        Mushy: all
+        MushyMessages: all
+    run:
+      config: Debug
+    archive:
+      config: Release

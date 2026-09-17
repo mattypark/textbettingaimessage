@@ -85,7 +85,9 @@ export function fundingHooks(store: Store, siteUrl = "") {
       const text = await fundingRequestText(await deps(bet));
       if (!text) return [];
       const link = payPageLink(siteUrl, bet.id);
-      return link ? [text, { text: link, link }] : [text];
+      const f = bet.funding!;
+      const card = { caption: `$${f.amountUsd} each`, subcaption: bet.claim.slice(0, 60), trailing: "put it down", imageUrl: `${link}/opengraph-image` };
+      return link ? [text, { text: link, link, card }] : [text];
     },
     fundingPayout: async (bet: Bet) => fundingPayoutText(await deps(bet)),
   };

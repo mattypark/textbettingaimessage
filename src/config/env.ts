@@ -26,6 +26,8 @@ const schema = z.object({
   LINQ_API_KEY: z.string().optional(),
   LINQ_WEBHOOK_SECRET: z.string().optional(),
   LINQ_FROM_NUMBER: z.string().optional(),
+  /** Bundle id of the Mushy Messages extension. When set, pay/sign cards go out as iMessage app cards instead of link previews. */
+  LINQ_IMESSAGE_APP_BUNDLE_ID: z.string().optional(),
 
   // Sendblue
   SENDBLUE_API_KEY: z.string().optional(),

@@ -63,6 +63,8 @@ export interface OutboundMessage {
   text: string;
   /** Sent as a rich link preview on providers that support it (Linq: the link is the whole message). */
   link?: string;
+  /** Optional card layout for providers that can render an iMessage app card for the link. */
+  card?: { caption: string; subcaption?: string; trailing?: string; imageUrl?: string };
   attachments?: OutboundAttachment[];
   replyToProviderMessageId?: string;
   effect?: "confetti";

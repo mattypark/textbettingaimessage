@@ -159,7 +159,7 @@ function wire(transportName: TransportName): Wiring {
       const site = env().NEXT_PUBLIC_SITE_URL;
       const first: OutboundMessage = { text: introMessage(botName, site, chatId), attachments: [{ contactCard: true }] };
       const link = isPublicSite(site) ? signUrl(site, chatId) : null;
-      return link ? [first, { text: link, link }] : first;
+      return link ? [first, { text: link, link, card: { caption: "everyone signs once", subcaption: "name, number, rules — 30 seconds", trailing: "tap", imageUrl: `${link}/opengraph-image` } }] : first;
     },
     turnLimit: { limiter: defaultRateLimiter(), perUserPerHour: env().BOT_TURNS_PER_USER_HOUR, perChatPerHour: env().BOT_TURNS_PER_CHAT_HOUR },
     accessGate:
