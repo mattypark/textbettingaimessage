@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { LinqTransport } from "@/src/transport/linq/linq-transport";
 import { reactionKind } from "@/src/transport/linq/parse";
@@ -82,4 +82,32 @@ describe("reactionKind", () => {
   ])("%s / %s → %s", (type, emoji, expected) => {
     expect(reactionKind(type, emoji)).toBe(expected);
   });
+});
+
+/**
+ * Payloads captured from the real line by `npm run linq:capture`
+ * (tests/fixtures/linq/live-*.json). Absent until Stage 0 has run; once
+ * present, every inbound one must normalize.
+ */
+const liveDir = new URL("../fixtures/linq/", import.meta.url);
+const liveFiles = readdirSync(liveDir).filter((f) => f.startsWith("live-") && f.endsWith(".json")).sort();
+
+describe.skipIf(liveFiles.length === 0)("live Linq captures", () => {
+  const transport = new LinqTransport();
+  for (const file of liveFiles) {
+    it(`normalizes ${file}`, () => {
+      const raw = readFileSync(new URL(file, liveDir), "utf8");
+      const payload = JSON.parse(raw) as { event_type: string; data: { direction?: string; is_from_me?: boolean } };
+      const event = transport.parseInbound(raw);
+      const outbound = payload.data.direction === "outbound" || payload.data.is_from_me === true;
+      if (outbound) {
+        expect(event).toBeNull();
+        return;
+      }
+      expect(event, `${payload.event_type} should normalize`).not.toBeNull();
+      expect(event?.providerChatId).toBeTruthy();
+      expect(event?.senderHandle).toBeTruthy();
+      expect(raw).not.toMatch(/\+1(?!2053968556|5029998282|713555\d{4})\d{10}/);
+    });
+  }
 });

@@ -12,7 +12,9 @@
     "test:integration": "vitest run --config vitest.integration.config.mts",
     "typecheck": "tsc --noEmit",
     "agent:smoke": "node --env-file=.env.local node_modules/.bin/tsx scripts/agent-smoke.ts",
-    "webhooks:dev": "linq webhooks listen --forward-to http://localhost:3000/api/webhooks/linq --events message.received,reaction.added,reaction.removed,participant.added,chat.created"
+    "webhooks:dev": "linq webhooks listen --forward-to http://localhost:3000/api/webhooks/linq --events message.received,reaction.added,reaction.removed,participant.added,chat.created",
+    "tick:dev": "node --env-file=.env.local node_modules/.bin/tsx scripts/tick-loop.ts",
+    "linq:capture": "node --env-file=.env.local node_modules/.bin/tsx scripts/linq-capture.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",

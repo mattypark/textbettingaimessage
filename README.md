@@ -40,6 +40,8 @@ cp .env.example .env.local        # fill in Linq + Supabase + Anthropic keys
 npm install
 npm run dev                       # http://localhost:3000
 npm run webhooks:dev              # streams Linq webhooks to /api/webhooks/linq
+npm run tick:dev                  # local pg_cron: outbox, judge jobs, timeouts every 15 s
+npm run linq:capture              # Stage 0: saves redacted Linq payloads into tests/fixtures/linq/ (LINQ_CAPTURE_FORWARD tees into the app)
 WEB_DEMO=1 npm run dev            # /app with seeded data, no Supabase needed (dev only, off on Vercel)
 ```
 
