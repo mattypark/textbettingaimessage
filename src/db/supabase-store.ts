@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { InboundEvent, OutboundMessage } from "@/src/transport/types";
-import type { ChatRow, MemberRow, OutboxRow, Store, StuckInboundRow, UserRow } from "./store";
+import type { BetDraft, ChatRow, MemberRow, OutboxRow, Store, StuckInboundRow, UserRow } from "./store";
 
 function fail(context: string, error: { message: string } | null): never {
   throw new Error(`${context}: ${error?.message ?? "unknown error"}`);
@@ -99,6 +99,25 @@ export class SupabaseStore implements Store {
   async setDisplayName(userId: string, name: string): Promise<void> {
     const { error } = await this.db.from("users").update({ display_name: name }).eq("id", userId);
     if (error) fail("setDisplayName", error);
+  }
+
+  async getDraft(chatId: string, userId: string): Promise<BetDraft | null> {
+    const { data, error } = await this.db.from("bet_drafts").select("step, claim, stake, created_at").eq("chat_id", chatId).eq("user_id", userId).maybeSingle();
+    if (error) fail("getDraft", error);
+    if (!data) return null;
+    return { chatId, userId, step: data.step as BetDraft["step"], claim: (data.claim as string | null) ?? undefined, stake: (data.stake as BetDraft["stake"] | null) ?? undefined, createdAt: data.created_at as string };
+  }
+
+  async setDraft(draft: BetDraft): Promise<void> {
+    const { error } = await this.db
+      .from("bet_drafts")
+      .upsert({ chat_id: draft.chatId, user_id: draft.userId, step: draft.step, claim: draft.claim ?? null, stake: draft.stake ?? null, created_at: draft.createdAt, updated_at: new Date().toISOString() }, { onConflict: "chat_id,user_id" });
+    if (error) fail("setDraft", error);
+  }
+
+  async clearDraft(chatId: string, userId: string): Promise<void> {
+    const { error } = await this.db.from("bet_drafts").delete().eq("chat_id", chatId).eq("user_id", userId);
+    if (error) fail("clearDraft", error);
   }
 
   async setPayHandle(userId: string, provider: string, handle: string): Promise<void> {

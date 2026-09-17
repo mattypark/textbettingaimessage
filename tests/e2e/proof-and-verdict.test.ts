@@ -9,7 +9,6 @@ import { escrowAccount } from "@/src/ledger/types";
 import { fakeJudge, HANDLES, png, T0, world, type CassetteStep, type World } from "./harness";
 
 const cassette: CassetteStep[] = [
-  { match: /^hey mushy$/i, say: "hey." },
   {
     match: /says I make this shot/i,
     tool: {

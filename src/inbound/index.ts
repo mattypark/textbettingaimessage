@@ -145,9 +145,11 @@ function wire(transportName: TransportName): Wiring {
       siteUrl: env().NEXT_PUBLIC_SITE_URL,
       botName,
       access: defaultAccessStore(),
-      model,
-      classifier: model ? modelClassifier(model) : undefined,
-      intake: { proofStore, media },
+      model: env().MODEL_MODE === "off" ? undefined : model,
+      modelMode: env().MODEL_MODE,
+      judgeMode: env().JUDGE_MODE,
+      classifier: model && env().MODEL_MODE !== "off" ? modelClassifier(model) : undefined,
+      intake: { proofStore, media, judgeMode: env().JUDGE_MODE },
     }),
     media,
     // The intro carries the bot's contact card so one tap names it in the group.
@@ -162,10 +164,11 @@ function wire(transportName: TransportName): Wiring {
     senderHasOpenBet: (chatId, userId) => awaitsProof(betStore, chatId, userId),
     log: (line, extra) => console.info(`[inbound:${transportName}] ${line}`, extra ?? ""),
   });
-  const judge = model ? modelJudge(model) : undefined;
-  const jobRunners: Wiring["jobRunners"] = judge
-    ? { judge: (payload: Record<string, unknown>) => runJudgeJob({ betStore, proofStore, media, engine, judge, renderVideo: renderVideoFrames }, payload as { betId: string; proofId: string; pass: 1 | 2 }) }
-    : {};
+  // Vision judging only when asked for; confirm mode still runs the job so referee bets move to "judging".
+  const judge = model && env().JUDGE_MODE === "vision" ? modelJudge(model) : undefined;
+  const jobRunners: Wiring["jobRunners"] = {
+    judge: (payload: Record<string, unknown>) => runJudgeJob({ betStore, proofStore, media, engine, judge, renderVideo: renderVideoFrames }, payload as { betId: string; proofId: string; pass: 1 | 2 }),
+  };
   const wiring = { store, betStore, proofStore, media, outbox, engine, pipeline, jobRunners };
   wirings.set(transportName, wiring);
   return wiring;

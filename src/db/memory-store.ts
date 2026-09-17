@@ -1,5 +1,5 @@
 import type { InboundEvent, OutboundMessage } from "@/src/transport/types";
-import type { ChatRow, MemberRow, OutboxRow, Store, StuckInboundRow, UserRow } from "./store";
+import type { BetDraft, ChatRow, MemberRow, OutboxRow, Store, StuckInboundRow, UserRow } from "./store";
 
 /** In-memory Store for unit tests and the replay harness. */
 export class MemoryStore implements Store {
@@ -85,6 +85,20 @@ export class MemoryStore implements Store {
 
   async setDisplayName(userId: string, name: string): Promise<void> {
     for (const user of this.users.values()) if (user.id === userId) user.displayName = name;
+  }
+
+  readonly drafts = new Map<string, BetDraft>();
+
+  async getDraft(chatId: string, userId: string): Promise<BetDraft | null> {
+    return this.drafts.get(`${chatId}:${userId}`) ?? null;
+  }
+
+  async setDraft(draft: BetDraft): Promise<void> {
+    this.drafts.set(`${draft.chatId}:${draft.userId}`, draft);
+  }
+
+  async clearDraft(chatId: string, userId: string): Promise<void> {
+    this.drafts.delete(`${chatId}:${userId}`);
   }
 
   readonly handles = new Map<string, Record<string, string>>();

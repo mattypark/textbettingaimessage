@@ -34,6 +34,8 @@ export interface BetStore {
   /** Replaces the funding record (who paid the holder, holder confirmation). No version bump: not a state transition. */
   setFunding(betId: string, funding: Funding): Promise<void>;
   setReminded(betId: string, at: string): Promise<void>;
+  /** Confirm mode: the opponent becomes the referee when proof lands. */
+  setReferee(betId: string, userId: string): Promise<void>;
   /** Locked bets whose deadline falls in (now, before], for the proof-due nudge. */
   lockedBetsDueBefore(now: string, before: string, limit: number): Promise<Bet[]>;
   /** Bet whose card was reacted to; falls back to the newest proposed bet in the chat when the target is unknown. */
@@ -94,6 +96,11 @@ export class MemoryBetStore implements BetStore {
   async setReminded(betId: string, at: string): Promise<void> {
     const bet = this.bets.get(betId);
     if (bet) this.bets.set(betId, { ...bet, reminderSentAt: at });
+  }
+
+  async setReferee(betId: string, userId: string): Promise<void> {
+    const bet = this.bets.get(betId);
+    if (bet) this.bets.set(betId, { ...bet, judgeKind: "referee", refereeUserId: userId });
   }
 
   async lockedBetsDueBefore(now: string, before: string, limit: number): Promise<Bet[]> {

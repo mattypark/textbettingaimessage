@@ -10,7 +10,8 @@ export interface JudgeJobDeps {
   proofStore: ProofStore;
   media: MediaStore;
   engine: BetEngine;
-  judge: Judge;
+  /** Absent in confirm mode: only referee bets reach here, and they need no model. */
+  judge?: Judge;
   renderVideo?: (bytes: Buffer) => Promise<Buffer[]>;
 }
 
@@ -38,6 +39,10 @@ export async function runJudgeJob(deps: JudgeJobDeps, payload: { betId: string; 
     }
   }
 
+  if (!deps.judge) {
+    await deps.engine.apply(bet.id, { type: "VERDICT", outcome: "inconclusive", confidence: 0, proofId: proof.id }).catch(() => undefined);
+    return;
+  }
   const images = await framesFor(proof, deps.media, deps.renderVideo);
   if (images.length === 0) {
     await deps.engine.apply(bet.id, { type: "VERDICT", outcome: "inconclusive", confidence: 0, proofId: proof.id }).catch(() => undefined);

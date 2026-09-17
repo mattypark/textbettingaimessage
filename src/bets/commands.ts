@@ -35,6 +35,10 @@ export interface CommandDeps {
   setPayHandle?: (userId: string, provider: string, handle: string) => Promise<void>;
   /** The sender's invite link. Absent = `!invite` is off. */
   inviteLink?: (userId: string) => Promise<string>;
+  /** User ids in the chat, for the deterministic leaderboard. */
+  members?: (chatId: string) => Promise<string[]>;
+  /** False in confirm mode: no challenge word in proof. */
+  challengeToken?: boolean;
 }
 
 const DAY_MS = 86_400_000;
@@ -129,7 +133,7 @@ export function parseBetCommand(text: string, now: Date): ParsedBet | { error: s
   return { claim, stake, deadlineAt };
 }
 
-export function buildBet(parsed: ParsedBet, ctx: TurnContext, now: Date): Bet {
+export function buildBet(parsed: ParsedBet, ctx: TurnContext, now: Date, options: { challengeToken?: boolean } = {}): Bet {
   return {
     id: randomUUID(),
     chatId: ctx.chatId,
@@ -142,7 +146,7 @@ export function buildBet(parsed: ParsedBet, ctx: TurnContext, now: Date): Bet {
       summary: `clear photo or video showing: ${parsed.claim}`,
       required: [parsed.claim],
       optional: [],
-      challengeTokenRequired: true,
+      challengeTokenRequired: options.challengeToken ?? true,
       mediaKinds: ["photo", "video"],
     },
     judgeKind: "bot",
@@ -157,7 +161,7 @@ export function buildBet(parsed: ParsedBet, ctx: TurnContext, now: Date): Bet {
 }
 
 /** Wraps the engine for the pipeline. Returns replies; the card is posted by the pipeline so its id can be recorded. */
-export function commandHandler({ store, engine, names: fallbackNames, namesFor, clock = () => new Date(), mayStake, needsTermsMessage, setPayHandle, inviteLink }: CommandDeps): TurnHandler {
+export function commandHandler({ store, engine, names: fallbackNames, namesFor, clock = () => new Date(), mayStake, needsTermsMessage, setPayHandle, inviteLink, members, challengeToken }: CommandDeps): TurnHandler {
   const allowed = async (userId: string) => (mayStake ? mayStake(userId) : true);
 
   return async (ctx): Promise<OutboundMessage[]> => {
@@ -189,7 +193,7 @@ export function commandHandler({ store, engine, names: fallbackNames, namesFor, 
       if (!(await allowed(ctx.userId))) return needsTermsMessage ? [{ text: needsTermsMessage(names(ctx.userId)) }] : [];
       const parsed = parseBetCommand(text, clock());
       if ("error" in parsed) return [{ text: `❓ ${parsed.error}` }];
-      const bet = await store.create(buildBet(parsed, ctx, clock()));
+      const bet = await store.create(buildBet(parsed, ctx, clock(), { challengeToken }));
       return [{ text: betCard(bet, names), replyToProviderMessageId: event.providerMessageId, idempotencyKey: `card:${bet.id}` }];
     }
 
@@ -213,6 +217,23 @@ export function commandHandler({ store, engine, names: fallbackNames, namesFor, 
       if (!bet) return [{ text: "no open bet with that id here" }];
       const result = await refereeDecide(store, engine, bet.id, ctx.userId, /^(yes|stands)$/i.test(callMatch[2]));
       return result.ok ? [] : [{ text: `❓ ${result.text}` }];
+    }
+
+    // Natural phrasings that map 1:1 to a command never cost a model turn.
+    const plain = text.replace(/^(hey|yo)?\s*@?mushy[,:]?\s*/i, "").replace(/[!?.]+$/, "").trim().toLowerCase();
+    if (/^!?(what'?s the |show (me )?(the )?|who'?s (winning|up)\s*)?(leaderboard|standings|scoreboard|board)$/.test(plain) || /^who'?s winning$/.test(plain)) {
+      const ids = members ? await members(ctx.chatId) : [ctx.userId];
+      const rows = await Promise.all(ids.map(async (id) => ({ id, wallet: await engine.wallet(id) })));
+      rows.sort((a, b) => Number(b.wallet.available + b.wallet.held - (a.wallet.available + a.wallet.held)));
+      const lines = rows.map((r, i) => `${i + 1}. ${names(r.id)} — ${r.wallet.available} pts${r.wallet.held > 0n ? ` (+${r.wallet.held} on the line)` : ""}`);
+      return [{ text: lines.join("\n") || "nobody on the board yet" }];
+    }
+    if (/^(balance|my points|how many points do i have|points)$/.test(plain)) {
+      const wallet = await engine.wallet(ctx.userId);
+      return [{ text: `${names(ctx.userId)}: ${wallet.available} pts available, ${wallet.held} on the line` }];
+    }
+    if (/^(invite|invite link|link|send me (an|the) invite( link)?|my invite)$/.test(plain) && inviteLink) {
+      return [{ text: await inviteLink(ctx.userId) }];
     }
 
     if (/^!invite\b/i.test(text)) {

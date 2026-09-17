@@ -37,6 +37,10 @@ const schema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 
+  /** assist = model parses one-liners and judges proof; off = scripted flow + human confirm only, zero tokens. */
+  MODEL_MODE: z.enum(["assist", "off"]).default("assist"),
+  /** confirm = the opponent calls the result ("call #id yes/no"); vision = the model judges the photo. */
+  JUDGE_MODE: z.enum(["confirm", "vision"]).default("confirm"),
   // LLM vendor. MODEL_PROVIDER forces one; otherwise the first key present wins (OpenAI, then Anthropic).
   MODEL_PROVIDER: z.enum(["openai", "anthropic"]).optional(),
   OPENAI_API_KEY: z.string().optional(),

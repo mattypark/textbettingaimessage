@@ -66,7 +66,7 @@ export function postText(kind: PostKind, bet: Bet, name: Names): string {
       return `⌛ ${short} died — not everyone 👍'd in 24h`;
     case "proof_received":
       return bet.judgeKind === "referee" && bet.refereeUserId
-        ? `📸 proof's in for ${short}. ${name(bet.refereeUserId)} you're the ref — "call ${short} yes" if it counts, "call ${short} no" if not`
+        ? `📸 proof's in for ${short} — ${name(bet.refereeUserId)} you're calling it: "call ${short} yes" if it counts, "call ${short} no" if not`
         : `📸 proof's in for ${short} — gimme a sec`;
     case "need_better_proof":
       return `🤔 couldn't call ${short} off that — need a cleaner shot: ${bet.proofCriteria.required.join(", ")}`;

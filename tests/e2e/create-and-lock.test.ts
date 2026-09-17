@@ -44,7 +44,8 @@ describe("e2e: create and lock", () => {
     const first = await w.send(HANDLES.matt, "hey mushy");
     expect(first).toMatchObject({ outcome: "processed", replies: 2 });
     expect(w.transcript()[0]).toMatch(/mushy/i);
-    expect(w.transcript()[1]).toMatch(/describe a bet/);
+    expect(w.transcript()[1]).toMatch(/bet/); // canned wake reply, no model turn
+    expect(w.toolLog).toHaveLength(0);
     const introId = w.transport.sends[0].providerMessageId;
 
     // 2. Both bettors accept the terms with a 👍 on the intro.
@@ -78,8 +79,8 @@ describe("e2e: create and lock", () => {
     vi.setSystemTime(new Date(T0.getTime() + 60_000));
     const followUp = await w.send(HANDLES.sam, "what's the leaderboard");
     expect(followUp).toMatchObject({ outcome: "processed", replies: 1 });
-    expect(w.transcript().at(-1)).toBe("standings above.");
-    expect(w.toolLog.at(-1)).toMatch(/1\./);
+    // Plain-English twin of !leaderboard: answered deterministically, no model turn.
+    expect(w.transcript().at(-1)).toMatch(/^1\. .* — \d+ pts/);
 
     // 6. Unrelated chatter inside the window: classifier says no → nothing sent.
     vi.setSystemTime(new Date(T0.getTime() + 90_000));

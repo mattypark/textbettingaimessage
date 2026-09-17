@@ -15,6 +15,8 @@ export interface IntakeDeps {
   media: MediaStore;
   engine: BetEngine;
   clock?: () => Date;
+  /** "confirm": the other side calls it instead of a vision model. */
+  judgeMode?: "confirm" | "vision";
 }
 
 /** Gate helper: does this sender have a bet in the chat that can take proof right now? */
@@ -78,6 +80,12 @@ export async function intakeProof(
     existing.push(proof);
 
     try {
+      if (deps.judgeMode === "confirm" && bet.judgeKind === "bot") {
+        // Human confirm: the other side calls it. First opponent by accept order.
+        const mySide = bet.participants.find((p) => p.userId === userId)?.side ?? "for";
+        const opponent = bet.participants.find((p) => p.side !== mySide && p.userId !== userId);
+        if (opponent) await deps.betStore.setReferee(bet.id, opponent.userId);
+      }
       await deps.engine.apply(bet.id, { type: "PROOF", userId, proofId: proof.id });
     } catch (error) {
       if (error instanceof IllegalTransition) {

@@ -1,6 +1,7 @@
 import type { ModelProvider } from "@/src/model/types";
 import { inviteLine } from "@/src/access/invite-line";
 import { commandHandler } from "@/src/bets/commands";
+import { draftFlow } from "@/src/bets/draft-flow";
 import { namesFor } from "@/src/db/names";
 import type { TurnContext, TurnHandler } from "@/src/inbound/pipeline";
 import type { OutboundMessage } from "@/src/transport/types";
@@ -9,10 +10,15 @@ import { TermsGate } from "@/src/onboarding/gate";
 import { TERMS_VERSION } from "@/src/onboarding/terms";
 import type { Classifier } from "./classifier";
 import { runAgentTurn, type RunTurnDeps } from "./run-turn";
+import { templateReply, worthClassifying } from "./templates";
 import { intakeProof, type IntakeDeps } from "@/src/proof/intake";
 
 export interface AgentHandlerDeps extends Omit<RunTurnDeps, "model"> {
   model?: ModelProvider;
+  /** "off": never call the model; the scripted builder and commands do everything. */
+  modelMode?: "assist" | "off";
+  /** "confirm": the opponent calls the result; no challenge word in proof. */
+  judgeMode?: "confirm" | "vision";
   classifier?: Classifier;
   /** Test seam: replaces the Claude call. */
   runTurn?: (ctx: TurnContext) => Promise<OutboundMessage[]>;
@@ -36,9 +42,22 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     needsTermsMessage: (name) => new TermsGate(deps.store, deps.siteUrl).needsTermsMessage(name),
     setPayHandle: (userId, provider, handle) => deps.store.setPayHandle(userId, provider, handle),
     inviteLink: deps.access ? async (userId) => inviteLine(await deps.access!.ensureInvite(userId), deps.siteUrl) : undefined,
+    members: async (chatId) => (await deps.store.chatMembers(chatId)).map((m) => m.id),
+    challengeToken: deps.judgeMode !== "confirm",
   });
 
   const gate = new TermsGate(deps.store, deps.siteUrl);
+  const drafts = draftFlow({
+    store: deps.store,
+    betStore: deps.betStore,
+    namesFor: namesFor(deps.store),
+    botName: deps.botName,
+    clock: deps.clock,
+    mayStake: (userId) => deps.store.hasAcceptedTerms(userId, TERMS_VERSION),
+    needsTermsMessage: (name) => gate.needsTermsMessage(name),
+    challengeToken: deps.judgeMode !== "confirm",
+    modelMode: deps.modelMode,
+  });
 
   return async (ctx) => {
     const { event, decision } = ctx;
@@ -64,7 +83,20 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
       if (proofReplies.length || decision.reason === "proof_attachment") return proofReplies;
     }
 
+    // Free replies first: a bare "hey mushy", help, thanks, then plain-English
+    // twins of the commands (leaderboard, balance, invite). No tokens, no wait.
+    const canned = templateReply(ctx, deps.botName);
+    if (canned) {
+      if (canned.kind === "wake") await drafts.open(ctx);
+      return canned.messages;
+    }
+    const viaCommand = await commands(ctx);
+    if (viaCommand.length) return viaCommand;
+    const drafted = await drafts.step(ctx);
+    if (drafted) return drafted;
+
     if (decision.act === "maybe") {
+      if (!worthClassifying(event.text)) return [];
       const addressed = deps.classifier ? await deps.classifier(event.text, deps.botName) : false;
       if (!addressed) return [];
     }
@@ -73,6 +105,11 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
       return [{ text: gate.needsTermsMessage(name) }];
     }
 
+    if (deps.modelMode === "off") {
+      // Scripted only: anything we couldn't match gets nudged into the builder.
+      await drafts.open(ctx);
+      return [{ text: `say the bet in one line and i'll take it from there — or "!bet thing ; 20 ; friday"` }];
+    }
     if (deps.runTurn) return deps.runTurn(ctx);
     if (!deps.model) return [{ text: `my brain's not plugged in yet (no model key). "!bet thing ; 20 ; friday" still works` }];
     return runAgentTurn(ctx, { ...deps, model: deps.model });

@@ -8,7 +8,6 @@ import { tick } from "@/src/jobs/tick";
 import { HANDLES, png, T0, world, type CassetteStep } from "./harness";
 
 const cassette: CassetteStep[] = [
-  { match: /^hey mushy$/i, say: "hey." },
   {
     match: /loser pays/i,
     tool: {

@@ -37,7 +37,21 @@ export interface StuckInboundRow {
   attempts: number;
 }
 
+export interface BetDraft {
+  chatId: string;
+  userId: string;
+  step: "claim" | "stake" | "deadline";
+  claim?: string;
+  /** Serialized stake: amount as a string so JSON survives. */
+  stake?: { kind: "points" | "social"; amount: string; currency: string; description?: string };
+  createdAt: string;
+}
+
 export interface Store {
+  /** Scripted bet builder state, one per person per chat. */
+  getDraft(chatId: string, userId: string): Promise<BetDraft | null>;
+  setDraft(draft: BetDraft): Promise<void>;
+  clearDraft(chatId: string, userId: string): Promise<void>;
   /** Returns the inbox row id, or null if this provider message was already claimed. */
   claimInbound(event: InboundEvent): Promise<string | null>;
   markInbound(id: string, status: "processing" | "processed" | "ignored" | "failed", error?: string): Promise<void>;

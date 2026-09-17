@@ -94,6 +94,9 @@ export async function png(seed: number, w = 64, h = 64): Promise<Buffer> {
 export interface WorldOptions {
   cassette: CassetteStep[];
   judge?: Judge;
+  /** Defaults to vision so the scripted judge in tests is exercised; confirm = opponent calls it. */
+  judgeMode?: "confirm" | "vision";
+  modelMode?: "assist" | "off";
   /** What the sonnet classifier would say for "maybe" messages. Default: addressed. */
   classifier?: (text: string) => boolean;
 }
@@ -139,7 +142,9 @@ export async function world(opts: WorldOptions) {
       ...toolDeps,
       botName: BOT,
       classifier: async (text) => (opts.classifier ?? (() => true))(text),
-      intake: { proofStore, media, clock },
+      intake: { proofStore, media, clock, judgeMode: opts.judgeMode ?? "vision" },
+      judgeMode: opts.judgeMode ?? "vision",
+      modelMode: opts.modelMode ?? "assist",
       runTurn: fakeModel(toolDeps, opts.cassette, toolLog),
     }),
     botNames: [BOT],
@@ -178,12 +183,13 @@ export async function world(opts: WorldOptions) {
     expect(b, "a bet exists").toBeDefined();
     return b;
   };
+  const chatIdOf = () => [...store.chats.values()][0]?.id ?? "";
   const inboxStatus = (providerMessageId: string) => {
     const row = [...store.inbox.entries()].find(([key]) => key.endsWith(`:${providerMessageId}`));
     return row ? { status: row[1].status, reason: row[1].error } : null;
   };
 
-  return { store, betStore, proofStore, media, ledger, transport, pipeline, tickDeps, now, users, toolLog, send, react, photo, transcript, lastSend, bet, inboxStatus };
+  return { store, betStore, proofStore, media, ledger, transport, pipeline, tickDeps, now, users, toolLog, send, react, photo, transcript, lastSend, bet, inboxStatus, chatIdOf };
 }
 
 export type World = Awaited<ReturnType<typeof world>>;

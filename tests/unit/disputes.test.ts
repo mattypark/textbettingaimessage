@@ -128,7 +128,7 @@ describe("disputes", () => {
   it("referee bets: proof prompts the ref, 'call #id yes' posts the verdict, a later dispute goes back to the ref, silence voids", async () => {
     const w = await world(async () => { throw new Error("AI must not judge referee bets"); });
     const bet = await postedVerdict(w, { judgeKind: "referee", refereeUserId: w.users["+1ref"] });
-    expect(w.transport.transcript("g1").at(-1)).toMatch(/you're the ref/);
+    expect(w.transport.transcript("g1").at(-1)).toMatch(/you're calling it/);
     await tick(w.deps); // judge job → JUDGE_START only
     expect((await w.betStore.get(bet.id))?.status).toBe("judging");
 
