@@ -31,6 +31,14 @@ Project: **Mushy** (renamed from Bookie 2026-09-17; `BOT_NAMES=mushy`, wake word
 | Settle-up + holder-funded stakes: `!pay` handles, Venmo/Cash App/PayPal links, "$20 each, sam holds it" → pay-the-holder request after LOCKED, `paid`/`got it` (tools + `!paid`/`!got`), holder pays winner after SETTLED. **Frontend:** `bet.state.funding` is new (`Funding` in `src/bets/types.ts`); the flip card could show paid/holder state | `src/settle/`, migration 0012 | done, 8 scenarios green |
 | Local run tooling: `npm run tick:dev` (pg_cron stand-in), `npm run linq:capture` (redacted Stage-0 fixtures + tee) | `scripts/tick-loop.ts`, `scripts/linq-capture.ts` | done |
 
+## Live status (2026-09-17 afternoon)
+
+- **Stage 0 passed.** Linq free-tier *shared* line +1 (205) 396-8556 sits in a real 3-person group; "hey mushy" → inbox row → outbox → reply in the group. Shared line routes only numbers registered with `linq contacts add`. `linq doctor`'s "Session expired" is cosmetic.
+- OpenAI gpt-5 smoke: 5 phrasings → card + one casual line. Reasoning tokens need an 8000-token floor (`src/model/openai.ts`); `MODEL_DEBUG=1` prints tool calls.
+- Cloud Supabase: migrations 0001–0013 applied; integration tests 11/11; `/api/join` 429 live.
+- Still needs the phone: 👍 lock, attention window, photo/video verdict. Still needs a deploy: `/app` phone OTP (Send SMS hook needs a public URL).
+- Model credits are Matthew's; do not loop `agent:smoke` — cassette tests are free.
+
 ## What has NOT happened (needs Matthew's hands)
 
 As of 2026-09-17 midday none of the prerequisites exist on this Mac (no `.env.local`, `linq` session expired, Supabase not linked). Exact steps: `docs/SETUP-LIVE.md`. Supabase = cloud project (decided 2026-09-17; Docker stays off). After `supabase db push`, migrations 0010 + 0011 must go up too.

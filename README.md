@@ -14,11 +14,11 @@ Mirror of the task panel (2026-09-16). "code-complete" = built + unit-tested, ne
 
 | # | Stage | Status | What's left / done-check |
 |---|---|---|---|
-| 0 | Provider spike — add bot to an existing group (Linq, then Sendblue) | **open** | `linq login` → `npm run dev` + `npm run webhooks:dev` → from a phone add +1 (205) 396-8556 to a 3-person group → text, 👍, photo, 5s video → save raw payloads (phones redacted) into `tests/fixtures/linq/` → fill `docs/providers.md` |
-| 1 | Scaffold + transport adapters + live round-trip | **in progress** | code done; "hey mushy" in a real group must get a reply in the group (not a DM); replayed webhook → one reply |
+| 0 | Provider spike — add bot to an existing group (Linq, then Sendblue) | **passed 2026-09-17** (Linq free-tier shared line, real 3-person group, reply landed in the group) | `linq login` → `npm run dev` + `npm run webhooks:dev` → from a phone add +1 (205) 396-8556 to a 3-person group → text, 👍, photo, 5s video → save raw payloads (phones redacted) into `tests/fixtures/linq/` → fill `docs/providers.md` |
+| 1 | Scaffold + transport adapters + live round-trip | **passed 2026-09-17** | code done; "hey mushy" in a real group must get a reply in the group (not a DM); replayed webhook → one reply |
 | 2 | Double-entry points ledger + CashLedger stub | done | property tests + Postgres RPC tests pass |
 | 3 | Bet state machine + engine (no LLM) | **in progress** | code done; live check: two phones lock a bet via 👍 with `!bet thing ; 20 ; friday` |
-| 4 | Claude agent layer + mention gate | **in progress** | code done; needs `ANTHROPIC_API_KEY` in `.env.local` → `npm run agent:smoke "mushy 20 says I make this shot by friday, jake you in?"` → tune `src/agent/prompts/system.ts` on 5 phrasings |
+| 4 | Agent layer (OpenAI gpt-5 behind `src/model/`) + mention gate | **smoke passed** on 5 phrasings 2026-09-17; friend-slang voice, no periods; left: live 👍 lock with two phones |
 | 5 | Onboarding + terms in iMessage and web | done | intro once per chat; 👍/"I agree" gates stakes |
 | 6 | Timeouts + pg_cron tick + outbox drain | done | needs `app.tick_url`/`app.cron_secret` set in prod (docs/DEPLOY.md) |
 | 7 | Proof intake + photo judging (Claude vision) | done | live check pending: photo in group → verdict < 60s |
