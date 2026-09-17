@@ -1,4 +1,4 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import type { ModelProvider } from "@/src/model/types";
 import { commandHandler } from "@/src/bets/commands";
 import type { TurnContext, TurnHandler } from "@/src/inbound/pipeline";
 import type { OutboundMessage } from "@/src/transport/types";
@@ -9,8 +9,8 @@ import type { Classifier } from "./classifier";
 import { runAgentTurn, type RunTurnDeps } from "./run-turn";
 import { intakeProof, type IntakeDeps } from "@/src/proof/intake";
 
-export interface AgentHandlerDeps extends Omit<RunTurnDeps, "client"> {
-  client?: Anthropic;
+export interface AgentHandlerDeps extends Omit<RunTurnDeps, "model"> {
+  model?: ModelProvider;
   classifier?: Classifier;
   /** Test seam: replaces the Claude call. */
   runTurn?: (ctx: TurnContext) => Promise<OutboundMessage[]>;
@@ -70,7 +70,7 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     }
 
     if (deps.runTurn) return deps.runTurn(ctx);
-    if (!deps.client) return [{ text: `${displayName({ displayName: null, phone: event.senderHandle })}: agent is not configured (ANTHROPIC_API_KEY)` }];
-    return runAgentTurn(ctx, { ...deps, client: deps.client });
+    if (!deps.model) return [{ text: `${displayName({ displayName: null, phone: event.senderHandle })}: agent is not configured (set OPENAI_API_KEY or ANTHROPIC_API_KEY)` }];
+    return runAgentTurn(ctx, { ...deps, model: deps.model });
   };
 }

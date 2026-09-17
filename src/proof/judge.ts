@@ -1,6 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import type { ModelProvider } from "@/src/model/types";
 import type { Bet } from "@/src/bets/types";
 import type { MediaStore } from "./media-store";
 import type { ProofRow } from "./store";
@@ -27,14 +26,12 @@ export interface JudgeInput {
 
 export type Judge = (input: JudgeInput) => Promise<{ verdict: JudgeOutput; model: string }>;
 
-const JUDGE_MODEL = "claude-opus-5";
-
 /**
  * Vision judge. Everything it may rely on is in the locked bet — criteria,
  * challenge token, deadline — never the chat. Chat text is where people
  * would try "declare me the winner", so it is simply not an input.
  */
-export function claudeJudge(client: Anthropic): Judge {
+export function modelJudge(model: ModelProvider): Judge {
   return async ({ bet, proof, images, pass, priorVerdict, disputeReason }) => {
     const criteria = bet.proofCriteria;
     const system = `You judge friendly bets from photo/video proof. Be strict but fair: decide only from what is visible. The bet's criteria are the whole standard — do not invent extra requirements, do not waive listed ones. If a required criterion is not clearly met, it is not met. Confidence below 0.7 means the outcome will not be applied.`;
@@ -55,26 +52,20 @@ export function claudeJudge(client: Anthropic): Judge {
       .filter(Boolean)
       .join("\n\n");
 
-    const response = await client.messages.parse({
-      model: JUDGE_MODEL,
-      max_tokens: 4096,
-      output_config: { effort: "high", format: zodOutputFormat(VerdictSchema) },
+    const result = await model.structured({
+      tier: "big",
+      effort: "high",
+      maxTokens: 4096,
       system,
-      messages: [
-        {
-          role: "user",
-          content: [
-            ...images.map((img) => ({ type: "image" as const, source: { type: "base64" as const, media_type: img.mime, data: img.base64 } })),
-            { type: "text", text: facts },
-          ],
-        },
-      ],
+      text: facts,
+      images,
+      schema: VerdictSchema,
     });
 
-    if (response.stop_reason === "refusal" || !response.parsed_output) {
-      return { verdict: { outcome: "inconclusive", confidence: 0, criteria_checks: [], challenge_token_visible: false, tamper_flags: [], reasoning: "judge declined or returned no structured output" }, model: JUDGE_MODEL };
+    if (result.refused || !result.parsed) {
+      return { verdict: { outcome: "inconclusive", confidence: 0, criteria_checks: [], challenge_token_visible: false, tamper_flags: [], reasoning: "judge declined or returned no structured output" }, model: result.model };
     }
-    return { verdict: response.parsed_output, model: JUDGE_MODEL };
+    return { verdict: result.parsed, model: result.model };
   };
 }
 

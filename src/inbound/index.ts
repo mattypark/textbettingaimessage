@@ -1,9 +1,8 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { accessGate } from "@/src/access/gate";
 import { MemoryRateLimiter, SupabaseRateLimiter, type RateLimiter } from "@/src/access/rate-limit";
 import { MemoryAccessStore, SupabaseAccessStore, type AccessStore } from "@/src/access/store";
 import { agentHandler } from "@/src/agent/handler";
-import { claudeClassifier } from "@/src/agent/classifier";
+import { modelClassifier } from "@/src/agent/classifier";
 import { BetEngine } from "@/src/bets/engine";
 import { MemoryBetStore, type BetStore } from "@/src/bets/store";
 import { SupabaseBetStore } from "@/src/bets/supabase-store";
@@ -14,7 +13,8 @@ import type { Store } from "@/src/db/store";
 import { SupabaseStore } from "@/src/db/supabase-store";
 import { createLedger } from "@/src/ledger";
 import { awaitsProof } from "@/src/proof/intake";
-import { claudeJudge } from "@/src/proof/judge";
+import { createModel } from "@/src/model";
+import { modelJudge } from "@/src/proof/judge";
 import { MemoryMediaStore, SupabaseMediaStore, type MediaStore } from "@/src/proof/media-store";
 import { renderVideoFrames } from "@/src/proof/frames";
 import { runJudgeJob } from "@/src/proof/run-judge";
@@ -117,7 +117,7 @@ function wire(transportName: TransportName): Wiring {
     settleUp: env().SETTLE_UP === "0" ? undefined : settleUpFor(store),
   });
   const ledger = createLedger();
-  const client = env().ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env().ANTHROPIC_API_KEY }) : undefined;
+  const model = createModel();
   const botName = botNames()[0] ?? "mushy";
   const pipeline = new InboundPipeline({
     store,
@@ -129,8 +129,8 @@ function wire(transportName: TransportName): Wiring {
       ledger,
       siteUrl: env().NEXT_PUBLIC_SITE_URL,
       botName,
-      client,
-      classifier: client ? claudeClassifier(client) : undefined,
+      model,
+      classifier: model ? modelClassifier(model) : undefined,
       intake: { proofStore, media },
     }),
     media,
@@ -142,7 +142,7 @@ function wire(transportName: TransportName): Wiring {
     senderHasOpenBet: (chatId, userId) => awaitsProof(betStore, chatId, userId),
     log: (line, extra) => console.info(`[inbound:${transportName}] ${line}`, extra ?? ""),
   });
-  const judge = client ? claudeJudge(client) : undefined;
+  const judge = model ? modelJudge(model) : undefined;
   const jobRunners: Wiring["jobRunners"] = judge
     ? { judge: (payload: Record<string, unknown>) => runJudgeJob({ betStore, proofStore, media, engine, judge, renderVideo: renderVideoFrames }, payload as { betId: string; proofId: string; pass: 1 | 2 }) }
     : {};

@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { betaZodTool } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { betCard } from "@/src/bets/card";
 import { disputeBet, refereeDecide } from "@/src/bets/decisions";
@@ -9,6 +8,7 @@ import { IllegalTransition } from "@/src/bets/state-machine";
 import type { BetStore } from "@/src/bets/store";
 import { ACCEPT_WINDOW_HOURS, type Bet } from "@/src/bets/types";
 import type { Store } from "@/src/db/store";
+import { tool } from "@/src/model/types";
 import { PAY_PROVIDERS, PROVIDER_LABEL } from "@/src/settle/pay-links";
 import type { Ledger } from "@/src/ledger/types";
 import { TERMS_SUMMARY, TERMS_VERSION, termsUrl } from "@/src/onboarding/terms";
@@ -45,7 +45,7 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
   const gate = new TermsGate(store, deps.siteUrl);
   const termsBlock = async () => ((await gate.accepted(ctx.userId)) ? null : `blocked: ${gate.needsTermsMessage(names(ctx.userId))}`);
 
-  const createBet = betaZodTool({
+  const createBet = tool({
     name: "create_bet",
     description:
       "Create a bet from what the sender described and post its card to the chat. The sender is always on the 'for' side (they claim they'll do it, or that X will happen). Use against_user_ids when they named who they're betting; leave it empty for an open bet that anyone can take by reacting 👍.",
@@ -102,7 +102,7 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
-  const acceptBet = betaZodTool({
+  const acceptBet = tool({
     name: "accept_bet",
     description: "The sender accepts an open or pending bet in this chat (they said 'I'm in', 'bet', 'deal', etc.). Use the bet id from the open bets list.",
     inputSchema: z.object({ bet_id: z.string() }),
@@ -121,7 +121,7 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
-  const declineBet = betaZodTool({
+  const declineBet = tool({
     name: "decline_bet",
     description: "The sender declines a bet they were named in, or the creator cancels their own proposed bet.",
     inputSchema: z.object({ bet_id: z.string() }),
@@ -137,7 +137,7 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
-  const getBalance = betaZodTool({
+  const getBalance = tool({
     name: "get_balance",
     description: "Points balance and honor score for the sender or a named member.",
     inputSchema: z.object({ user_id: z.string().optional() }),
@@ -149,7 +149,7 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
-  const leaderboard = betaZodTool({
+  const leaderboard = tool({
     name: "leaderboard",
     description: "Points and honor for everyone in this chat, richest first.",
     inputSchema: z.object({}),
@@ -160,14 +160,14 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
-  const explainTerms = betaZodTool({
+  const explainTerms = tool({
     name: "explain_terms",
     description: "The rules / terms, for when someone asks how it works or what they agreed to.",
     inputSchema: z.object({}),
     run: async () => `terms v${TERMS_VERSION} (${termsUrl(deps.siteUrl)}):\n${TERMS_SUMMARY.join("\n")}`,
   });
 
-  const setName = betaZodTool({
+  const setName = tool({
     name: "set_name",
     description: "Remember what to call the sender ('call me Matt').",
     inputSchema: z.object({ name: z.string().min(1).max(30) }),
@@ -177,7 +177,7 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
-  const setPayHandle = betaZodTool({
+  const setPayHandle = tool({
     name: "set_pay_handle",
     description: "Remember where the sender wants to be paid when a social stake settles ('my venmo is @matt'). Mushy only posts a link that opens the payer's own app; it never holds money.",
     inputSchema: z.object({ provider: z.enum(PAY_PROVIDERS), handle: z.string().min(2).max(40).describe("Username, $cashtag, PayPal.me name, or phone for Apple Cash — without the @ or $") }),
@@ -188,14 +188,14 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
-  const dispute = betaZodTool({
+  const dispute = tool({
     name: "dispute_bet",
     description: "The sender disputes a posted verdict on a bet they lost. Costs a points bond that is forfeited if the verdict stands. Include their stated reason.",
     inputSchema: z.object({ bet_id: z.string(), reason: z.string().max(300).optional() }),
     run: async ({ bet_id, reason }) => (await disputeBet(betStore, engine, bet_id, ctx.userId, reason)).text,
   });
 
-  const refereeCall = betaZodTool({
+  const refereeCall = tool({
     name: "referee_decide",
     description: "The sender is the named referee of a bet and is calling it: claim_stands=true means the 'for' side wins.",
     inputSchema: z.object({ bet_id: z.string(), claim_stands: z.boolean() }),

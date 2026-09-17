@@ -17,9 +17,11 @@ Group-chat betting bot for iMessage. Plan of record:
   and RPC tests have run and been quoted.
 
 ## Stack
-Next.js 16 App Router · Supabase (Postgres, Auth, Storage, pg_cron) · Claude
-(`claude-opus-5` parse/judge, `claude-sonnet-5` classifier) · Linq primary,
-Sendblue secondary, `TRANSPORT=fake` for tests.
+Next.js 16 App Router · Supabase (Postgres, Auth, Storage, pg_cron) · LLM
+behind `src/model/` (`ModelProvider`): OpenAI (`gpt-5` turns + vision judge,
+`gpt-5-mini` classifier) when `OPENAI_API_KEY` is set — Matthew's choice
+2026-09-17 — or Claude (`claude-opus-5` / `claude-sonnet-5`) with
+`ANTHROPIC_API_KEY`. Linq primary, Sendblue secondary, `TRANSPORT=fake` for tests.
 
 ## Commands
 `npm test` · `npm run typecheck` · `npm run webhooks:dev` (Linq → localhost, no ngrok)

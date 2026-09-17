@@ -37,7 +37,11 @@ const schema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 
-  // Claude
+  // LLM vendor. MODEL_PROVIDER forces one; otherwise the first key present wins (OpenAI, then Anthropic).
+  MODEL_PROVIDER: z.enum(["openai", "anthropic"]).optional(),
+  OPENAI_API_KEY: z.string().optional(),
+  OPENAI_MODEL: z.string().default("gpt-5"),
+  OPENAI_MODEL_SMALL: z.string().default("gpt-5-mini"),
   ANTHROPIC_API_KEY: z.string().optional(),
 
   // Internal
@@ -50,7 +54,9 @@ let cached: Env | undefined;
 
 export function env(): Env {
   if (cached) return cached;
-  const parsed = schema.safeParse(process.env);
+  // .env.example ships blank values; a blank key means "not set", not "".
+  const present = Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== undefined && value.trim() !== ""));
+  const parsed = schema.safeParse(present);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((issue) => `${issue.path.join(".")}: ${issue.message}`)

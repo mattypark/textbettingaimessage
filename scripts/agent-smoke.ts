@@ -1,9 +1,9 @@
 /**
- * Live smoke test for the agent turn against real Claude, no iMessage, no DB.
- *   npx tsx scripts/agent-smoke.ts "20 says I make this half court shot by friday, jake you in?"
- * Needs ANTHROPIC_API_KEY (or an `ant auth login` profile).
+ * Live smoke test for the agent turn against the real model, no iMessage, no DB.
+ *   npm run agent:smoke "20 says I make this half court shot by friday, jake you in?"
+ * Needs OPENAI_API_KEY or ANTHROPIC_API_KEY in .env.local.
  */
-import Anthropic from "@anthropic-ai/sdk";
+import { createModel } from "@/src/model";
 import { runAgentTurn } from "@/src/agent/run-turn";
 import { BetEngine } from "@/src/bets/engine";
 import { MemoryBetStore } from "@/src/bets/store";
@@ -13,6 +13,9 @@ import { FakeTransport } from "@/src/transport/fake/fake-transport";
 import { Outbox } from "@/src/transport/outbox";
 
 const text = process.argv.slice(2).join(" ") || "mushy, 20 says I make a half court shot by friday. jake you in?";
+const model = createModel();
+if (!model) throw new Error("set OPENAI_API_KEY or ANTHROPIC_API_KEY in .env.local");
+console.log(`--- model: ${model.name} ---`);
 
 const store = new MemoryStore();
 const betStore = new MemoryBetStore();
@@ -40,7 +43,7 @@ const replies = await runAgentTurn(
     firstContact: false,
     attachments: [],
   },
-  { store, betStore, engine, ledger, siteUrl: "https://example.test", botName: "mushy", client: new Anthropic() }
+  { store, betStore, engine, ledger, siteUrl: "https://example.test", botName: "mushy", model }
 );
 
 console.log("--- replies ---");

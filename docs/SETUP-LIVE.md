@@ -52,18 +52,25 @@ Check: `linq doctor` all green.
 
 Check: `supabase migration list` shows 0001–0009 applied remotely.
 
-## 3. Claude
+## 3. The model — OpenAI (your call)
 
-- `.env.local`: `ANTHROPIC_API_KEY=<console.anthropic.com key>` ($5 of credit
-  covers weeks of a friend group; Opus turns + Sonnet classifier + vision judge).
-- Without it the bot still runs: intro, `!bet … ; 20 ; friday`, 👍 lock,
-  `!cancel`, `!pay`, `!balance` are deterministic. What needs the key: plain-
-  English bets ("hey mushy 20 says…"), the follow-up classifier, proof verdicts.
-- A ChatGPT subscription is not an API key. Swapping to OpenAI means a new
-  `openai` dependency and rewriting three call sites (tool loop, structured
-  classifier, vision judge) — say so explicitly if that is the call.
+1. platform.openai.com → API keys → create one. Add a few dollars of credit
+   (Billing). A ChatGPT Plus subscription does not include API access.
+2. `.env.local`:
+   ```
+   OPENAI_API_KEY=sk-...
+   OPENAI_MODEL=gpt-5            # agent turns + vision judge (default)
+   OPENAI_MODEL_SMALL=gpt-5-mini # follow-up classifier (default)
+   ```
+   Leave `ANTHROPIC_API_KEY` empty. If both are set, OpenAI wins unless
+   `MODEL_PROVIDER=anthropic`.
+3. Without any key the bot still runs its deterministic paths: intro,
+   `!bet … ; 20 ; friday`, 👍 lock, `!cancel`, `!pay`, `!balance`. The key
+   unlocks plain-English bets ("hey mushy 20 says…"), the follow-up
+   classifier and proof verdicts.
 
-Check: `npm run agent:smoke "mushy 20 says I make this shot by friday, jake you in?"` prints a card.
+Check: `npm run agent:smoke "mushy 20 says I make this shot by friday, jake you in?"`
+prints `--- model: openai ---` and a card.
 
 ## 4. `.env.local`
 
