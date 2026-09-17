@@ -26,12 +26,12 @@ Mirror of the task panel (2026-09-16). "code-complete" = built + unit-tested, ne
 | 9 | Video proof via ffmpeg keyframes | done | confirm the 45 MB ffmpeg binary deploys on Vercel |
 | 10 | Web app — phone OTP, bets, wallet, RLS | done | live check pending: real phone sign-in, second account can't see your bet |
 | 11 | First landing (betting-slip) | retired | betting-slip tokens removed 2026-09-16; everything is on the folk system |
-| 12 | Hardening, docs, launch checklist | **in progress** | docs done; 20-item checklist walked on the web surfaces (`docs/LAUNCH-CHECKLIST.md`: 16 done, 2 n/a, spam rate-limit + analytics open); left: load test 50 webhooks/min, week-long soak with a real group, `/repo-describe-one` |
+| 12 | Hardening, docs, launch checklist | **in progress** | docs done; checklist 17 done, 2 n/a, analytics open. `/api/join` rate-limited 5/h per IP + phone (0010); bot turns capped per sender/chat (`BOT_TURNS_PER_*_HOUR`); `chat_leaderboard` RPC (0011); e2e cassettes in `tests/e2e`; `npm run tick:dev` + `npm run linq:capture` for the local run. Left: live stages via `docs/SETUP-LIVE.md`, load test 50 webhooks/min, soak, `/repo-describe-one` |
 | 13 | Invite-only — referral links, waitlist, bot gate | done | seed a code: `insert into invites (code, max_uses) values ('MATT0001', 50);` |
 | 14 | folk.com-style landing + `/join` onboarding | done | verified 375/768/1440; folk.com motion added (pop-in, scroll reveals, Lenis, hide-on-scroll nav, live phone thread) |
 | 15 | Web: `/app` on the folk system, `WEB_DEMO=1`, flip card + Realtime hook, leaderboard | done (frontend) | `WEB_DEMO=1 npm run dev` renders every `/app` screen with seeded data; live checks pending: real phone sign-in, `alter publication supabase_realtime add table bets;` so the bet page refreshes itself |
 
-Start here next session: `docs/HANDOFF.md` → this table → `nextsessions/backend.md` or `nextsessions/frontend.md`.
+Start here next session: `docs/HANDOFF.md` → this table → `nextsessions/backend.md` or `nextsessions/frontend.md`. Live run prerequisites: `docs/SETUP-LIVE.md`.
 
 ## Run it locally
 

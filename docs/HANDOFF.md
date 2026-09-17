@@ -24,9 +24,15 @@ Project: **Mushy** (renamed from Bookie 2026-09-17; `BOT_NAMES=mushy`, wake word
 | `/app` on the folk system: dashboard, bet flip card, leaderboard `/app/chats/[id]`, Realtime hook | `app/app/**`, `src/web/data/`, `src/web/status-theme.ts` | done; only ever run in demo mode |
 | `WEB_DEMO=1` seeded mode (8 bets, proofs, verdicts, 5 members) — refuses on Vercel or with Supabase set | `src/web/demo/` | done |
 | Launch checklist walk (web) | `docs/LAUNCH-CHECKLIST.md` | 16 done, 2 n/a, spam rate limit + analytics open |
-| Docs | `docs/DEPLOY.md`, `docs/SESSION-*.md`, `docs/legal-status.md`, `docs/providers.md`, `nextsessions/*.md` | done |
+| Docs | `docs/DEPLOY.md`, `docs/SESSION-*.md`, `docs/legal-status.md`, `docs/providers.md`, `docs/SETUP-LIVE.md`, `nextsessions/*.md` | done |
+| Spam guards: `/api/join` 5/h per IP + phone, bot turns per sender (30/h) + per chat (120/h), one nudge then silence | `src/access/rate-limit.ts`, migration 0010, `src/inbound/pipeline.ts` `turnLimit` | done (unit-tested; RPC test needs a DB) |
+| `chat_leaderboard(p_chat_id)` RPC, wired into `SupabaseWebData.leaderboard()` (adds `available`) | migration 0011, `src/web/queries.ts` | done (integration test signs in as member + outsider) |
+| E2E cassettes: create-and-lock, proof-and-verdict, on a FakeModel/FakeJudge harness | `tests/e2e/` | done, 6 scenarios green |
+| Local run tooling: `npm run tick:dev` (pg_cron stand-in), `npm run linq:capture` (redacted Stage-0 fixtures + tee) | `scripts/tick-loop.ts`, `scripts/linq-capture.ts` | done |
 
 ## What has NOT happened (needs Matthew's hands)
+
+As of 2026-09-17 midday none of the prerequisites exist on this Mac (no `.env.local`, `linq` session expired, Supabase not linked). Exact steps: `docs/SETUP-LIVE.md`. Supabase = cloud project (decided 2026-09-17; Docker stays off). After `supabase db push`, migrations 0010 + 0011 must go up too.
 
 1. **`linq login`** — CLI token expired. Then `npm run dev` + `npm run webhooks:dev` (no ngrok) and do the Stage 0 spike in `docs/providers.md`: add +1 (205) 396-8556 to a real group, send text / 👍 / photo / video, save raw payloads into `tests/fixtures/linq/`. Parser guesses to confirm: `chat.created` participants shape, reaction target ids.
 2. **`ANTHROPIC_API_KEY` in `.env.local`** → `npm run agent:smoke "mushy 20 says I make this shot by friday, jake you in?"` and tune `src/agent/prompts/system.ts` + tool descriptions.
@@ -35,7 +41,8 @@ Project: **Mushy** (renamed from Bookie 2026-09-17; `BOT_NAMES=mushy`, wake word
 5. **Vercel deploy** (Matthew deploys; not the "old projects" Vercel account).
 6. `/repo-describe-one` on the repo (standing rule after a push) — not run yet.
 7. **Real-Supabase pass of `/app`**: sign in with a phone, dashboard shows a real bet, second account can't see it, leaderboard ranks the chat. Then `alter publication supabase_realtime add table bets;` so `LiveStatus` on the bet page fires.
-8. Decide: uninstall `gsap`/`lenis`? No — the landing now uses both (`app/(site)/folk/motion.tsx`). Decide on analytics (`@vercel/analytics` = new dep) and a rate limit on `/api/join`.
+8. Decide: uninstall `gsap`/`lenis`? No — the landing now uses both (`app/(site)/folk/motion.tsx`). Decide on analytics (`@vercel/analytics` = new dep). `/api/join` rate limit is done.
+9. Scope reminder (Matthew, 2026-09-17): iMessage bot + website only, no native app. Apple Wallet / Apple Cash money-in was asked for and declined — no API exists and cash custody is closed (`docs/legal-status.md`); reopening needs an explicit override plus a licensed partner.
 
 ## Decisions worth not re-litigating
 
