@@ -48,10 +48,17 @@ export class OpenAIProvider implements ModelProvider {
   constructor(
     private readonly client: ChatClient,
     private readonly models: OpenAIModels,
+    /** Debug tap: every tool call and result, and the final stop. */
+    private readonly log: (line: string) => void = () => undefined,
   ) {}
 
   private base(model: string, effort: string | undefined) {
     return REASONING_MODEL.test(model) && effort ? { model, reasoning_effort: effort } : { model };
+  }
+
+  /** Reasoning models spend hidden tokens before answering; a tight cap yields finish_reason "length" and no text. */
+  private budget(model: string, wanted: number) {
+    return REASONING_MODEL.test(model) ? Math.max(wanted, 8000) : wanted;
   }
 
   async agentTurn({ system, user, tools, maxIterations, effort = "medium" }: AgentTurnParams): Promise<AgentTurnResult> {
@@ -72,18 +79,24 @@ export class OpenAIProvider implements ModelProvider {
         messages,
         tools: toolDefs,
         tool_choice: "auto",
-        max_completion_tokens: 2048,
+        max_completion_tokens: this.budget(model, 2048),
       });
       const message = response.choices[0]?.message;
       if (!message) return { text: "", refused: false, model };
       if (message.refusal) return { text: "", refused: true, model };
       messages.push(message as unknown as Record<string, unknown>);
-      if (!message.tool_calls?.length) return { text: (message.content ?? "").trim(), refused: false, model };
+      if (!message.tool_calls?.length) {
+        this.log(`final (${response.choices[0]?.finish_reason ?? "?"}): ${JSON.stringify(message.content ?? "")}`);
+        return { text: (message.content ?? "").trim(), refused: false, model };
+      }
 
       for (const call of message.tool_calls) {
-        messages.push({ role: "tool", tool_call_id: call.id, content: await runTool(byName.get(call.function.name), call.function.arguments) });
+        const result = await runTool(byName.get(call.function.name), call.function.arguments);
+        this.log(`tool ${call.function.name}(${call.function.arguments.slice(0, 300)}) → ${result.slice(0, 300)}`);
+        messages.push({ role: "tool", tool_call_id: call.id, content: result });
       }
     }
+    this.log(`stopped after ${maxIterations} iterations with no final text`);
     return { text: "", refused: false, model };
   }
 
@@ -102,7 +115,7 @@ export class OpenAIProvider implements ModelProvider {
         },
       ],
       response_format: { type: "json_schema", json_schema: { name: "output", schema: jsonSchema(schema, "output") } },
-      max_completion_tokens: maxTokens,
+      max_completion_tokens: this.budget(model, maxTokens),
     });
     const message = response.choices[0]?.message;
     if (!message || message.refusal) return { parsed: null, refused: Boolean(message?.refusal), model };

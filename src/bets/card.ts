@@ -1,3 +1,4 @@
+import { BOT_TZ } from "./tz";
 import type { Bet } from "./types";
 import type { PostKind } from "./state-machine";
 
@@ -14,8 +15,9 @@ function stakeLine(bet: Bet): string {
   return `${bet.stake.amount} pts each`;
 }
 
+/** Deadlines read in the group's zone, not the server's. */
 function when(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  return new Date(iso).toLocaleString("en-US", { timeZone: BOT_TZ, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
 export function betCard(bet: Bet, name: Names): string {
@@ -25,7 +27,7 @@ export function betCard(bet: Bet, name: Names): string {
   return [
     `🎯 bet #${bet.id.slice(0, 6)}`,
     `${name(bet.creatorId)} says: "${bet.claim}"`,
-    `stake: ${stakeLine(bet)}`,
+    `stake: ${stakeLine(bet)}${bet.funding ? ` · ${name(bet.funding.holderUserId)} holds the pot` : ""}`,
     `${forSide || "—"} vs ${against || "anyone who 👍"}`,
     `by ${when(bet.deadlineAt)}`,
     `proof: ${bet.proofCriteria.summary}`,

@@ -6,7 +6,10 @@ import { disputeBet, findBetByPrefix, refereeDecide } from "./decisions";
 import type { BetEngine } from "./engine";
 import { IllegalTransition } from "./state-machine";
 import type { BetStore } from "./store";
+import { fundedBetFor } from "@/src/settle/funded-bet";
+import { fundingStatusText } from "@/src/settle/funding";
 import { parsePayHandle, PROVIDER_LABEL } from "@/src/settle/pay-links";
+import { BOT_TZ } from "./tz";
 import { ACCEPT_WINDOW_HOURS, type Bet } from "./types";
 
 /**
@@ -14,12 +17,15 @@ import { ACCEPT_WINDOW_HOURS, type Bet } from "./types";
  *   !bet <claim> ; <stake pts | "dinner"> ; <deadline>
  *   !cancel
  *   !pay <venmo|cashapp|paypal|applecash> <handle>   (where to be paid when a social stake settles)
+ *   !paid [#id]   /   !got [#id]                     (funded bets: bettor sent the stake / holder has the pot)
  * A 👍 on the card from anyone else takes the other side and locks it.
  */
 export interface CommandDeps {
   store: BetStore;
   engine: BetEngine;
   names: Names;
+  /** Preferred over `names` when present: per-chat display names. */
+  namesFor?: (chatId: string) => Promise<Names>;
   clock?: () => Date;
   /** Returns true when the user may stake (terms accepted). Absent = no gate (tests, dev). */
   mayStake?: (userId: string) => Promise<boolean>;
@@ -30,8 +36,7 @@ export interface CommandDeps {
 
 const DAY_MS = 86_400_000;
 const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-/** Deadlines are "end of day" for the group, not for the server. */
-export const BOT_TZ = process.env.BOT_TZ ?? "America/Chicago";
+export { BOT_TZ };
 
 function zonedParts(date: Date, tz: string): { y: number; m: number; d: number; weekday: number } {
   const parts = new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "numeric", day: "numeric", weekday: "short" }).formatToParts(date);
@@ -50,14 +55,34 @@ export function endOfDayIn(base: Date, daysAhead: number, tz = BOT_TZ): Date {
   return new Date(guess - offsetMs);
 }
 
+/**
+ * Strips the ways people (and models) decorate a day: "by friday", "friday
+ * at 11:59pm", "end of day tomorrow", "2026-09-18 23:59". Deadlines are
+ * always end of that day in the group's zone, so the clock part is noise.
+ */
+function normalizeDeadline(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/^(by|on|before|until|till|due)\s+/, "")
+    .replace(/\b(end of (the )?day|eod|midnight|close of business|cob)\b/g, " ")
+    .replace(/(\s+at)?\s+\d{1,2}(:\d{2})?\s*(am|pm)\b/g, " ")
+    .replace(/(\s+at)?\s+\d{1,2}:\d{2}\b/g, " ")
+    .replace(/^(\d{4}-\d{2}-\d{2})\b.*$/, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function parseDeadline(text: string, now: Date, tz = BOT_TZ): Date | null {
-  const t = text.trim().toLowerCase();
+  const t = normalizeDeadline(text);
   const bare = t.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (bare) return endOfDayIn(new Date(Date.UTC(Number(bare[1]), Number(bare[2]) - 1, Number(bare[3]), 12)), 0, tz);
   const iso = Date.parse(text.trim());
   if (!Number.isNaN(iso) && /\d{4}-\d{2}-\d{2}T/.test(text)) return new Date(iso);
   if (t === "today" || t === "tonight") return endOfDayIn(now, 0, tz);
-  if (t === "tomorrow") return endOfDayIn(now, 1, tz);
+  if (t === "tomorrow" || t === "tmrw" || t === "tmr") return endOfDayIn(now, 1, tz);
+  if (t === "next week") return endOfDayIn(now, 7, tz);
+  if (t === "this weekend" || t === "weekend") return parseDeadline("sunday", now, tz);
   const inMatch = t.match(/^in (\d+) (hour|hours|day|days|week|weeks)$/);
   if (inMatch) {
     const n = Number(inMatch[1]);
@@ -129,11 +154,12 @@ export function buildBet(parsed: ParsedBet, ctx: TurnContext, now: Date): Bet {
 }
 
 /** Wraps the engine for the pipeline. Returns replies; the card is posted by the pipeline so its id can be recorded. */
-export function commandHandler({ store, engine, names, clock = () => new Date(), mayStake, needsTermsMessage, setPayHandle }: CommandDeps): TurnHandler {
+export function commandHandler({ store, engine, names: fallbackNames, namesFor, clock = () => new Date(), mayStake, needsTermsMessage, setPayHandle }: CommandDeps): TurnHandler {
   const allowed = async (userId: string) => (mayStake ? mayStake(userId) : true);
 
   return async (ctx): Promise<OutboundMessage[]> => {
     const { event } = ctx;
+    const names = namesFor ? await namesFor(ctx.chatId) : fallbackNames;
 
     if (event.reaction) {
       if (event.reaction.removed || event.reaction.kind === "other") return [];
@@ -192,6 +218,17 @@ export function commandHandler({ store, engine, names, clock = () => new Date(),
       if (!parsed) return [{ text: "❓ format: !pay venmo @you · !pay cashapp $you · !pay paypal you · !pay applecash <your number>" }];
       await setPayHandle(ctx.userId, parsed.provider, parsed.handle);
       return [{ text: `bet — ${PROVIDER_LABEL[parsed.provider]} ${parsed.handle}. whoever loses to you gets a link. i never hold the money.` }];
+    }
+
+    // Deterministic twins of the mark_paid / confirm_pot tools, for when the model is off.
+    const paidMatch = text.match(/^!(paid|got)\b\s*#?([0-9a-f]{6,})?/i);
+    if (paidMatch) {
+      const role = paidMatch[1].toLowerCase() === "got" ? "holder" : "bettor";
+      const bet = await fundedBetFor(store, ctx.chatId, ctx.userId, paidMatch[2], role);
+      if (typeof bet === "string") return [{ text: bet }];
+      const funding = role === "holder" ? { ...bet.funding!, confirmedAt: clock().toISOString() } : { ...bet.funding!, paid: { ...bet.funding!.paid, [ctx.userId]: clock().toISOString() } };
+      await store.setFunding(bet.id, funding);
+      return [{ text: fundingStatusText({ ...bet, funding }, names) }];
     }
 
     if (/^!(balance|bal)\b/i.test(text)) {

@@ -28,6 +28,7 @@ Project: **Mushy** (renamed from Bookie 2026-09-17; `BOT_NAMES=mushy`, wake word
 | Spam guards: `/api/join` 5/h per IP + phone, bot turns per sender (30/h) + per chat (120/h), one nudge then silence | `src/access/rate-limit.ts`, migration 0010, `src/inbound/pipeline.ts` `turnLimit` | done (unit-tested; RPC test needs a DB) |
 | `chat_leaderboard(p_chat_id)` RPC, wired into `SupabaseWebData.leaderboard()` (adds `available`) | migration 0011, `src/web/queries.ts` | done (integration test signs in as member + outsider) |
 | E2E cassettes: create-and-lock, proof-and-verdict, on a FakeModel/FakeJudge harness | `tests/e2e/` | done, 6 scenarios green |
+| Settle-up + holder-funded stakes: `!pay` handles, Venmo/Cash App/PayPal links, "$20 each, sam holds it" → pay-the-holder request after LOCKED, `paid`/`got it` (tools + `!paid`/`!got`), holder pays winner after SETTLED. **Frontend:** `bet.state.funding` is new (`Funding` in `src/bets/types.ts`); the flip card could show paid/holder state | `src/settle/`, migration 0012 | done, 8 scenarios green |
 | Local run tooling: `npm run tick:dev` (pg_cron stand-in), `npm run linq:capture` (redacted Stage-0 fixtures + tee) | `scripts/tick-loop.ts`, `scripts/linq-capture.ts` | done |
 
 ## What has NOT happened (needs Matthew's hands)

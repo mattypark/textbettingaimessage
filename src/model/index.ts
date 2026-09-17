@@ -25,7 +25,8 @@ export function createModel(): ModelProvider | undefined {
     const client: ChatClient = {
       chat: { completions: { create: (params) => openai.chat.completions.create(params as never) as unknown as Promise<ChatResponse> } },
     };
-    cached = new OpenAIProvider(client, { big: e.OPENAI_MODEL, small: e.OPENAI_MODEL_SMALL });
+    const log = process.env.MODEL_DEBUG === "1" ? (line: string) => console.info(`[model] ${line}`) : undefined;
+    cached = new OpenAIProvider(client, { big: e.OPENAI_MODEL, small: e.OPENAI_MODEL_SMALL }, log);
   } else if (want === "anthropic" && e.ANTHROPIC_API_KEY) {
     cached = new AnthropicProvider(new Anthropic({ apiKey: e.ANTHROPIC_API_KEY }));
   } else {

@@ -1,5 +1,6 @@
 import type { ModelProvider } from "@/src/model/types";
 import { commandHandler } from "@/src/bets/commands";
+import { namesFor } from "@/src/db/names";
 import type { TurnContext, TurnHandler } from "@/src/inbound/pipeline";
 import type { OutboundMessage } from "@/src/transport/types";
 import { displayName } from "./context";
@@ -28,6 +29,7 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     store: deps.betStore,
     engine: deps.engine,
     names: (id) => id,
+    namesFor: namesFor(deps.store),
     clock: deps.clock,
     mayStake: (userId) => deps.store.hasAcceptedTerms(userId, TERMS_VERSION),
     needsTermsMessage: (name) => new TermsGate(deps.store, deps.siteUrl).needsTermsMessage(name),

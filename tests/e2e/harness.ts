@@ -12,6 +12,7 @@ import { buildTools, type ToolDeps } from "@/src/agent/tools";
 import { BetEngine } from "@/src/bets/engine";
 import { MemoryBetStore } from "@/src/bets/store";
 import { MemoryStore } from "@/src/db/memory-store";
+import { namesFor } from "@/src/db/names";
 import { InboundPipeline, type TurnContext } from "@/src/inbound/pipeline";
 import { MemoryLedger } from "@/src/ledger/memory-ledger";
 import { introMessage } from "@/src/onboarding/terms";
@@ -20,6 +21,7 @@ import type { Judge, JudgeOutput } from "@/src/proof/judge";
 import { MemoryMediaStore } from "@/src/proof/media-store";
 import { runJudgeJob } from "@/src/proof/run-judge";
 import { MemoryProofStore } from "@/src/proof/store";
+import { fundingHooks } from "@/src/settle/funding";
 import { settleUpFor } from "@/src/settle/settle-up";
 import { FakeTransport } from "@/src/transport/fake/fake-transport";
 import { Outbox } from "@/src/transport/outbox";
@@ -36,6 +38,8 @@ export interface CassetteStep {
   tool?: { name: string; input: (snap: ChatSnapshot, ctx: TurnContext) => Record<string, unknown> };
   /** Closing line after the tool (or the whole reply when there is no tool). */
   say?: string;
+  /** Relay the tool's result as the reply, the way the model reads a tally back. */
+  sayToolResult?: boolean;
 }
 
 type Runnable = { name: string; run: (input: Record<string, unknown>) => Promise<string> };
@@ -51,7 +55,9 @@ export function fakeModel(deps: ToolDeps, cassette: CassetteStep[], log: string[
     if (step.tool) {
       const tool = tools.find((t) => t.name === step.tool?.name);
       if (!tool) throw new Error(`cassette names unknown tool ${step.tool.name}`);
-      log.push(await tool.run(step.tool.input(snap, ctx)));
+      const result = await tool.run(step.tool.input(snap, ctx));
+      log.push(result);
+      if (step.sayToolResult) session.replies.push({ text: result });
     }
     if (step.say) session.replies.push({ text: step.say });
     return session.replies;
@@ -116,7 +122,7 @@ export async function world(opts: WorldOptions) {
   await store.setDisplayName(users[HANDLES.jake], "Jake");
   await store.setDisplayName(users[HANDLES.sam], "Sam");
 
-  const engine = new BetEngine({ store: betStore, ledger, post: (c, m, k) => outbox.send(c, m, k), names: (id) => id, clock, settleUp: settleUpFor(store) });
+  const engine = new BetEngine({ store: betStore, ledger, post: (c, m, k) => outbox.send(c, m, k), names: (id) => id, namesFor: namesFor(store), clock, settleUp: settleUpFor(store), fundingRequest: fundingHooks(store).fundingRequest });
   const toolDeps: ToolDeps = { store, betStore, engine, ledger, siteUrl: SITE, clock };
   const files = new Map<string, Buffer>();
   const judge = opts.judge ?? fakeJudge(() => ({}));

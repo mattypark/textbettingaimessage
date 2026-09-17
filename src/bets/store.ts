@@ -1,4 +1,4 @@
-import type { Bet } from "./types";
+import type { Bet, Funding } from "./types";
 import type { BetEvent, Effect } from "./state-machine";
 
 export class VersionConflict extends Error {
@@ -31,6 +31,8 @@ export interface BetStore {
   markEffectsDone(betId: string, version: number): Promise<void>;
   setChallengeToken(betId: string, token: string): Promise<void>;
   setCardMessageId(betId: string, providerMessageId: string): Promise<void>;
+  /** Replaces the funding record (who paid the holder, holder confirmation). No version bump: not a state transition. */
+  setFunding(betId: string, funding: Funding): Promise<void>;
   /** Bet whose card was reacted to; falls back to the newest proposed bet in the chat when the target is unknown. */
   findByCard(chatId: string, providerMessageId: string | ""): Promise<Bet | null>;
   openBetsInChat(chatId: string): Promise<Bet[]>;
@@ -79,6 +81,11 @@ export class MemoryBetStore implements BetStore {
   async setCardMessageId(betId: string, providerMessageId: string): Promise<void> {
     const bet = this.bets.get(betId);
     if (bet) this.bets.set(betId, { ...bet, cardProviderMessageId: providerMessageId });
+  }
+
+  async setFunding(betId: string, funding: Funding): Promise<void> {
+    const bet = this.bets.get(betId);
+    if (bet) this.bets.set(betId, { ...bet, funding });
   }
 
   async findByCard(chatId: string, providerMessageId: string | ""): Promise<Bet | null> {

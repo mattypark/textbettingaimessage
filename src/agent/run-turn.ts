@@ -10,7 +10,7 @@ export interface RunTurnDeps extends ToolDeps {
   botName: string;
 }
 
-const MAX_ITERATIONS = 4;
+const MAX_ITERATIONS = 6;
 
 /**
  * One agent turn: snapshot the chat, hand the model the tools, collect

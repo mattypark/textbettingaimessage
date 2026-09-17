@@ -9,7 +9,9 @@ import type { BetStore } from "@/src/bets/store";
 import { ACCEPT_WINDOW_HOURS, type Bet } from "@/src/bets/types";
 import type { Store } from "@/src/db/store";
 import { tool } from "@/src/model/types";
-import { PAY_PROVIDERS, PROVIDER_LABEL } from "@/src/settle/pay-links";
+import { fundedBetFor } from "@/src/settle/funded-bet";
+import { fundingStatusText } from "@/src/settle/funding";
+import { dollarAmount, PAY_PROVIDERS, PROVIDER_LABEL } from "@/src/settle/pay-links";
 import type { Ledger } from "@/src/ledger/types";
 import { TERMS_SUMMARY, TERMS_VERSION, termsUrl } from "@/src/onboarding/terms";
 import { TermsGate } from "@/src/onboarding/gate";
@@ -53,11 +55,12 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
       claim: z.string().min(3).max(200).describe("The thing being bet on, first person from the sender's view, e.g. 'I make a half-court shot'"),
       stake_points: z.number().int().min(0).max(10_000).describe("Points each side puts up. 0 when the stake is social."),
       social_stake: z.string().max(80).optional().describe("A non-points forfeit like 'loser buys dinner'. Set stake_points to 0 when used."),
-      deadline: z.string().describe("Natural language or ISO date: 'friday', 'tomorrow', 'in 3 days', '2026-10-01'"),
+      deadline: z.string().describe("A day, not a time: 'friday', 'tomorrow', 'in 3 days', 'next week', or 'YYYY-MM-DD'. Deadlines are always end of that day."),
       proof_summary: z.string().max(160).describe("One line: what the proof photo/video must show"),
       proof_required: z.array(z.string().max(120)).min(1).max(5).describe("Concrete, checkable criteria the judge will tick off"),
       against_user_ids: z.array(z.string()).max(10).default([]).describe("user_ids from the members list who take the other side"),
       referee_user_id: z.string().optional().describe("A non-participant member who judges instead of the bot"),
+      holder_user_id: z.string().optional().describe("Real-money social stake only: the member (not in the bet) who holds the cash. Each bettor pays them up front; they pay the winner."),
       no_proof_rule: z.enum(["auto_loss", "void"]).default("auto_loss"),
     }),
     run: async (input) => {
@@ -71,6 +74,10 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
       const stake: Bet["stake"] = input.social_stake
         ? { kind: "social", amount: 0n, currency: "PTS", description: input.social_stake }
         : { kind: "points", amount: BigInt(input.stake_points), currency: "PTS" };
+      const dollars = stake.kind === "social" ? dollarAmount(stake.description ?? "") : null;
+      const holderOk = input.holder_user_id && input.holder_user_id !== ctx.userId && !against.includes(input.holder_user_id) && snap.members.some((m) => m.id === input.holder_user_id);
+      if (input.holder_user_id && !holderOk) return "the holder has to be someone in the chat who is not in the bet";
+      const funding: Bet["funding"] = dollars !== null && holderOk ? { holderUserId: input.holder_user_id!, amountUsd: dollars, paid: {} } : undefined;
       if (stake.kind === "points" && stake.amount > snap.wallet.available) {
         return `sender only has ${snap.wallet.available} pts available; suggest a smaller stake`;
       }
@@ -94,6 +101,7 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
         deadlineAt: deadlineAt.toISOString(),
         proofGraceHours: 12,
         noProofRule: input.no_proof_rule,
+        ...(funding ? { funding } : {}),
         version: 0,
       };
       await betStore.create(bet);
@@ -188,6 +196,32 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
+  const markPaid = tool({
+    name: "mark_paid",
+    description: "The sender says they sent their stake to the holder of a funded bet ('paid', 'sent it', 'venmo'd sam'). Records it and returns the tally.",
+    inputSchema: z.object({ bet_id: z.string().optional().describe("Omit when there is only one funded bet waiting on the sender") }),
+    run: async ({ bet_id }) => {
+      const bet = await fundedBetFor(betStore, ctx.chatId, ctx.userId, bet_id, "bettor");
+      if (typeof bet === "string") return bet;
+      const funding = { ...bet.funding!, paid: { ...bet.funding!.paid, [ctx.userId]: clock().toISOString() } };
+      await betStore.setFunding(bet.id, funding);
+      return fundingStatusText({ ...bet, funding }, names);
+    },
+  });
+
+  const confirmPot = tool({
+    name: "confirm_pot",
+    description: "The holder of a funded bet says the pot is full ('got it', 'all in', 'received'). Only the holder can do this.",
+    inputSchema: z.object({ bet_id: z.string().optional() }),
+    run: async ({ bet_id }) => {
+      const bet = await fundedBetFor(betStore, ctx.chatId, ctx.userId, bet_id, "holder");
+      if (typeof bet === "string") return bet;
+      const funding = { ...bet.funding!, confirmedAt: clock().toISOString() };
+      await betStore.setFunding(bet.id, funding);
+      return fundingStatusText({ ...bet, funding }, names);
+    },
+  });
+
   const dispute = tool({
     name: "dispute_bet",
     description: "The sender disputes a posted verdict on a bet they lost. Costs a points bond that is forfeited if the verdict stands. Include their stated reason.",
@@ -202,5 +236,5 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     run: async ({ bet_id, claim_stands }) => (await refereeDecide(betStore, engine, bet_id, ctx.userId, claim_stands)).text,
   });
 
-  return [createBet, acceptBet, declineBet, dispute, refereeCall, getBalance, leaderboard, explainTerms, setName, setPayHandle];
+  return [createBet, acceptBet, declineBet, markPaid, confirmPot, dispute, refereeCall, getBalance, leaderboard, explainTerms, setName, setPayHandle];
 }

@@ -53,6 +53,20 @@ export interface Dispute {
   openedAt: string;
 }
 
+/**
+ * Real-money social stake held by a friend in the chat, never by us. Each
+ * bettor pays the holder through their own app; the holder pays the winner.
+ * The bot only tracks who said "paid" and who said "got it".
+ */
+export interface Funding {
+  holderUserId: string;
+  amountUsd: number;
+  /** userId → ISO time they said they paid the holder. */
+  paid: Record<string, string>;
+  /** ISO time the holder confirmed the pot is full. */
+  confirmedAt?: string;
+}
+
 export interface Bet {
   id: string;
   chatId: string;
@@ -78,6 +92,8 @@ export interface Bet {
   challengeToken?: string;
   latestProofId?: string;
   verdict?: Verdict;
+  /** Present only for dollar-worded social stakes with a named holder. */
+  funding?: Funding;
   disputeWindowEndsAt?: string;
   dispute?: Dispute;
   resolvedAt?: string;

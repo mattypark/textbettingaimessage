@@ -9,6 +9,7 @@ import { SupabaseBetStore } from "@/src/bets/supabase-store";
 import { botNames, env } from "@/src/config/env";
 import { isSupabaseAdminConfigured, supabaseAdmin } from "@/src/db/admin";
 import { MemoryStore } from "@/src/db/memory-store";
+import { namesFor } from "@/src/db/names";
 import type { Store } from "@/src/db/store";
 import { SupabaseStore } from "@/src/db/supabase-store";
 import { createLedger } from "@/src/ledger";
@@ -20,6 +21,7 @@ import { renderVideoFrames } from "@/src/proof/frames";
 import { runJudgeJob } from "@/src/proof/run-judge";
 import { MemoryProofStore, SupabaseProofStore, type ProofStore } from "@/src/proof/store";
 import { introMessage } from "@/src/onboarding/terms";
+import { fundingHooks } from "@/src/settle/funding";
 import { settleUpFor } from "@/src/settle/settle-up";
 import { createTransport } from "@/src/transport";
 import { Outbox } from "@/src/transport/outbox";
@@ -113,8 +115,10 @@ function wire(transportName: TransportName): Wiring {
     ledger: createLedger(),
     post: (chatId, message, key) => outbox.send(chatId, message, key),
     names,
+    namesFor: namesFor(store),
     log: (line, extra) => console.info(`[engine] ${line}`, extra ?? ""),
     settleUp: env().SETTLE_UP === "0" ? undefined : settleUpFor(store),
+    fundingRequest: env().SETTLE_UP === "0" ? undefined : fundingHooks(store).fundingRequest,
   });
   const ledger = createLedger();
   const model = createModel();

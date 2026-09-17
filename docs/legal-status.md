@@ -43,3 +43,15 @@ from gambling payments — the risk sits with the payer, but a platform that
 prefills the amount could be argued to facilitate. `SETTLE_UP=0` turns it off
 in one env var if counsel says so.
 
+## Holder-funded stakes (added 2026-09-17, Matthew's call)
+Matthew asked for money in up front ("Apple Wallet link, enter your card,
+winner gets it all"). Card collection with us as custodian is exactly the
+closed path above (and Stripe / Apple Pay list gambling as prohibited and
+freeze funds). What ships instead: **a friend in the chat holds the pot.**
+On "$20 each, sam holds it" the bot posts links for each bettor to pay Sam
+through their own app, tallies "paid", takes Sam's "got it", judges the
+proof, then hands Sam one link to pay the winner the pot. `bets.state.funding`
+carries `{ holderUserId, amountUsd, paid, confirmedAt }`; points never move
+for these bets. Same guarantee: no payment API keys, no balances in dollars,
+no money through us. `SETTLE_UP=0` disables both this and the settle-up links.
+

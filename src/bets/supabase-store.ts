@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { VersionConflict, type BetStore, type TransitionRecord } from "./store";
-import type { Bet } from "./types";
+import type { Bet, Funding } from "./types";
 
 function fail(context: string, error: { message: string } | null): never {
   throw new Error(`${context}: ${error?.message ?? "unknown error"}`);
@@ -105,6 +105,13 @@ export class SupabaseBetStore implements BetStore {
       .update({ card_provider_message_id: providerMessageId, state: serialize({ ...bet, cardProviderMessageId: providerMessageId }) })
       .eq("id", betId);
     if (error) fail("bets.setCardMessageId", error);
+  }
+
+  async setFunding(betId: string, funding: Funding): Promise<void> {
+    const bet = await this.get(betId);
+    if (!bet) return;
+    const { error } = await this.db.from("bets").update({ state: serialize({ ...bet, funding }) }).eq("id", betId);
+    if (error) fail("bets.setFunding", error);
   }
 
   async findByCard(chatId: string, providerMessageId: string | ""): Promise<Bet | null> {

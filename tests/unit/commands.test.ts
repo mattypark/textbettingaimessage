@@ -30,6 +30,16 @@ describe("parseDeadline", () => {
   it("rejects nonsense", () => {
     expect(parseDeadline("whenever", NOW)).toBeNull();
   });
+
+  it("ignores the clock and filler people bolt onto a day", () => {
+    const day = (input: string) => chicagoDay(parseDeadline(input, NOW, "America/Chicago"));
+    expect(day("tomorrow 11:59pm")).toBe(day("tomorrow"));
+    expect(day("by friday at 6pm")).toBe(day("friday"));
+    expect(day("end of day friday")).toBe(day("friday"));
+    expect(day("2026-09-18 23:59")).toBe(day("2026-09-18"));
+    expect(day("tmrw")).toBe(day("tomorrow"));
+    expect(parseDeadline("next week", NOW)!.getTime()).toBeGreaterThan(NOW.getTime() + 6 * 86_400_000);
+  });
 });
 
 describe("parseStake / parseBetCommand", () => {
