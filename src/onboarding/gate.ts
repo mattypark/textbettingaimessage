@@ -17,7 +17,7 @@ export class TermsGate {
   }
 
   needsTermsMessage(name: string): string {
-    return `${name}, one thing first: accept the terms (v${TERMS_VERSION}) — 👍 my intro message, reply "I agree", or tap ${termsUrl(this.siteUrl)}. Then we're on.`;
+    return `${name} one sec — accept the terms (v${TERMS_VERSION}) first: 👍 my intro, say "i agree", or tap ${termsUrl(this.siteUrl)}. then we run it.`;
   }
 
   /** Returns true when this event was itself an acceptance (so callers can reply and stop). */

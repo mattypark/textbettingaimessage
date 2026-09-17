@@ -63,7 +63,7 @@ describe("settleUpText", () => {
     expect(text).toContain("Jake → Matt ($20)");
     expect(text).toContain("Venmo: https://venmo.com/matt-park?txn=pay&amount=20");
     expect(text).toContain("Apple Cash: send it in this thread to +15029998282");
-    expect(text).toContain("i keep score, you pay each other");
+    expect(text).toContain("i keep score, y'all pay each other");
   });
 
   it("never attaches links to a points stake, and says nothing when the winner has no handle", async () => {

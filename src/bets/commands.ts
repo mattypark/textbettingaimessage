@@ -167,7 +167,7 @@ export function commandHandler({ store, engine, names, clock = () => new Date(),
     if (/^!cancel\b/i.test(text)) {
       const open = (await store.openBetsInChat(ctx.chatId)).filter((b) => b.creatorId === ctx.userId && b.status === "proposed");
       for (const bet of open) await engine.apply(bet.id, { type: "CANCEL", userId: ctx.userId });
-      return [{ text: open.length ? `cancelled ${open.length} open bet(s)` : "nothing to cancel" }];
+      return [{ text: open.length ? `scrapped ${open.length} open bet${open.length === 1 ? "" : "s"}` : "nothing to scrap" }];
     }
 
     const disputeMatch = text.match(/^!dispute\s+#?([0-9a-f]{6,})\s*(.*)$/i);
@@ -191,7 +191,7 @@ export function commandHandler({ store, engine, names, clock = () => new Date(),
       const parsed = parsePayHandle(text);
       if (!parsed) return [{ text: "❓ format: !pay venmo @you · !pay cashapp $you · !pay paypal you · !pay applecash <your number>" }];
       await setPayHandle(ctx.userId, parsed.provider, parsed.handle);
-      return [{ text: `got it — ${PROVIDER_LABEL[parsed.provider]} ${parsed.handle}. losers get a link when a social stake settles. i never hold money.` }];
+      return [{ text: `bet — ${PROVIDER_LABEL[parsed.provider]} ${parsed.handle}. whoever loses to you gets a link. i never hold the money.` }];
     }
 
     if (/^!(balance|bal)\b/i.test(text)) {

@@ -113,7 +113,7 @@ describe("proof → judge → verdict", () => {
     expect((await w.betStore.get(bet.id))?.status).toBe("proof_submitted");
     expect(w.media.files.size).toBe(1);
     expect(w.proofStore.proofs[0].phash).toMatch(/^[0-9a-f]{16}$/);
-    expect(w.transport.transcript("g1").at(-1)).toMatch(/Proof received/);
+    expect(w.transport.transcript("g1").at(-1)).toMatch(/proof's in/);
 
     const report = await tick(w.deps);
     expect(report.jobsRun).toBe(1);
@@ -157,7 +157,7 @@ describe("proof → judge → verdict", () => {
     await tick(w.deps);
     expect((await w.betStore.get(bet.id))?.status).toBe("locked");
     expect(w.proofStore.verdicts[0].confidence).toBe(0.5);
-    expect(w.transport.transcript("g1").at(-1)).toMatch(/Couldn't verify/);
+    expect(w.transport.transcript("g1").at(-1)).toMatch(/couldn't call/);
   });
 
   it("a failed download marks the inbox row failed and sends nothing", async () => {

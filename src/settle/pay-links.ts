@@ -100,5 +100,5 @@ export async function settleUpText({ bet, name, handlesOf }: SettleUpInput): Pro
     lines.push(`${losers.map((l) => name(l.userId)).join(", ")} → ${name(winner.userId)} (${owed})\n${links.join("\n")}`);
   }
   if (!lines.length) return null;
-  return [`🤝 settle up ${short}. i keep score, you pay each other:`, ...lines].join("\n");
+  return [`🤝 settle up ${short}. i keep score, y'all pay each other:`, ...lines].join("\n");
 }

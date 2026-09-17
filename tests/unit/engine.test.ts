@@ -83,7 +83,7 @@ describe("BetEngine", () => {
     expect((await ledger.wallet("sam")).available).toBe(80n);
     expect(ledger.balance(escrowAccount("bet-abc123"))).toBe(0n);
     expect(posts.at(-1)?.text).toMatch(/SETTLED/);
-    expect(posts.find((p) => p.text.includes("Show the word"))).toBeTruthy();
+    expect(posts.find((p) => p.text.includes("get the word"))).toBeTruthy();
   });
 
   it("dispute: loser bonds, upheld → bond to winner, honor recorded", async () => {

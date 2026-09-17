@@ -37,12 +37,12 @@ export async function refereeDecide(store: BetStore, engine: BetEngine, betId: s
     const current = (await store.get(bet.id)) as Bet;
     if (current.status === "judging") {
       await engine.apply(bet.id, { type: "VERDICT", outcome, confidence: 1, proofId: current.latestProofId ?? "referee" });
-      return { ok: true, text: `called: claim ${claimStands ? "stands" : "fails"}. 24h dispute window open.` };
+      return { ok: true, text: `called it: claim ${claimStands ? "stands" : "fails"}. 24h to dispute.` };
     }
     if (current.status === "disputed" && current.dispute) {
       const result = outcome === current.dispute.challenged ? "upheld" : "overturned";
       await engine.apply(bet.id, { type: "DISPUTE_DECISION", result, decidedBy: "referee" });
-      return { ok: true, text: `final: original verdict ${result}. settled.` };
+      return { ok: true, text: `final answer: original call ${result}. settled.` };
     }
     return { ok: false, text: `#${bet.id.slice(0, 6)} isn't waiting on a call (status: ${current.status})` };
   } catch (error) {

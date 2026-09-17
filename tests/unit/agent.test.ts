@@ -142,7 +142,7 @@ describe("agentHandler routing", () => {
     const w = await world();
     const handler = agentHandler({ ...w.deps });
     const out = await handler(w.ctx("mushy set up a bet"));
-    expect(out[0].text).toMatch(/not configured/);
+    expect(out[0].text).toMatch(/not plugged in/);
   });
 
   it("full pipeline: intro on first contact, then a stubbed agent reply", async () => {

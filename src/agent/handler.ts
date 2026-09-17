@@ -41,7 +41,7 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     const name = displayName({ displayName: null, phone: event.senderHandle });
 
     if (await gate.tryAcceptFrom(event, ctx.chatId, ctx.userId)) {
-      return event.reaction ? [] : [{ text: `👍 got you, ${name}. you're in.` }];
+      return event.reaction ? [] : [{ text: `bet. you're in, ${name}.` }];
     }
     if (event.reaction || /^!\w+/.test(event.text.trim()) || decision.reason === "command") return commands(ctx);
 
@@ -70,7 +70,7 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     }
 
     if (deps.runTurn) return deps.runTurn(ctx);
-    if (!deps.model) return [{ text: `${displayName({ displayName: null, phone: event.senderHandle })}: agent is not configured (set OPENAI_API_KEY or ANTHROPIC_API_KEY)` }];
+    if (!deps.model) return [{ text: `my brain's not plugged in yet (no model key). "!bet thing ; 20 ; friday" still works.` }];
     return runAgentTurn(ctx, { ...deps, model: deps.model });
   };
 }

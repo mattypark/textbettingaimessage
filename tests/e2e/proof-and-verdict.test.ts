@@ -54,7 +54,7 @@ describe("e2e: proof and verdict", () => {
     const res = await w.photo(HANDLES.matt, "https://cdn.test/shot.png", await png(5));
     expect(res).toMatchObject({ outcome: "processed" });
     expect(w.bet().status).toBe("proof_submitted");
-    expect(w.transcript().at(-1)).toMatch(/Proof received/);
+    expect(w.transcript().at(-1)).toMatch(/proof's in/);
     expect(w.proofStore.jobs).toHaveLength(1);
 
     const report = await tick(w.tickDeps);

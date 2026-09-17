@@ -48,7 +48,7 @@ describe("tick", () => {
     const report = await tick(w.deps);
     expect(report.timeouts.advanced[0]).toMatch(/TIMEOUT_ACCEPT$/);
     expect([...w.betStore.bets.values()][0].status).toBe("expired");
-    expect(w.transport.transcript("g1").at(-1)).toMatch(/expired/);
+    expect(w.transport.transcript("g1").at(-1)).toMatch(/died/);
   });
 
   it("auto-loses a locked bet with no proof, then settles after the dispute window", async () => {

@@ -76,7 +76,7 @@ describe("!bet through the pipeline", () => {
     const created = await pipeline.handle(msg("m1", "+1matt", "!bet I make a half court shot ; 20 ; friday"), {});
     expect(created).toMatchObject({ outcome: "processed", replies: 1 });
     const card = transport.sends[0];
-    expect(card.message.text).toMatch(/🎯 BET #/);
+    expect(card.message.text).toMatch(/🎯 bet #/);
     const bet = [...betStore.bets.values()][0];
     expect(bet.cardProviderMessageId).toBe(card.providerMessageId);
 

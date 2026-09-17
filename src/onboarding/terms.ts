@@ -20,9 +20,9 @@ export function termsUrl(siteUrl: string): string {
 
 export function introMessage(botName: string, siteUrl: string): string {
   return [
-    `👋 I'm ${botName}. Add me to a group chat and text me a bet — "$20 says I make this shot by Friday" or "loser buys dinner if I lose the 5k".`,
-    "I turn it into a card, everyone 👍 to lock, then send proof in the thread and I'll call it.",
-    `Say "hey ${botName}" to get my attention; I follow the next couple of minutes without you repeating my name.`,
-    `Points only, no cash. Terms (v${TERMS_VERSION}): ${termsUrl(siteUrl)} — 👍 this message or reply "I agree" to accept.`,
+    `yo, i'm ${botName} 🍡 i keep score on bets in this chat.`,
+    `say "hey ${botName}" then the bet — "20 says i make this shot by friday, jake you in?" — i post the card, everyone 👍 to lock it, proof goes in the thread, i call it.`,
+    `points, not cash. tap "add" on my card so i've got a name in here.`,
+    `rules (v${TERMS_VERSION}): ${termsUrl(siteUrl)} — 👍 this message or say "i agree" and you're in.`,
   ].join("\n");
 }

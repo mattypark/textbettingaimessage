@@ -91,7 +91,7 @@ describe("disputes", () => {
     expect(disputed?.status).toBe("disputed");
     expect(disputed?.dispute?.reason).toBe("the ball rimmed out");
     expect((await w.ledger.wallet(w.users["+1jake"])).held).toBe(30n);
-    expect(w.transport.transcript("g1").at(-1)).toMatch(/disputed by .*rimmed out/);
+    expect(w.transport.transcript("g1").at(-1)).toMatch(/disputed #.*rimmed out/);
     expect(w.proofStore.jobs.at(-1)?.payload).toMatchObject({ pass: 2, disputeReason: "the ball rimmed out" });
 
     await tick(w.deps);
