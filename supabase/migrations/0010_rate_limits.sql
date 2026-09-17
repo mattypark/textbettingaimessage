@@ -12,7 +12,7 @@ create table rate_limits (
 -- One call = one hit. Returns whether this hit is within the limit and how
 -- long until the window rolls, so the route can send Retry-After.
 create or replace function rate_limit_hit(p_key text, p_limit integer, p_window_secs integer)
-returns table (allowed boolean, retry_after_secs integer)
+returns table (allowed boolean, retry_after_secs integer, hit_count integer)
 language plpgsql security definer set search_path = public as $$
 declare
   v_window_start timestamptz := to_timestamp(floor(extract(epoch from now()) / p_window_secs) * p_window_secs);
@@ -30,7 +30,8 @@ begin
 
   return query select
     v_count <= p_limit,
-    greatest(1, ceil(extract(epoch from (v_window_start + make_interval(secs => p_window_secs) - now())))::integer);
+    greatest(1, ceil(extract(epoch from (v_window_start + make_interval(secs => p_window_secs) - now())))::integer),
+    v_count;
 end;
 $$;
 

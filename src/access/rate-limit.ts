@@ -4,6 +4,8 @@ export interface RateLimitResult {
   allowed: boolean;
   /** Seconds until the current window rolls over. */
   retryAfterSecs: number;
+  /** This hit's position in the window (1 = first). `limit + 1` is the first refused one. */
+  count: number;
 }
 
 /** Fixed-window counter. One `hit` = one request; the caller decides the key. */
@@ -18,8 +20,8 @@ export class SupabaseRateLimiter implements RateLimiter {
   async hit(key: string, limit: number, windowSecs: number): Promise<RateLimitResult> {
     const { data, error } = await this.db.rpc("rate_limit_hit", { p_key: key, p_limit: limit, p_window_secs: windowSecs }).single();
     if (error) throw new Error(`rate_limit_hit: ${error.message}`);
-    const row = data as { allowed: boolean; retry_after_secs: number };
-    return { allowed: Boolean(row.allowed), retryAfterSecs: Number(row.retry_after_secs) };
+    const row = data as { allowed: boolean; retry_after_secs: number; hit_count: number };
+    return { allowed: Boolean(row.allowed), retryAfterSecs: Number(row.retry_after_secs), count: Number(row.hit_count) };
   }
 }
 
@@ -37,7 +39,7 @@ export class MemoryRateLimiter implements RateLimiter {
     const window = current && current.start === start ? current : { start, count: 0 };
     window.count += 1;
     this.windows.set(key, window);
-    return { allowed: window.count <= limit, retryAfterSecs: Math.max(1, Math.ceil((start + windowMs - now) / 1000)) };
+    return { allowed: window.count <= limit, retryAfterSecs: Math.max(1, Math.ceil((start + windowMs - now) / 1000)), count: window.count };
   }
 }
 

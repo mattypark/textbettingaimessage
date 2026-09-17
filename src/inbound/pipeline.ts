@@ -1,3 +1,4 @@
+import type { RateLimiter } from "@/src/access/rate-limit";
 import type { Store } from "@/src/db/store";
 import type { MediaStore } from "@/src/proof/media-store";
 import { storeAttachments, type Fetcher, type StoredAttachment } from "@/src/transport/attachments";
@@ -34,6 +35,12 @@ export interface PipelineDeps {
   onCardPosted?: (betId: string, providerMessageId: string) => Promise<void>;
   /** Hook for Stage 5: the intro + terms message posted once per chat. */
   introMessage?: () => OutboundMessage | null;
+  /**
+   * Spam guard. Counts turns that reach the handler (not silent chatter,
+   * not reactions) per sender and per chat; over the cap the bot says so
+   * once per window, then ignores.
+   */
+  turnLimit?: { limiter: RateLimiter; perUserPerHour: number; perChatPerHour: number };
   log?: (line: string, extra?: Record<string, unknown>) => void;
 }
 
@@ -80,6 +87,24 @@ export class InboundPipeline {
       }
     }
     return this.process(inboxId, { ...event, attachments: stored.length ? stored : event.attachments });
+  }
+
+  /**
+   * `null` = under both caps. Otherwise the nudge to send — a line the first
+   * time a cap is crossed in this window, empty text after that.
+   */
+  private async overTurnLimit(chatId: string, userId: string): Promise<string | null> {
+    const { limiter, perUserPerHour, perChatPerHour } = this.deps.turnLimit!;
+    const hour = 60 * 60;
+    const [user, chat] = await Promise.all([
+      limiter.hit(`turn:user:${userId}`, perUserPerHour, hour),
+      limiter.hit(`turn:chat:${chatId}`, perChatPerHour, hour),
+    ]);
+    if (user.allowed && chat.allowed) return null;
+    const minutes = Math.max(1, Math.ceil(Math.max(user.retryAfterSecs, chat.retryAfterSecs) / 60));
+    if (!user.allowed && user.count === perUserPerHour + 1) return `easy — that's a lot of me in one hour. i'm back for you in ${minutes} min.`;
+    if (user.allowed && chat.count === perChatPerHour + 1) return `this chat hit my hourly limit. back in ${minutes} min.`;
+    return "";
   }
 
   /** Steps after the inbox claim. The cron tick re-runs this for rows that never finished. */
@@ -134,6 +159,19 @@ export class InboundPipeline {
         await store.markInbound(inboxId, "ignored", decision.reason);
         log("ignored", { inboxId, reason: decision.reason });
         return { outcome: "ignored", inboxId, reason: decision.reason };
+      }
+
+      if (this.deps.turnLimit && !event.reaction) {
+        const nudge = await this.overTurnLimit(chat.id, user.id);
+        if (nudge !== null) {
+          if (nudge) {
+            await this.outbox.send(chat.id, { text: nudge }, `${event.provider}:${event.providerMessageId}:ratelimit`);
+            replies += 1;
+          }
+          await store.markInbound(inboxId, "ignored", "rate_limited");
+          log("ignored", { inboxId, reason: "rate_limited" });
+          return { outcome: "ignored", inboxId, reason: "rate_limited" };
+        }
       }
 
       const attachments = event.attachments.filter((a): a is StoredAttachment => "storagePath" in a && typeof a.storagePath === "string");

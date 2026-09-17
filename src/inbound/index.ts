@@ -133,6 +133,7 @@ function wire(transportName: TransportName): Wiring {
     }),
     media,
     introMessage: () => ({ text: introMessage(botName, env().NEXT_PUBLIC_SITE_URL) }),
+    turnLimit: { limiter: defaultRateLimiter(), perUserPerHour: env().BOT_TURNS_PER_USER_HOUR, perChatPerHour: env().BOT_TURNS_PER_CHAT_HOUR },
     accessGate: env().INVITE_ONLY === "0" ? undefined : accessGate(defaultAccessStore(), env().NEXT_PUBLIC_SITE_URL),
     botNames: botNames(),
     onCardPosted: (betId, providerMessageId) => betStore.setCardMessageId(betId, providerMessageId),

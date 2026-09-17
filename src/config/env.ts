@@ -14,6 +14,9 @@ const schema = z.object({
   BOT_NAMES: z.string().default("mushy"),
   /** "0" opens the bot to anyone (dev). Default: invite-only. */
   INVITE_ONLY: z.string().default("1"),
+  /** Spam guard: bot turns one sender / one chat may trigger per hour. Reactions are free. */
+  BOT_TURNS_PER_USER_HOUR: z.coerce.number().int().positive().default(30),
+  BOT_TURNS_PER_CHAT_HOUR: z.coerce.number().int().positive().default(120),
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
 
   // Linq
