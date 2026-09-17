@@ -30,7 +30,7 @@ const handles = async (id: string) => (id === "sam" ? { venmo: "sam-holds" } : i
 describe("funded bets", () => {
   it("asks both bettors to pay the holder with the holder's links", async () => {
     const text = await fundingRequestText({ bet: bet({ holderUserId: "sam", amountUsd: 20, paid: {} }), name, handlesOf: handles });
-    expect(text).toContain("$20 each, $40 pot. Sam's holding it.");
+    expect(text).toContain("$20 each, $40 pot — Sam's holding it");
     expect(text).toContain("Matt + Jake → send Sam $20:");
     expect(text).toContain("Venmo: https://venmo.com/sam-holds?txn=pay&amount=20");
     expect(text).toContain('Sam says "got it"');

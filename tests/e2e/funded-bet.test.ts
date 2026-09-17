@@ -55,7 +55,7 @@ describe("e2e: holder-funded bet", () => {
     await w.react(HANDLES.jake, card.providerMessageId);
     expect(w.bet().status).toBe("locked");
     const request = w.transcript().at(-1)!;
-    expect(request).toContain("$20 each, $40 pot. Sam's holding it.");
+    expect(request).toContain("$20 each, $40 pot — Sam's holding it");
     expect(request).toContain("https://venmo.com/sam-holds?txn=pay&amount=20");
 
     // Bettors pay the holder; the tally follows; the holder confirms.

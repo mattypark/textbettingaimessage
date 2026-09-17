@@ -7,7 +7,7 @@ describe("buildVCard", () => {
     expect(card.startsWith("BEGIN:VCARD\r\nVERSION:3.0\r\n")).toBe(true);
     expect(card).toContain("FN:Mushy\r\n");
     expect(card).toContain("TEL;TYPE=CELL,VOICE:+12053968556\r\n");
-    expect(card).toContain("PHOTO;ENCODING=b;TYPE=PNG:");
+    expect(card).toContain("PHOTO;ENCODING=b;TYPE=JPEG:");
     for (const line of card.split("\r\n")) expect(Buffer.byteLength(line)).toBeLessThanOrEqual(75);
     expect(card.endsWith("END:VCARD\r\n")).toBe(true);
   });

@@ -32,10 +32,10 @@ export async function fundingRequestText({ bet, name, handlesOf }: FundingTextIn
   const holder = name(f.holderUserId);
   const links = linksFor(await handlesOf(f.holderUserId), f.amountUsd, `mushy ${short} pot`);
   return [
-    `💵 ${short} is $${f.amountUsd} each, $${pot} pot. ${holder}'s holding it.`,
+    `💵 ${short} is $${f.amountUsd} each, $${pot} pot — ${holder}'s holding it`,
     `${bettors.map((p) => name(p.userId)).join(" + ")} → send ${holder} $${f.amountUsd}${links.length ? ":" : " (" + holder + ", drop your venmo/cash app with !pay so i can link it)"}`,
     ...links,
-    `say "paid" when it's sent. ${holder} says "got it" when the pot's full.`,
+    `say "paid" when it's sent, ${holder} says "got it" when the pot's full`,
   ].join("\n");
 }
 
@@ -46,7 +46,7 @@ export function fundingStatusText(bet: Bet, name: (userId: string) => string): s
   const bettors = bet.participants.filter((p) => p.userId !== f.holderUserId);
   const paid = bettors.filter((p) => f.paid[p.userId]);
   const missing = bettors.filter((p) => !f.paid[p.userId]);
-  if (f.confirmedAt) return `💰 pot's full — $${f.amountUsd * bettors.length} with ${name(f.holderUserId)}. proof time.`;
+  if (f.confirmedAt) return `💰 pot's full — $${f.amountUsd * bettors.length} with ${name(f.holderUserId)}, proof time`;
   return `${paid.map((p) => name(p.userId)).join(", ") || "nobody"} paid (${paid.length}/${bettors.length})${missing.length ? ` — waiting on ${missing.map((p) => name(p.userId)).join(", ")}` : ` — ${name(f.holderUserId)} say "got it"`}`;
 }
 

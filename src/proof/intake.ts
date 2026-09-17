@@ -45,7 +45,7 @@ export async function intakeProof(
   const bet = betId ? candidates.find((b) => b.id === betId) : candidates[0];
   if (!bet) return [];
   if (!betId && candidates.length > 1) {
-    return [{ text: `which one's this for? ${candidates.map((b) => `#${b.id.slice(0, 6)} "${b.claim}"`).join(" · ")} — reply with the number.` }];
+    return [{ text: `which one's this for? ${candidates.map((b) => `#${b.id.slice(0, 6)} "${b.claim}"`).join(" · ")} — reply with the number` }];
   }
 
   const existing = await deps.proofStore.proofsForBet(bet.id);
@@ -59,7 +59,7 @@ export async function intakeProof(
 
     const dupe = existing.find((p) => p.sha256 === att.sha256 || (phash && p.phash && hamming(p.phash, phash) < NEAR_DUPLICATE_BITS));
     if (dupe) {
-      replies.push({ text: `that's the same shot as before (#${bet.id.slice(0, 6)}). run it back with a new one.` });
+      replies.push({ text: `that's the same shot as before (#${bet.id.slice(0, 6)}). run it back with a new one` });
       continue;
     }
 

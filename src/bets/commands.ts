@@ -217,7 +217,7 @@ export function commandHandler({ store, engine, names: fallbackNames, namesFor, 
       const parsed = parsePayHandle(text);
       if (!parsed) return [{ text: "❓ format: !pay venmo @you · !pay cashapp $you · !pay paypal you · !pay applecash <your number>" }];
       await setPayHandle(ctx.userId, parsed.provider, parsed.handle);
-      return [{ text: `bet — ${PROVIDER_LABEL[parsed.provider]} ${parsed.handle}. whoever loses to you gets a link. i never hold the money.` }];
+      return [{ text: `bet — ${PROVIDER_LABEL[parsed.provider]} ${parsed.handle}, whoever loses to you gets a link (i never hold the money)` }];
     }
 
     // Deterministic twins of the mark_paid / confirm_pot tools, for when the model is off.

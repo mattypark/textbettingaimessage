@@ -29,15 +29,15 @@ export function accessGate(store: AccessStore, siteUrl: string, chatMemberIds?: 
     if (code) {
       try {
         const own = await store.redeemInvite(code, phone);
-        return { allowed: true, reply: `say less, you're in. your own invite link (3 uses): ${site}/join?ref=${own}` };
+        return { allowed: true, reply: `say less, you're in — your own invite link (3 uses): ${site}/join?ref=${own}` };
       } catch {
-        return { allowed: false, reply: `that code's not it. grab a spot at ${site}/join` };
+        return { allowed: false, reply: `that code's not it — grab a spot at ${site}/join` };
       }
     }
 
     const key = `${chatId}:${userId}`;
     if (nudged.has(key)) return { allowed: false };
     nudged.add(key);
-    return { allowed: false, reply: `mushy's invite-only rn. grab a spot at ${site}/join — or reply "code XXXXXXXX" if a friend gave you one.` };
+    return { allowed: false, reply: `mushy's invite-only rn — grab a spot at ${site}/join or reply "code XXXXXXXX" if a friend gave you one` };
   };
 }

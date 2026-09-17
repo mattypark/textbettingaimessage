@@ -8,7 +8,7 @@ import { linqClient } from "./client";
  * and one tap on "Add" turns "+1 (205) 396-8556" into "Mushy" with the mark,
  * the way Instinct shows up. Uploaded once per process, then reused by id.
  */
-const AVATAR_PATH = join(process.cwd(), "public", "brand", "mushy-mark-512.png");
+const AVATAR_PATH = join(process.cwd(), "public", "brand", "mushy-contact-512.jpg");
 
 export function buildVCard({ name, phone, avatarPng }: { name: string; phone: string; avatarPng: Buffer | null }): string {
   const lines = [
@@ -18,12 +18,12 @@ export function buildVCard({ name, phone, avatarPng }: { name: string; phone: st
     `FN:${name}`,
     `ORG:${name}`,
     `TEL;TYPE=CELL,VOICE:${phone}`,
-    "NOTE:Group-chat betting bot. Text \"hey mushy\" in a chat I'm in.",
+    "NOTE:keeps score on bets in the group chat — say \"hey mushy\"",
   ];
   if (avatarPng) {
     // vCard 3.0 folds long lines at 75 octets with a leading space.
     const b64 = avatarPng.toString("base64");
-    const first = `PHOTO;ENCODING=b;TYPE=PNG:${b64.slice(0, 40)}`;
+    const first = `PHOTO;ENCODING=b;TYPE=JPEG:${b64.slice(0, 40)}`;
     const rest = b64.slice(40).match(/.{1,74}/g) ?? [];
     lines.push(first, ...rest.map((chunk) => ` ${chunk}`));
   }

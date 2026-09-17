@@ -70,13 +70,13 @@ describe("pipeline access gate", () => {
     const w = await world();
     expect(await w.pipeline.handle(msg("m1", "+1stranger", "mushy make a bet"), {})).toMatchObject({ outcome: "ignored", reason: "not_invited" });
     // No intro for strangers — just the one nudge.
-    expect(w.transport.transcript("g1")).toEqual(["mushy's invite-only rn. grab a spot at https://mushy.test/join — or reply \"code XXXXXXXX\" if a friend gave you one."]);
+    expect(w.transport.transcript("g1")).toEqual(["mushy's invite-only rn — grab a spot at https://mushy.test/join or reply \"code XXXXXXXX\" if a friend gave you one"]);
     expect(await w.pipeline.handle(msg("m2", "+1stranger", "mushy pls"), {})).toMatchObject({ outcome: "ignored" });
     expect(w.transport.sends).toHaveLength(1);
     expect(w.handled).toEqual([]);
 
     expect(await w.pipeline.handle(msg("m3", "+1stranger", "code friend01"), {})).toMatchObject({ outcome: "processed" });
-    expect(w.transport.transcript("g1").at(-1)).toMatch(/you're in. your own invite link/);
+    expect(w.transport.transcript("g1").at(-1)).toMatch(/you're in — your own invite link/);
     expect(await w.pipeline.handle(msg("m4", "+1stranger", "mushy 20 says"), {})).toMatchObject({ outcome: "processed" });
     expect(w.handled).toEqual(["mushy 20 says"]);
   });

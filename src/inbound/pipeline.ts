@@ -102,8 +102,8 @@ export class InboundPipeline {
     ]);
     if (user.allowed && chat.allowed) return null;
     const minutes = Math.max(1, Math.ceil(Math.max(user.retryAfterSecs, chat.retryAfterSecs) / 60));
-    if (!user.allowed && user.count === perUserPerHour + 1) return `chill — that's a lot of me in one hour. back for you in ${minutes} min.`;
-    if (user.allowed && chat.count === perChatPerHour + 1) return `this chat hit my hourly limit. back in ${minutes} min.`;
+    if (!user.allowed && user.count === perUserPerHour + 1) return `chill — that's a lot of me in one hour, back for you in ${minutes} min`;
+    if (user.allowed && chat.count === perChatPerHour + 1) return `this chat hit my hourly limit — back in ${minutes} min`;
     return "";
   }
 
