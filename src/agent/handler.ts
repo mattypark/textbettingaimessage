@@ -65,11 +65,13 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     const name = displayName({ displayName: null, phone: event.senderHandle });
 
     if (await gate.tryAcceptFrom(event, ctx.chatId, ctx.userId)) {
+      // A 👍 from each person would otherwise ask each of them their name; stay quiet there.
+      // Names come from the sign sheet, or from "call me matt".
       const resumed = await drafts.resume(ctx);
+      if (event.reaction) return resumed ?? [];
       const known = (await deps.store.chatMembers(ctx.chatId)).find((m) => m.id === ctx.userId)?.displayName;
       const hello = known ? `bet, you're in ${known}` : `bet, you're in — what should i call you? ("call me matt")`;
-      if (resumed) return event.reaction ? resumed : [{ text: hello }, ...resumed];
-      return event.reaction ? (known ? [] : [{ text: `what should i call you? ("call me matt")` }]) : [{ text: hello }];
+      return resumed ? [{ text: hello }, ...resumed] : [{ text: hello }];
     }
     if (event.reaction || /^!\w+/.test(event.text.trim()) || decision.reason === "command") return commands(ctx);
 

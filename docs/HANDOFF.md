@@ -41,7 +41,15 @@ Project: **Mushy** (renamed from Bookie 2026-09-17; `BOT_NAMES=mushy`, wake word
 - Still needs the phone: 👍 lock, attention window, photo/video verdict. Still needs a deploy: `/app` phone OTP (Send SMS hook needs a public URL).
 - Model credits are Matthew's; do not loop `agent:smoke` — cassette tests are free.
 
-## Deploy is now the blocker
+## Deployed 2026-09-17 — the remaining setup is `docs/GO-LIVE.md`
+
+Live at the Vercel URL; landing, /terms, /privacy, /join all answer 200.
+Two things still wrong in production as of the deploy: `TRANSPORT` is not
+`linq` (so `/api/webhooks/linq` answers 503) and `LINQ_WEBHOOK_SECRET` is
+unset (so a correctly-routed webhook would 401). `vercel.json` now runs the
+tick every minute, so the pg_cron settings are optional.
+
+## Previously: deploy was the blocker
 
 Every link the bot sends (sign sheet, pay sheet, terms) points at `NEXT_PUBLIC_SITE_URL`, which is `http://localhost:3000` until the app is deployed. Deploy to Vercel (Matthew's own account), set `NEXT_PUBLIC_SITE_URL=https://<app>.vercel.app` in Vercel env and in `.env.local`, redeploy; a custom domain can come later and only changes that one value.
 

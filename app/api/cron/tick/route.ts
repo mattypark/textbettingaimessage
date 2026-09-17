@@ -16,9 +16,18 @@ function authorized(request: Request): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-/** Called every minute by pg_cron → pg_net (see migration 0006). */
-export async function POST(request: Request) {
+async function run(request: Request) {
   if (!authorized(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const report = await tick(tickDeps());
   return NextResponse.json(report);
+}
+
+/** Vercel Cron calls GET every minute (vercel.json) with the CRON_SECRET bearer. */
+export async function GET(request: Request) {
+  return run(request);
+}
+
+/** pg_cron → pg_net posts (migration 0006), and `npm run tick:dev` locally. */
+export async function POST(request: Request) {
+  return run(request);
 }
