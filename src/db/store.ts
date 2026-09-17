@@ -46,6 +46,9 @@ export interface Store {
   upsertUser(handle: string): Promise<UserRow>;
   upsertMember(chatId: string, userId: string, handle: string): Promise<void>;
   setDisplayName(userId: string, name: string): Promise<void>;
+  /** Payment handles for settle-up links ({ venmo: "matt", ... }); never money itself. */
+  setPayHandle(userId: string, provider: string, handle: string): Promise<void>;
+  payHandles(userId: string): Promise<Record<string, string>>;
   hasAcceptedTerms(userId: string, version: number): Promise<boolean>;
   recordTermsAcceptance(userId: string, version: number, via: "imessage" | "web", providerMessageId?: string): Promise<void>;
   /** Provider id of the intro/terms message in a chat, if posted. */

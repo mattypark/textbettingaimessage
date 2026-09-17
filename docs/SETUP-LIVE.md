@@ -26,14 +26,21 @@ Check: `linq doctor` all green.
    ```bash
    supabase login
    supabase link --project-ref <ref>
-   supabase db push          # migrations 0001–0009 now; 0010–0011 land later in this session
+   supabase db push          # migrations 0001–0012 (0010 rate limits, 0011 leaderboard RPC, 0012 pay handles)
    ```
-3. Dashboard → **Auth → Providers → Phone**: enable.
-4. Dashboard → **Auth → Hooks → Send SMS**: type HTTPS, URL
-   `https://<public-site>/api/auth/send-sms`. This must be a public URL, so
-   web OTP only works once the app is deployed (Vercel preview is enough).
-   For the local run today, skip it — the bot side does not need it.
-   When you do set it, copy the secret into `SUPABASE_AUTH_HOOK_SECRET`.
+3. Dashboard → **Auth → Providers → Phone** — **skip for now.** The bot
+   (Stages 0–3) never uses Supabase phone auth; only `/app` web sign-in does
+   (Stage 4). The dashboard refuses to save Phone without Twilio fields, and
+   we do not use Twilio: our Send SMS hook (step 4) delivers the code from
+   the bot line. When Stage 4 comes: pick Twilio, fill placeholder values
+   (Account SID `AC` + 32 hex, any 32-char token, Message Service SID `MG`
+   + 32 hex), save, then enable the hook — the hook replaces provider
+   sending. If Supabase rejects placeholders, a free Twilio trial account
+   satisfies the form and still never sends (the hook does). Cancel today.
+4. Dashboard → **Auth → Hooks → Send SMS** (Stage 4 only): type HTTPS, URL
+   `https://<public-site>/api/auth/send-sms`. Must be public, so web OTP
+   works once deployed (Vercel preview is enough). Copy the secret into
+   `SUPABASE_AUTH_HOOK_SECRET`.
 5. Dashboard → **Auth → Rate Limits**: note the SMS values (default 30/hour,
    one OTP per phone per 60 s). Read only — Claude records them in the launch checklist.
 6. Dashboard → **Project Settings → API**: copy into `.env.local`
@@ -47,7 +54,14 @@ Check: `supabase migration list` shows 0001–0009 applied remotely.
 
 ## 3. Claude
 
-- `.env.local`: `ANTHROPIC_API_KEY=<console.anthropic.com key>`.
+- `.env.local`: `ANTHROPIC_API_KEY=<console.anthropic.com key>` ($5 of credit
+  covers weeks of a friend group; Opus turns + Sonnet classifier + vision judge).
+- Without it the bot still runs: intro, `!bet … ; 20 ; friday`, 👍 lock,
+  `!cancel`, `!pay`, `!balance` are deterministic. What needs the key: plain-
+  English bets ("hey mushy 20 says…"), the follow-up classifier, proof verdicts.
+- A ChatGPT subscription is not an API key. Swapping to OpenAI means a new
+  `openai` dependency and rewriting three call sites (tool loop, structured
+  classifier, vision judge) — say so explicitly if that is the call.
 
 Check: `npm run agent:smoke "mushy 20 says I make this shot by friday, jake you in?"` prints a card.
 

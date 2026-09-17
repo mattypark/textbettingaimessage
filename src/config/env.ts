@@ -17,6 +17,8 @@ const schema = z.object({
   /** Spam guard: bot turns one sender / one chat may trigger per hour. Reactions are free. */
   BOT_TURNS_PER_USER_HOUR: z.coerce.number().int().positive().default(30),
   BOT_TURNS_PER_CHAT_HOUR: z.coerce.number().int().positive().default(120),
+  /** "0" turns off settle-up pay links after social stakes. Points stakes never get links. */
+  SETTLE_UP: z.string().default("1"),
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
 
   // Linq

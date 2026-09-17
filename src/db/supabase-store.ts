@@ -101,6 +101,18 @@ export class SupabaseStore implements Store {
     if (error) fail("setDisplayName", error);
   }
 
+  async setPayHandle(userId: string, provider: string, handle: string): Promise<void> {
+    const current = await this.payHandles(userId);
+    const { error } = await this.db.from("users").update({ pay_handles: { ...current, [provider]: handle } }).eq("id", userId);
+    if (error) fail("setPayHandle", error);
+  }
+
+  async payHandles(userId: string): Promise<Record<string, string>> {
+    const { data, error } = await this.db.from("users").select("pay_handles").eq("id", userId).maybeSingle();
+    if (error) fail("payHandles", error);
+    return ((data?.pay_handles as Record<string, string> | null) ?? {});
+  }
+
   async chatMembers(chatId: string): Promise<MemberRow[]> {
     const { data, error } = await this.db
       .from("chat_members")

@@ -22,3 +22,24 @@ before any money moves.
 ## Code gate
 `STAKE_MODE=cash` refuses to boot unless `LEGAL_CLEARANCE=1` and
 `CASH_PARTNER` are set. `CashLedger` throws `NotLicensedError` until then.
+
+## Settle-up links (added 2026-09-17, Matthew's call)
+Matthew asked for "Apple Wallet or something" so friends can actually pay.
+What ships: after a **social** stake settles, the bot posts links that open
+the loser's own Venmo / Cash App / PayPal pointed at the winner, with the
+dollar amount the friends themselves wrote ("$20 loser pays"). Apple Cash has
+no URL scheme or API, so it is an instruction ("send it in this thread").
+Handles are set with `!pay venmo @you` or by telling the bot.
+
+Why this stays on the right side of the wall above:
+- We never hold, move, receive, or charge money. No payment API keys, no
+  webhooks, no balances in dollars. Same shape as Splitwise's "settle up".
+- Points stakes never get a link (`CLAUDE.md`: no USD-denominated points).
+- The wager itself is a private social bet between friends; the link only
+  saves typing the amount.
+
+Open item for the attorney: Venmo/PayPal/Cash App terms bar *their* users
+from gambling payments — the risk sits with the payer, but a platform that
+prefills the amount could be argued to facilitate. `SETTLE_UP=0` turns it off
+in one env var if counsel says so.
+

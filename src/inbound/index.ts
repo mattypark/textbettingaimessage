@@ -20,6 +20,7 @@ import { renderVideoFrames } from "@/src/proof/frames";
 import { runJudgeJob } from "@/src/proof/run-judge";
 import { MemoryProofStore, SupabaseProofStore, type ProofStore } from "@/src/proof/store";
 import { introMessage } from "@/src/onboarding/terms";
+import { settleUpFor } from "@/src/settle/settle-up";
 import { createTransport } from "@/src/transport";
 import { Outbox } from "@/src/transport/outbox";
 import type { TransportName } from "@/src/transport/types";
@@ -113,6 +114,7 @@ function wire(transportName: TransportName): Wiring {
     post: (chatId, message, key) => outbox.send(chatId, message, key),
     names,
     log: (line, extra) => console.info(`[engine] ${line}`, extra ?? ""),
+    settleUp: env().SETTLE_UP === "0" ? undefined : settleUpFor(store),
   });
   const ledger = createLedger();
   const client = env().ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env().ANTHROPIC_API_KEY }) : undefined;

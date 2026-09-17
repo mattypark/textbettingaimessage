@@ -87,6 +87,16 @@ export class MemoryStore implements Store {
     for (const user of this.users.values()) if (user.id === userId) user.displayName = name;
   }
 
+  readonly handles = new Map<string, Record<string, string>>();
+
+  async setPayHandle(userId: string, provider: string, handle: string): Promise<void> {
+    this.handles.set(userId, { ...(this.handles.get(userId) ?? {}), [provider]: handle });
+  }
+
+  async payHandles(userId: string): Promise<Record<string, string>> {
+    return { ...(this.handles.get(userId) ?? {}) };
+  }
+
   async chatMembers(chatId: string): Promise<MemberRow[]> {
     const ids = [...this.members].filter((m) => m.startsWith(`${chatId}:`)).map((m) => m.slice(chatId.length + 1));
     return [...this.users.values()].filter((u) => ids.includes(u.id)).map((u) => ({ ...u, honorScore: 100 }));

@@ -20,6 +20,7 @@ import type { Judge, JudgeOutput } from "@/src/proof/judge";
 import { MemoryMediaStore } from "@/src/proof/media-store";
 import { runJudgeJob } from "@/src/proof/run-judge";
 import { MemoryProofStore } from "@/src/proof/store";
+import { settleUpFor } from "@/src/settle/settle-up";
 import { FakeTransport } from "@/src/transport/fake/fake-transport";
 import { Outbox } from "@/src/transport/outbox";
 import type { OutboundMessage } from "@/src/transport/types";
@@ -115,7 +116,7 @@ export async function world(opts: WorldOptions) {
   await store.setDisplayName(users[HANDLES.jake], "Jake");
   await store.setDisplayName(users[HANDLES.sam], "Sam");
 
-  const engine = new BetEngine({ store: betStore, ledger, post: (c, m, k) => outbox.send(c, m, k), names: (id) => id, clock });
+  const engine = new BetEngine({ store: betStore, ledger, post: (c, m, k) => outbox.send(c, m, k), names: (id) => id, clock, settleUp: settleUpFor(store) });
   const toolDeps: ToolDeps = { store, betStore, engine, ledger, siteUrl: SITE, clock };
   const files = new Map<string, Buffer>();
   const judge = opts.judge ?? fakeJudge(() => ({}));

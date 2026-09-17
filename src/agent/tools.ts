@@ -9,6 +9,7 @@ import { IllegalTransition } from "@/src/bets/state-machine";
 import type { BetStore } from "@/src/bets/store";
 import { ACCEPT_WINDOW_HOURS, type Bet } from "@/src/bets/types";
 import type { Store } from "@/src/db/store";
+import { PAY_PROVIDERS, PROVIDER_LABEL } from "@/src/settle/pay-links";
 import type { Ledger } from "@/src/ledger/types";
 import { TERMS_SUMMARY, TERMS_VERSION, termsUrl } from "@/src/onboarding/terms";
 import { TermsGate } from "@/src/onboarding/gate";
@@ -176,6 +177,17 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
+  const setPayHandle = betaZodTool({
+    name: "set_pay_handle",
+    description: "Remember where the sender wants to be paid when a social stake settles ('my venmo is @matt'). Mushy only posts a link that opens the payer's own app; it never holds money.",
+    inputSchema: z.object({ provider: z.enum(PAY_PROVIDERS), handle: z.string().min(2).max(40).describe("Username, $cashtag, PayPal.me name, or phone for Apple Cash — without the @ or $") }),
+    run: async ({ provider, handle }) => {
+      const clean = handle.replace(/^[@$]/, "");
+      await store.setPayHandle(ctx.userId, provider, clean);
+      return `saved: ${PROVIDER_LABEL[provider]} ${clean}`;
+    },
+  });
+
   const dispute = betaZodTool({
     name: "dispute_bet",
     description: "The sender disputes a posted verdict on a bet they lost. Costs a points bond that is forfeited if the verdict stands. Include their stated reason.",
@@ -190,5 +202,5 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     run: async ({ bet_id, claim_stands }) => (await refereeDecide(betStore, engine, bet_id, ctx.userId, claim_stands)).text,
   });
 
-  return [createBet, acceptBet, declineBet, dispute, refereeCall, getBalance, leaderboard, explainTerms, setName];
+  return [createBet, acceptBet, declineBet, dispute, refereeCall, getBalance, leaderboard, explainTerms, setName, setPayHandle];
 }

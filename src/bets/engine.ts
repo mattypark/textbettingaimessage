@@ -17,6 +17,8 @@ export interface EngineDeps {
   names: Names;
   clock?: () => Date;
   log?: (line: string, extra?: Record<string, unknown>) => void;
+  /** Extra line after SETTLED (settle-up links for social stakes). Null = nothing to add. */
+  settleUp?: (bet: Bet) => Promise<string | null>;
 }
 
 const TOKEN_WORDS = ["mango", "comet", "walrus", "pickle", "saturn", "banjo", "tundra", "velvet", "cactus", "orbit", "maple", "falcon"];
@@ -108,9 +110,14 @@ export class BetEngine {
           }
           break;
         }
-        case "post":
+        case "post": {
           await this.deps.post(bet.chatId, { text: postText(effect.message, current, this.deps.names), effect: effect.message === "settled" ? "confetti" : undefined }, key(`post:${index}`));
+          if (effect.message === "settled" && this.deps.settleUp) {
+            const extra = await this.deps.settleUp(current);
+            if (extra) await this.deps.post(bet.chatId, { text: extra }, key(`post:${index}:settleup`));
+          }
           break;
+        }
         case "honor":
           await this.deps.store.addHonor(effect.userId, bet.id, effect.delta, effect.reason);
           break;

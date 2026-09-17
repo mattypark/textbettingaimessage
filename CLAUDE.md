@@ -6,6 +6,9 @@ Group-chat betting bot for iMessage. Plan of record:
 ## Non-negotiables
 - `STAKE_MODE=points` until legal clearance. Never wire a cash rail, never hold
   funds, never denominate points in USD with payment links. See `docs/legal-status.md`.
+  Settle-up links (Venmo / Cash App / PayPal deep links, Apple Cash instruction)
+  are allowed on **social** stakes only — they open the payer's own app, we
+  touch nothing. `SETTLE_UP=0` disables.
 - Every reply goes through the outbox (`src/transport/outbox.ts`); never call
   `transport.send` directly from a handler.
 - Sendblue: reply to `group_id`, never `from_number`.

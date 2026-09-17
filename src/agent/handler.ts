@@ -31,6 +31,7 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     clock: deps.clock,
     mayStake: (userId) => deps.store.hasAcceptedTerms(userId, TERMS_VERSION),
     needsTermsMessage: (name) => new TermsGate(deps.store, deps.siteUrl).needsTermsMessage(name),
+    setPayHandle: (userId, provider, handle) => deps.store.setPayHandle(userId, provider, handle),
   });
 
   const gate = new TermsGate(deps.store, deps.siteUrl);

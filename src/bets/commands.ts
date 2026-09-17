@@ -6,12 +6,14 @@ import { disputeBet, findBetByPrefix, refereeDecide } from "./decisions";
 import type { BetEngine } from "./engine";
 import { IllegalTransition } from "./state-machine";
 import type { BetStore } from "./store";
+import { parsePayHandle, PROVIDER_LABEL } from "@/src/settle/pay-links";
 import { ACCEPT_WINDOW_HOURS, type Bet } from "./types";
 
 /**
  * Stage-3 slash-style commands, replaced by the agent in Stage 4:
  *   !bet <claim> ; <stake pts | "dinner"> ; <deadline>
  *   !cancel
+ *   !pay <venmo|cashapp|paypal|applecash> <handle>   (where to be paid when a social stake settles)
  * A 👍 on the card from anyone else takes the other side and locks it.
  */
 export interface CommandDeps {
@@ -22,6 +24,8 @@ export interface CommandDeps {
   /** Returns true when the user may stake (terms accepted). Absent = no gate (tests, dev). */
   mayStake?: (userId: string) => Promise<boolean>;
   needsTermsMessage?: (name: string) => string;
+  /** Records a payment handle for settle-up links. Absent = `!pay` is off. */
+  setPayHandle?: (userId: string, provider: string, handle: string) => Promise<void>;
 }
 
 const DAY_MS = 86_400_000;
@@ -125,7 +129,7 @@ export function buildBet(parsed: ParsedBet, ctx: TurnContext, now: Date): Bet {
 }
 
 /** Wraps the engine for the pipeline. Returns replies; the card is posted by the pipeline so its id can be recorded. */
-export function commandHandler({ store, engine, names, clock = () => new Date(), mayStake, needsTermsMessage }: CommandDeps): TurnHandler {
+export function commandHandler({ store, engine, names, clock = () => new Date(), mayStake, needsTermsMessage, setPayHandle }: CommandDeps): TurnHandler {
   const allowed = async (userId: string) => (mayStake ? mayStake(userId) : true);
 
   return async (ctx): Promise<OutboundMessage[]> => {
@@ -180,6 +184,14 @@ export function commandHandler({ store, engine, names, clock = () => new Date(),
       if (!bet) return [{ text: "no open bet with that id here" }];
       const result = await refereeDecide(store, engine, bet.id, ctx.userId, /^(yes|stands)$/i.test(callMatch[2]));
       return result.ok ? [] : [{ text: `❓ ${result.text}` }];
+    }
+
+    if (/^!pay\b/i.test(text)) {
+      if (!setPayHandle) return [];
+      const parsed = parsePayHandle(text);
+      if (!parsed) return [{ text: "❓ format: !pay venmo @you · !pay cashapp $you · !pay paypal you · !pay applecash <your number>" }];
+      await setPayHandle(ctx.userId, parsed.provider, parsed.handle);
+      return [{ text: `got it — ${PROVIDER_LABEL[parsed.provider]} ${parsed.handle}. losers get a link when a social stake settles. i never hold money.` }];
     }
 
     if (/^!(balance|bal)\b/i.test(text)) {
