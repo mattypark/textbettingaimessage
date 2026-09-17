@@ -1,3 +1,4 @@
+import { siteUrl } from "@/src/config/site";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { TERMS_VERSION } from "@/src/onboarding/terms";
@@ -70,7 +71,7 @@ export default async function AppHome() {
         settled={<BetList items={settled} viewerId={viewer.userId} empty={<EmptyState mood="zen" title="no history yet" body="settled bets land here with the verdict." />} />}
       />
 
-      {invite && <InvitePanel code={invite.code} uses={invite.uses} maxUses={invite.maxUses} siteUrl={process.env.NEXT_PUBLIC_SITE_URL ?? ""} />}
+      {invite && <InvitePanel code={invite.code} uses={invite.uses} maxUses={invite.maxUses} siteUrl={siteUrl()} />}
     </main>
   );
 }

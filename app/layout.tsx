@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { siteUrl } from "@/src/config/site";
 
 /* Inter is only the last fallback in --font-round (system rounded faces come first). */
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const SITE = siteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
