@@ -91,7 +91,7 @@ export interface WorldOptions {
   classifier?: (text: string) => boolean;
 }
 
-export const HANDLES = { matt: "+15029998282", jake: "+17135550101", sam: "+17135550102" } as const;
+export const HANDLES = { matt: "+17135550100", jake: "+17135550101", sam: "+17135550102" } as const;
 
 export async function world(opts: WorldOptions) {
   const store = new MemoryStore();

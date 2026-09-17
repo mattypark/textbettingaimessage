@@ -17,7 +17,19 @@ linq tokens           # copy the API key
 - `LINQ_WEBHOOK_SECRET`: shown when you run `npm run webhooks:dev` (the dev
   listener prints its signing secret). Paste it, restart `npm run dev`.
 
-Check: `linq doctor` all green.
+Check: `linq doctor` — every row green **except** "Session expired", which is
+a dashboard-session check and does not affect the API or `webhooks listen`.
+
+**Shared line (Free tier).** +1 (205) 396-8556 is a shared line: only numbers
+you register are routed to you. Add yourself and both friends:
+
+```bash
+linq contacts add +1XXXXXXXXXX
+linq contacts list
+```
+
+Whether a shared line can sit in a group chat is the Stage 0 question. If
+messages from the group never arrive, `linq upgrade` buys a dedicated line.
 
 ## 2. Supabase — cloud project (no Docker)
 
@@ -108,9 +120,17 @@ send, in order: "hey mushy", a 👍 on the reply, a photo, a 5-second video.
 
 Tell Claude which of 1–6 are done. Then the panes are:
 
+One per terminal tab, typed exactly (zsh treats a trailing `#` as an argument, not a comment):
+
 ```bash
-npm run dev               # app on :3000
-npm run webhooks:dev      # Linq → localhost, no ngrok
-npm run tick:dev          # every 15 s: outbox, judge jobs, timeouts
-npm run linq:capture      # Stage 0 only: saves redacted payloads to tests/fixtures/linq/
+npm run dev
 ```
+```bash
+npm run webhooks:dev
+```
+```bash
+npm run tick:dev
+```
+
+`npm run dev` is the bot: Linq posts every iMessage to `/api/webhooks/linq`
+inside it. `tick:dev` prints "fetch failed" until `dev` is up.

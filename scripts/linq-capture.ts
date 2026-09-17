@@ -21,7 +21,7 @@ mkdirSync(dir, { recursive: true });
 
 /** The bot line is public (landing-page CTA); everyone else maps to the fixture pool. */
 const BOT_NUMBER = "+12053968556";
-const POOL = ["+15029998282", "+17135550101", "+17135550102", "+17135550103", "+17135550104", "+17135550105"];
+const POOL = ["+17135550100", "+17135550101", "+17135550102", "+17135550103", "+17135550104", "+17135550105"];
 const redactions = new Map<string, string>();
 
 function redactNumber(real: string): string {

@@ -107,7 +107,7 @@ describe.skipIf(liveFiles.length === 0)("live Linq captures", () => {
       expect(event, `${payload.event_type} should normalize`).not.toBeNull();
       expect(event?.providerChatId).toBeTruthy();
       expect(event?.senderHandle).toBeTruthy();
-      expect(raw).not.toMatch(/\+1(?!2053968556|5029998282|713555\d{4})\d{10}/);
+      expect(raw).not.toMatch(/\+1(?!2053968556|713555\d{4})\d{10}/);
     });
   }
 });
