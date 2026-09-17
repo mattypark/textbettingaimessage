@@ -54,10 +54,10 @@ export interface InboundEvent {
   raw: unknown;
 }
 
-export interface OutboundAttachment {
-  url: string;
-  mime: string;
-}
+export type OutboundAttachment =
+  | { url: string; mime: string }
+  /** The bot's own vCard; each transport decides how (Linq uploads it once). */
+  | { contactCard: true };
 
 export interface OutboundMessage {
   text: string;

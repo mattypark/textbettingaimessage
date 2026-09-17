@@ -24,6 +24,8 @@ export class AccessError extends Error {
 export interface AccessStore {
   access(userId: string): Promise<AccessLevel>;
   accessByPhone(phone: string): Promise<AccessLevel>;
+  /** True when any of these users is activated (chat-level unlock). */
+  anyActive(userIds: string[]): Promise<boolean>;
   /** Redeems an invite for a phone; returns the new member's own invite code. */
   redeemInvite(code: string, phone: string): Promise<string>;
   joinWaitlist(phone: string, referredBy?: string): Promise<WaitlistResult>;
@@ -55,6 +57,11 @@ export class MemoryAccessStore implements AccessStore {
   async accessByPhone(phone: string): Promise<AccessLevel> {
     const id = this.phoneToUser.get(phone);
     return id ? this.access(id) : "waitlist";
+  }
+
+  async anyActive(userIds: string[]): Promise<boolean> {
+    for (const id of userIds) if ((await this.access(id)) === "active") return true;
+    return false;
   }
 
   private activate(phone: string): string {
@@ -133,6 +140,13 @@ export class SupabaseAccessStore implements AccessStore {
     const { data, error } = await this.db.from("users").select("access").eq("phone", phone).maybeSingle();
     if (error) fail("accessByPhone", error);
     return (data?.access as AccessLevel) ?? "waitlist";
+  }
+
+  async anyActive(userIds: string[]): Promise<boolean> {
+    if (!userIds.length) return false;
+    const { count, error } = await this.db.from("users").select("id", { count: "exact", head: true }).in("id", userIds).eq("access", "active");
+    if (error) fail("anyActive", error);
+    return (count ?? 0) > 0;
   }
 
   async redeemInvite(code: string, phone: string): Promise<string> {

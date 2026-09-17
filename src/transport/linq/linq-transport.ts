@@ -1,6 +1,8 @@
 import type { LinqAPIV3 } from "@linqapp/sdk";
 import { env } from "@/src/config/env";
+import { botNames } from "@/src/config/env";
 import { linqClient } from "./client";
+import { contactCardAttachmentId } from "./contact-card";
 import { normalizeLinqEvent } from "./parse";
 import type {
   InboundEvent,
@@ -41,18 +43,24 @@ export class LinqTransport implements MessageTransport {
   }
 
   async send(providerChatId: string, message: OutboundMessage): Promise<SendResult> {
-    const parts: Array<{ type: "text"; value: string } | { type: "media"; url: string }> = [
+    const parts: Array<{ type: "text"; value: string } | { type: "media"; url: string } | { type: "media"; attachment_id: string }> = [
       { type: "text", value: message.text },
     ];
     for (const attachment of message.attachments ?? []) {
-      parts.push({ type: "media", url: attachment.url });
+      if ("contactCard" in attachment) {
+        const name = botNames()[0] ?? "mushy";
+        const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+        parts.push({ type: "media", attachment_id: await contactCardAttachmentId(displayName, env().LINQ_FROM_NUMBER ?? "") });
+      } else {
+        parts.push({ type: "media", url: attachment.url });
+      }
     }
 
     const sent = await linqClient().chats.messages.send(
       providerChatId,
       {
         message: {
-          parts,
+          parts: parts as never,
           ...(message.replyToProviderMessageId
             ? { reply_to: { message_id: message.replyToProviderMessageId } }
             : {}),

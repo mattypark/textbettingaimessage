@@ -76,7 +76,7 @@ export class SendblueTransport implements MessageTransport {
     const body: Record<string, unknown> = {
       content: message.text,
       from_number: env().SENDBLUE_FROM_NUMBER,
-      ...(message.attachments?.[0] ? { media_url: message.attachments[0].url } : {}),
+      ...(message.attachments?.[0] && "url" in message.attachments[0] ? { media_url: message.attachments[0].url } : {}),
       ...(message.effect === "confetti" ? { send_style: "confetti" } : {}),
     };
     const result = isGroup

@@ -87,3 +87,20 @@ describe("pipeline access gate", () => {
     expect(w.transport.transcript("g1").at(-1)).toMatch(/didn't work/);
   });
 });
+
+describe("chat-level unlock", () => {
+  it("one activated member opens the chat to everyone in it; a chat with none stays gated", async () => {
+    const access = new MemoryAccessStore();
+    await access.mint("SEED0001", 5);
+    access.registerUser("u-matt", "+1matt");
+    access.registerUser("u-friend", "+1friend");
+    access.registerUser("u-loner", "+1loner");
+    await access.redeemInvite("SEED0001", "+1matt");
+    const members: Record<string, string[]> = { "chat-a": ["u-matt", "u-friend"], "chat-b": ["u-loner"] };
+    const gate = accessGate(access, "https://mushy.test", async (chatId) => members[chatId] ?? []);
+
+    expect(await gate("chat-a", "u-friend", "+1friend", "mushy 20 says")).toEqual({ allowed: true });
+    expect(await access.access("u-friend")).toBe("waitlist"); // unlocked by the chat, not activated personally
+    expect(await gate("chat-b", "u-loner", "+1loner", "mushy 20 says")).toMatchObject({ allowed: false });
+  });
+});

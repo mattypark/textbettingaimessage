@@ -134,9 +134,13 @@ function wire(transportName: TransportName): Wiring {
       intake: { proofStore, media },
     }),
     media,
-    introMessage: () => ({ text: introMessage(botName, env().NEXT_PUBLIC_SITE_URL) }),
+    // The intro carries the bot's contact card so one tap names it in the group.
+    introMessage: () => ({ text: introMessage(botName, env().NEXT_PUBLIC_SITE_URL), attachments: [{ contactCard: true }] }),
     turnLimit: { limiter: defaultRateLimiter(), perUserPerHour: env().BOT_TURNS_PER_USER_HOUR, perChatPerHour: env().BOT_TURNS_PER_CHAT_HOUR },
-    accessGate: env().INVITE_ONLY === "0" ? undefined : accessGate(defaultAccessStore(), env().NEXT_PUBLIC_SITE_URL),
+    accessGate:
+      env().INVITE_ONLY === "0"
+        ? undefined
+        : accessGate(defaultAccessStore(), env().NEXT_PUBLIC_SITE_URL, async (chatId) => (await store.chatMembers(chatId)).map((m) => m.id)),
     botNames: botNames(),
     onCardPosted: (betId, providerMessageId) => betStore.setCardMessageId(betId, providerMessageId),
     senderHasOpenBet: (chatId, userId) => awaitsProof(betStore, chatId, userId),
