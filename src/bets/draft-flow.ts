@@ -23,7 +23,7 @@ export interface DraftDeps {
   botName: string;
   clock?: () => Date;
   mayStake?: (userId: string) => Promise<boolean>;
-  needsTermsMessage?: (name: string) => string;
+  needsTermsMessage?: (name: string, chatId?: string) => string;
   /** Vision judge wants a challenge word in frame; human confirm does not. */
   challengeToken?: boolean;
   /** In assist mode a message that names the bot again is a fresh request for the model, not a draft answer. */
@@ -102,10 +102,19 @@ export function draftFlow(deps: DraftDeps) {
     return post(ctx, draft, deadlineAt);
   }
 
+  /** After the terms are accepted: a draft that was fully answered posts without re-asking. */
+  async function resume(ctx: TurnContext): Promise<OutboundMessage[] | null> {
+    const draft = await deps.store.getDraft(ctx.chatId, ctx.userId);
+    if (!draft?.claim || !draft.stake || !draft.deadlineAt) return null;
+    return post(ctx, draft, new Date(draft.deadlineAt));
+  }
+
   async function post(ctx: TurnContext, draft: BetDraft, deadlineAt: Date): Promise<OutboundMessage[]> {
     const names = await deps.namesFor(ctx.chatId);
     if (deps.mayStake && !(await deps.mayStake(ctx.userId))) {
-      return [{ text: deps.needsTermsMessage ? deps.needsTermsMessage(names(ctx.userId)) : "accept the terms first" }];
+      // Keep everything answered so "i agree" can finish the bet without re-asking.
+      await deps.store.setDraft({ ...draft, step: "deadline", deadlineAt: deadlineAt.toISOString() });
+      return [{ text: deps.needsTermsMessage ? deps.needsTermsMessage(names(ctx.userId), ctx.chatId) : "accept the terms first" }];
     }
     const bet = buildBet({ claim: draft.claim ?? "", stake: fromDraftStake(draft.stake!), deadlineAt }, ctx, clock(), { challengeToken: deps.challengeToken });
     await deps.betStore.create(bet);
@@ -113,5 +122,5 @@ export function draftFlow(deps: DraftDeps) {
     return [{ text: betCard(bet, names), replyToProviderMessageId: ctx.event.providerMessageId, idempotencyKey: `card:${bet.id}` }];
   }
 
-  return { open, step };
+  return { open, step, resume };
 }

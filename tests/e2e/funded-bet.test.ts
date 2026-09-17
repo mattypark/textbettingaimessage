@@ -53,7 +53,8 @@ describe("e2e: holder-funded bet", () => {
     expect(w.bet().funding).toMatchObject({ amountUsd: 20, holderUserId: w.users[HANDLES.sam] });
     await w.react(HANDLES.jake, card.providerMessageId);
     expect(w.bet().status).toBe("locked");
-    const request = w.transcript().at(-1)!;
+    const request = w.transcript().at(-2)!; // text, then the tap-to-pay card
+    expect(w.lastSend()?.message.link).toMatch(/\/pay\//);
     expect(request).toContain("$20 each, $40 pot — Sam's holding it");
     expect(request).toContain("https://venmo.com/sam-holds?txn=pay&amount=20");
 
@@ -76,7 +77,7 @@ describe("e2e: holder-funded bet", () => {
     vi.setSystemTime(hours(30));
     await tick(w.tickDeps);
     expect(w.bet().status).toBe("settled");
-    const payout = w.transcript().at(-1)!;
+    const payout = w.transcript().at(-2)!;
     expect(payout).toContain("Sam, pay it out — $40 pot:");
     expect(payout).toContain("→ Matt $40");
     expect(payout).toContain("https://cash.app/$matt/40");

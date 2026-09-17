@@ -44,10 +44,25 @@ export interface BetDraft {
   claim?: string;
   /** Serialized stake: amount as a string so JSON survives. */
   stake?: { kind: "points" | "social"; amount: string; currency: string; description?: string };
+  /** Set once all three answers are in but the terms were not yet accepted. */
+  deadlineAt?: string;
   createdAt: string;
 }
 
+export interface SignatureRow {
+  chatId: string | null;
+  userId: string;
+  phone: string;
+  fullName: string;
+  signature: string;
+  termsVersion: number;
+  ip?: string;
+  userAgent?: string;
+}
+
 export interface Store {
+  /** E-sign record from the sign sheet; the terms acceptance itself is recorded separately. */
+  recordSignature(row: SignatureRow): Promise<void>;
   /** Scripted bet builder state, one per person per chat. */
   getDraft(chatId: string, userId: string): Promise<BetDraft | null>;
   setDraft(draft: BetDraft): Promise<void>;

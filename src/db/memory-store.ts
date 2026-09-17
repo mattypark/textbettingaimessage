@@ -1,5 +1,5 @@
 import type { InboundEvent, OutboundMessage } from "@/src/transport/types";
-import type { BetDraft, ChatRow, MemberRow, OutboxRow, Store, StuckInboundRow, UserRow } from "./store";
+import type { BetDraft, ChatRow, SignatureRow, MemberRow, OutboxRow, Store, StuckInboundRow, UserRow } from "./store";
 
 /** In-memory Store for unit tests and the replay harness. */
 export class MemoryStore implements Store {
@@ -85,6 +85,12 @@ export class MemoryStore implements Store {
 
   async setDisplayName(userId: string, name: string): Promise<void> {
     for (const user of this.users.values()) if (user.id === userId) user.displayName = name;
+  }
+
+  readonly signatures: SignatureRow[] = [];
+
+  async recordSignature(row: SignatureRow): Promise<void> {
+    this.signatures.push(row);
   }
 
   readonly drafts = new Map<string, BetDraft>();

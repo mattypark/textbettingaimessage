@@ -1,7 +1,9 @@
 import type { Bet } from "@/src/bets/types";
 import type { Store } from "@/src/db/store";
 import { displayName } from "@/src/agent/context";
+import type { OutboundMessage } from "@/src/transport/types";
 import { PAY_PROVIDERS, PROVIDER_LABEL, payLink, type PayHandles } from "./pay-links";
+import { payPageLink } from "./settle-up";
 
 /**
  * Holder-funded stakes. A friend in the chat (not in the bet) holds the
@@ -68,7 +70,7 @@ export async function fundingPayoutText({ bet, name, handlesOf }: FundingTextInp
   return lines.join("\n");
 }
 
-export function fundingHooks(store: Store) {
+export function fundingHooks(store: Store, siteUrl = "") {
   const deps = async (bet: Bet) => {
     const members = await store.chatMembers(bet.chatId);
     return {
@@ -78,7 +80,13 @@ export function fundingHooks(store: Store) {
     };
   };
   return {
-    fundingRequest: async (bet: Bet) => fundingRequestText(await deps(bet)),
+    /** Text first (always readable), then the tap-to-pay card when the site is public. */
+    fundingRequest: async (bet: Bet): Promise<Array<string | OutboundMessage>> => {
+      const text = await fundingRequestText(await deps(bet));
+      if (!text) return [];
+      const link = payPageLink(siteUrl, bet.id);
+      return link ? [text, { text: link, link }] : [text];
+    },
     fundingPayout: async (bet: Bet) => fundingPayoutText(await deps(bet)),
   };
 }

@@ -170,8 +170,8 @@ describe("terms gate", () => {
     const handler = agentHandler({ ...w.deps, runTurn: async () => [{ text: "agent ran" }] });
     const as = (text: string, extra: Partial<TurnContext["event"]> = {}): TurnContext => ({ ...w.ctx(text), userId: newbie.id, event: { ...w.ctx(text).event, senderHandle: "+1newb", ...extra } });
 
-    expect((await handler(as("mushy 10 says i can do 20 pushups")))[0].text).toMatch(/accept the terms/);
-    expect((await handler(as("!bet pushups ; 10 ; friday")))[0].text).toMatch(/accept the terms/);
+    expect((await handler(as("mushy 10 says i can do 20 pushups")))[0].text).toMatch(/sign first/);
+    expect((await handler(as("!bet pushups ; 10 ; friday")))[0].text).toMatch(/sign first/);
     expect(await handler(as("", { reaction: { targetProviderMessageId: "some-other-msg", kind: "affirm", removed: false } }))).toEqual([]);
 
     expect((await handler(as("I agree")))[0].text).toMatch(/you're in/);

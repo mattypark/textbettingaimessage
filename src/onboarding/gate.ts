@@ -1,6 +1,6 @@
 import type { Store } from "@/src/db/store";
 import type { InboundEvent } from "@/src/transport/types";
-import { TERMS_VERSION, termsUrl } from "./terms";
+import { signUrl, TERMS_VERSION, termsUrl } from "./terms";
 
 export const AGREE_TEXT = /^\s*(i\s+)?(agree|accept|yes\s+to\s+the\s+terms|ok\s+terms)\s*[.!]*\s*$/i;
 
@@ -16,8 +16,9 @@ export class TermsGate {
     return this.store.hasAcceptedTerms(userId, TERMS_VERSION);
   }
 
-  needsTermsMessage(name: string): string {
-    return `${name} one sec — accept the terms (v${TERMS_VERSION}) first: 👍 my intro, say "i agree", or tap ${termsUrl(this.siteUrl)} — then we run it`;
+  needsTermsMessage(name: string, chatId?: string): string {
+    const where = chatId ? signUrl(this.siteUrl, chatId) : termsUrl(this.siteUrl);
+    return `${name} one sec — sign first (v${TERMS_VERSION}): ${where} — or 👍 my intro / say "i agree", then we run it`;
   }
 
   /** Returns true when this event was itself an acceptance (so callers can reply and stop). */

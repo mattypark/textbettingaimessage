@@ -18,11 +18,17 @@ export function termsUrl(siteUrl: string): string {
   return `${siteUrl.replace(/\/$/, "")}/terms`;
 }
 
-export function introMessage(botName: string, siteUrl: string): string {
+export function signUrl(siteUrl: string, chatId: string): string {
+  return `${siteUrl.replace(/\/$/, "")}/sign/${chatId}`;
+}
+
+export function introMessage(botName: string, siteUrl: string, chatId?: string): string {
   return [
     `yo, i'm ${botName} 🍡 i keep score on bets in this chat`,
-    `say "hey ${botName}" then the bet — "20 says i make this shot by friday, jake you in?" — i post the card, everyone 👍 to lock it, proof goes in the thread, i call it`,
+    `say "hey ${botName}" then the bet — "20 says i make this shot by friday, jake you in?" — i post the card, everyone 👍 to lock it, proof goes in the thread, whoever's on the other side calls it`,
     `points not cash — tap "add" on my card so i've got a name in here`,
-    `rules (v${TERMS_VERSION}): ${termsUrl(siteUrl)} — 👍 this message or say "i agree" and you're in`,
+    chatId
+      ? `who's in? everyone signs once (name, number, rules v${TERMS_VERSION}): ${signUrl(siteUrl, chatId)} — or 👍 this message / say "i agree"`
+      : `rules (v${TERMS_VERSION}): ${termsUrl(siteUrl)} — 👍 this message or say "i agree" and you're in`,
   ].join("\n");
 }

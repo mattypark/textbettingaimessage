@@ -68,10 +68,11 @@ describe("e2e: settle up", () => {
     await tick(w.tickDeps);
     expect(w.bet().status).toBe("settled");
 
-    const last = w.transcript().at(-1)!;
-    expect(w.transcript().at(-2)).toMatch(/SETTLED/);
+    const last = w.transcript().at(-2)!;
+    expect(w.transcript().at(-3)).toMatch(/SETTLED/);
     expect(last).toContain("Jake → Matt ($20)");
     expect(last).toContain("https://venmo.com/matt-park?txn=pay&amount=20");
+    expect(w.lastSend()?.message.link).toMatch(/\/pay\/[0-9a-f-]{36}$/); // tap-to-pay card
     // Points balances untouched by a social stake.
     expect((await w.ledger.wallet(w.users[HANDLES.matt])).available).toBe(100n);
     expect((await w.ledger.wallet(w.users[HANDLES.jake])).available).toBe(100n);

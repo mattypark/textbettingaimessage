@@ -1,32 +1,27 @@
+import { LEGAL_UPDATED, TERMS_SECTIONS } from "@/src/onboarding/legal";
 import { TERMS_SUMMARY, TERMS_VERSION } from "@/src/onboarding/terms";
 import { LegalShell } from "../legal-shell";
 
 export const metadata = { title: "Terms", description: "The rules of the group-chat betting bot." };
 
-/** Same source as the iMessage intro and the explain_terms tool. */
+/** Same source as the iMessage intro, the explain_terms tool, and the sign sheet. */
 export default function TermsPage() {
   return (
-    <LegalShell eyebrow="the rules" title={`Terms (v${TERMS_VERSION})`} updated="September 16, 2026" mood="ref">
+    <LegalShell eyebrow="the rules" title={`Terms (v${TERMS_VERSION})`} updated={LEGAL_UPDATED} mood="ref">
       <h2>the short version</h2>
       <ol>
         {TERMS_SUMMARY.map((line) => (
           <li key={line}>{line}</li>
         ))}
       </ol>
-      <h2>the longer version</h2>
-      <p>
-        This service keeps score of friendly bets between people who already know each other. Points are a game mechanic: they are not money, not a currency,
-        not redeemable for anything, and cannot be purchased. Social stakes are promises between friends that we do not enforce.
-      </p>
-      <p>
-        Verdicts are produced by an automated judge from the proof you send and the criteria locked when the bet was created. Disputes are resolved by a
-        second automated pass or by the referee you named. The service may void any bet and return all points at its discretion.
-      </p>
-      <p>
-        You must be 18 or older. Do not use the service for anything illegal where you live, and do not bet on people who are not in the conversation. We may
-        remove the bot from a chat at any time.
-      </p>
-      <p>The service is provided as-is, without warranty, and our liability to you is limited to the fullest extent the law allows.</p>
+      {TERMS_SECTIONS.map((section) => (
+        <section key={section.heading}>
+          <h2>{section.heading}</h2>
+          {section.body.map((p) => (
+            <p key={p}>{p}</p>
+          ))}
+        </section>
+      ))}
     </LegalShell>
   );
 }

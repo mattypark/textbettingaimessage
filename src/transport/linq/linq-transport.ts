@@ -43,10 +43,10 @@ export class LinqTransport implements MessageTransport {
   }
 
   async send(providerChatId: string, message: OutboundMessage): Promise<SendResult> {
-    const parts: Array<{ type: "text"; value: string } | { type: "media"; url: string } | { type: "media"; attachment_id: string }> = [
-      { type: "text", value: message.text },
-    ];
-    for (const attachment of message.attachments ?? []) {
+    const parts: Array<{ type: "text"; value: string } | { type: "link"; value: string } | { type: "media"; url: string } | { type: "media"; attachment_id: string }> = message.link
+      ? [{ type: "link", value: message.link }]
+      : [{ type: "text", value: message.text }];
+    for (const attachment of message.link ? [] : (message.attachments ?? [])) {
       if ("contactCard" in attachment) {
         const name = botNames()[0] ?? "mushy";
         const displayName = name.charAt(0).toUpperCase() + name.slice(1);

@@ -39,11 +39,12 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     namesFor: namesFor(deps.store),
     clock: deps.clock,
     mayStake: (userId) => deps.store.hasAcceptedTerms(userId, TERMS_VERSION),
-    needsTermsMessage: (name) => new TermsGate(deps.store, deps.siteUrl).needsTermsMessage(name),
+    needsTermsMessage: (name, chatId) => new TermsGate(deps.store, deps.siteUrl).needsTermsMessage(name, chatId),
     setPayHandle: (userId, provider, handle) => deps.store.setPayHandle(userId, provider, handle),
     inviteLink: deps.access ? async (userId) => inviteLine(await deps.access!.ensureInvite(userId), deps.siteUrl) : undefined,
     members: async (chatId) => (await deps.store.chatMembers(chatId)).map((m) => m.id),
     challengeToken: deps.judgeMode !== "confirm",
+    setName: (userId, name) => deps.store.setDisplayName(userId, name),
   });
 
   const gate = new TermsGate(deps.store, deps.siteUrl);
@@ -54,7 +55,7 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     botName: deps.botName,
     clock: deps.clock,
     mayStake: (userId) => deps.store.hasAcceptedTerms(userId, TERMS_VERSION),
-    needsTermsMessage: (name) => gate.needsTermsMessage(name),
+    needsTermsMessage: (name, chatId) => gate.needsTermsMessage(name, chatId),
     challengeToken: deps.judgeMode !== "confirm",
     modelMode: deps.modelMode,
   });
@@ -64,7 +65,11 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     const name = displayName({ displayName: null, phone: event.senderHandle });
 
     if (await gate.tryAcceptFrom(event, ctx.chatId, ctx.userId)) {
-      return event.reaction ? [] : [{ text: `bet, you're in ${name}` }];
+      const resumed = await drafts.resume(ctx);
+      const known = (await deps.store.chatMembers(ctx.chatId)).find((m) => m.id === ctx.userId)?.displayName;
+      const hello = known ? `bet, you're in ${known}` : `bet, you're in — what should i call you? ("call me matt")`;
+      if (resumed) return event.reaction ? resumed : [{ text: hello }, ...resumed];
+      return event.reaction ? (known ? [] : [{ text: `what should i call you? ("call me matt")` }]) : [{ text: hello }];
     }
     if (event.reaction || /^!\w+/.test(event.text.trim()) || decision.reason === "command") return commands(ctx);
 
@@ -102,7 +107,7 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     }
 
     if (!(await gate.accepted(ctx.userId)) && /\b(bet|says|wager|i'?m in|deal)\b/i.test(event.text)) {
-      return [{ text: gate.needsTermsMessage(name) }];
+      return [{ text: gate.needsTermsMessage(name, ctx.chatId) }];
     }
 
     if (deps.modelMode === "off") {

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { InboundEvent, OutboundMessage } from "@/src/transport/types";
-import type { BetDraft, ChatRow, MemberRow, OutboxRow, Store, StuckInboundRow, UserRow } from "./store";
+import type { BetDraft, ChatRow, SignatureRow, MemberRow, OutboxRow, Store, StuckInboundRow, UserRow } from "./store";
 
 function fail(context: string, error: { message: string } | null): never {
   throw new Error(`${context}: ${error?.message ?? "unknown error"}`);
@@ -101,17 +101,31 @@ export class SupabaseStore implements Store {
     if (error) fail("setDisplayName", error);
   }
 
+  async recordSignature(row: SignatureRow): Promise<void> {
+    const { error } = await this.db.from("signatures").insert({
+      chat_id: row.chatId,
+      user_id: row.userId,
+      phone: row.phone,
+      full_name: row.fullName,
+      signature: row.signature,
+      terms_version: row.termsVersion,
+      ip: row.ip ?? null,
+      user_agent: row.userAgent ?? null,
+    });
+    if (error) fail("recordSignature", error);
+  }
+
   async getDraft(chatId: string, userId: string): Promise<BetDraft | null> {
-    const { data, error } = await this.db.from("bet_drafts").select("step, claim, stake, created_at").eq("chat_id", chatId).eq("user_id", userId).maybeSingle();
+    const { data, error } = await this.db.from("bet_drafts").select("step, claim, stake, deadline_at, created_at").eq("chat_id", chatId).eq("user_id", userId).maybeSingle();
     if (error) fail("getDraft", error);
     if (!data) return null;
-    return { chatId, userId, step: data.step as BetDraft["step"], claim: (data.claim as string | null) ?? undefined, stake: (data.stake as BetDraft["stake"] | null) ?? undefined, createdAt: data.created_at as string };
+    return { chatId, userId, step: data.step as BetDraft["step"], claim: (data.claim as string | null) ?? undefined, stake: (data.stake as BetDraft["stake"] | null) ?? undefined, deadlineAt: (data.deadline_at as string | null) ?? undefined, createdAt: data.created_at as string };
   }
 
   async setDraft(draft: BetDraft): Promise<void> {
     const { error } = await this.db
       .from("bet_drafts")
-      .upsert({ chat_id: draft.chatId, user_id: draft.userId, step: draft.step, claim: draft.claim ?? null, stake: draft.stake ?? null, created_at: draft.createdAt, updated_at: new Date().toISOString() }, { onConflict: "chat_id,user_id" });
+      .upsert({ chat_id: draft.chatId, user_id: draft.userId, step: draft.step, claim: draft.claim ?? null, stake: draft.stake ?? null, deadline_at: draft.deadlineAt ?? null, created_at: draft.createdAt, updated_at: new Date().toISOString() }, { onConflict: "chat_id,user_id" });
     if (error) fail("setDraft", error);
   }
 

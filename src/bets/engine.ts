@@ -19,10 +19,10 @@ export interface EngineDeps {
   namesFor?: (chatId: string) => Promise<Names>;
   clock?: () => Date;
   log?: (line: string, extra?: Record<string, unknown>) => void;
-  /** Extra line after SETTLED (settle-up links for social stakes). Null = nothing to add. */
-  settleUp?: (bet: Bet) => Promise<string | null>;
-  /** Extra line after LOCKED for a holder-funded stake: who pays whom, with links. Null = nothing to add. */
-  fundingRequest?: (bet: Bet) => Promise<string | null>;
+  /** Extra messages after SETTLED (settle-up links for social stakes). Empty = nothing to add. */
+  settleUp?: (bet: Bet) => Promise<Array<string | OutboundMessage>>;
+  /** Extra messages after LOCKED for a holder-funded stake: who pays whom, with links. Empty = nothing to add. */
+  fundingRequest?: (bet: Bet) => Promise<Array<string | OutboundMessage>>;
 }
 
 const TOKEN_WORDS = ["mango", "comet", "walrus", "pickle", "saturn", "banjo", "tundra", "velvet", "cactus", "orbit", "maple", "falcon"];
@@ -117,13 +117,12 @@ export class BetEngine {
         case "post": {
           const names = this.deps.namesFor ? await this.deps.namesFor(bet.chatId) : this.deps.names;
           await this.deps.post(bet.chatId, { text: postText(effect.message, current, names), effect: effect.message === "settled" ? "confetti" : undefined }, key(`post:${index}`));
-          if (effect.message === "settled" && this.deps.settleUp) {
-            const extra = await this.deps.settleUp(current);
-            if (extra) await this.deps.post(bet.chatId, { text: extra }, key(`post:${index}:settleup`));
-          }
-          if (effect.message === "locked" && this.deps.fundingRequest) {
-            const extra = await this.deps.fundingRequest(current);
-            if (extra) await this.deps.post(bet.chatId, { text: extra }, key(`post:${index}:funding`));
+          const extras = effect.message === "settled" ? this.deps.settleUp : effect.message === "locked" ? this.deps.fundingRequest : undefined;
+          if (extras) {
+            for (const [n, extra] of (await extras(current)).entries()) {
+              const message = typeof extra === "string" ? { text: extra } : extra;
+              await this.deps.post(bet.chatId, message, key(`post:${index}:${effect.message}:${n}`));
+            }
           }
           break;
         }

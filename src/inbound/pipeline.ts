@@ -34,7 +34,7 @@ export interface PipelineDeps {
   /** Called with (betId, providerMessageId) after a bet card lands, so tapbacks can be resolved. */
   onCardPosted?: (betId: string, providerMessageId: string) => Promise<void>;
   /** Hook for Stage 5: the intro + terms message posted once per chat. */
-  introMessage?: () => OutboundMessage | null;
+  introMessage?: (chatId: string) => OutboundMessage | OutboundMessage[] | null;
   /**
    * Spam guard. Counts turns that reach the handler (not silent chatter,
    * not reactions) per sender and per chat; over the cap the bot says so
@@ -139,12 +139,15 @@ export class InboundPipeline {
       }
 
       if (firstContact) {
-        const intro = this.deps.introMessage?.();
-        const providerMessageId = intro
-          ? await this.outbox.send(chat.id, intro, `${event.provider}:${event.providerMessageId}:intro`)
-          : null;
+        const intro = this.deps.introMessage?.(chat.id);
+        const intros = intro ? (Array.isArray(intro) ? intro : [intro]) : [];
+        let providerMessageId: string | null = null;
+        for (const [n, message] of intros.entries()) {
+          const id = await this.outbox.send(chat.id, message, `${event.provider}:${event.providerMessageId}:intro${n ? `:${n}` : ""}`);
+          if (n === 0) providerMessageId = id; // the first one is the terms message a 👍 accepts
+          replies += 1;
+        }
         await store.markIntroduced(chat.id, providerMessageId);
-        if (intro) replies += 1;
       }
 
       const decision = gate({

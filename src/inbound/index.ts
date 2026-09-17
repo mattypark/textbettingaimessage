@@ -21,7 +21,9 @@ import { MemoryMediaStore, SupabaseMediaStore, type MediaStore } from "@/src/pro
 import { renderVideoFrames } from "@/src/proof/frames";
 import { runJudgeJob } from "@/src/proof/run-judge";
 import { MemoryProofStore, SupabaseProofStore, type ProofStore } from "@/src/proof/store";
-import { introMessage } from "@/src/onboarding/terms";
+import { introMessage, signUrl } from "@/src/onboarding/terms";
+import { isPublicSite } from "@/src/settle/settle-up";
+import type { OutboundMessage } from "@/src/transport/types";
 import { fundingHooks } from "@/src/settle/funding";
 import { settleUpFor } from "@/src/settle/settle-up";
 import { createTransport } from "@/src/transport";
@@ -128,8 +130,8 @@ function wire(transportName: TransportName): Wiring {
     names,
     namesFor: namesFor(store),
     log: (line, extra) => console.info(`[engine] ${line}`, extra ?? ""),
-    settleUp: env().SETTLE_UP === "0" ? undefined : settleUpFor(store),
-    fundingRequest: env().SETTLE_UP === "0" ? undefined : fundingHooks(store).fundingRequest,
+    settleUp: env().SETTLE_UP === "0" ? undefined : settleUpFor(store, env().NEXT_PUBLIC_SITE_URL),
+    fundingRequest: env().SETTLE_UP === "0" ? undefined : fundingHooks(store, env().NEXT_PUBLIC_SITE_URL).fundingRequest,
   });
   const ledger = createLedger();
   const model = createModel();
@@ -152,8 +154,13 @@ function wire(transportName: TransportName): Wiring {
       intake: { proofStore, media, judgeMode: env().JUDGE_MODE },
     }),
     media,
-    // The intro carries the bot's contact card so one tap names it in the group.
-    introMessage: () => ({ text: introMessage(botName, env().NEXT_PUBLIC_SITE_URL), attachments: [{ contactCard: true }] }),
+    // The intro carries the bot's contact card so one tap names it in the group, then the sign-sheet card when the site is public.
+    introMessage: (chatId) => {
+      const site = env().NEXT_PUBLIC_SITE_URL;
+      const first: OutboundMessage = { text: introMessage(botName, site, chatId), attachments: [{ contactCard: true }] };
+      const link = isPublicSite(site) ? signUrl(site, chatId) : null;
+      return link ? [first, { text: link, link }] : first;
+    },
     turnLimit: { limiter: defaultRateLimiter(), perUserPerHour: env().BOT_TURNS_PER_USER_HOUR, perChatPerHour: env().BOT_TURNS_PER_CHAT_HOUR },
     accessGate:
       env().INVITE_ONLY === "0"

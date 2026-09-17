@@ -30,7 +30,7 @@ export interface CommandDeps {
   clock?: () => Date;
   /** Returns true when the user may stake (terms accepted). Absent = no gate (tests, dev). */
   mayStake?: (userId: string) => Promise<boolean>;
-  needsTermsMessage?: (name: string) => string;
+  needsTermsMessage?: (name: string, chatId?: string) => string;
   /** Records a payment handle for settle-up links. Absent = `!pay` is off. */
   setPayHandle?: (userId: string, provider: string, handle: string) => Promise<void>;
   /** The sender's invite link. Absent = `!invite` is off. */
@@ -39,6 +39,8 @@ export interface CommandDeps {
   members?: (chatId: string) => Promise<string[]>;
   /** False in confirm mode: no challenge word in proof. */
   challengeToken?: boolean;
+  /** Remembers what to call someone ("call me Matt", "!name Matt"). */
+  setName?: (userId: string, name: string) => Promise<void>;
 }
 
 const DAY_MS = 86_400_000;
@@ -161,7 +163,7 @@ export function buildBet(parsed: ParsedBet, ctx: TurnContext, now: Date, options
 }
 
 /** Wraps the engine for the pipeline. Returns replies; the card is posted by the pipeline so its id can be recorded. */
-export function commandHandler({ store, engine, names: fallbackNames, namesFor, clock = () => new Date(), mayStake, needsTermsMessage, setPayHandle, inviteLink, members, challengeToken }: CommandDeps): TurnHandler {
+export function commandHandler({ store, engine, names: fallbackNames, namesFor, clock = () => new Date(), mayStake, needsTermsMessage, setPayHandle, inviteLink, members, challengeToken, setName }: CommandDeps): TurnHandler {
   const allowed = async (userId: string) => (mayStake ? mayStake(userId) : true);
 
   return async (ctx): Promise<OutboundMessage[]> => {
@@ -173,7 +175,7 @@ export function commandHandler({ store, engine, names: fallbackNames, namesFor, 
       const bet = await store.findByCard(ctx.chatId, event.reaction.targetProviderMessageId);
       if (!bet || bet.status !== "proposed") return [];
       if (event.reaction.kind === "affirm" && !(await allowed(ctx.userId))) {
-        return needsTermsMessage ? [{ text: needsTermsMessage(names(ctx.userId)) }] : [];
+        return needsTermsMessage ? [{ text: needsTermsMessage(names(ctx.userId), ctx.chatId) }] : [];
       }
       try {
         const isParticipant = bet.participants.some((p) => p.userId === ctx.userId);
@@ -190,7 +192,7 @@ export function commandHandler({ store, engine, names: fallbackNames, namesFor, 
 
     const text = event.text.trim();
     if (/^!bet\b/i.test(text)) {
-      if (!(await allowed(ctx.userId))) return needsTermsMessage ? [{ text: needsTermsMessage(names(ctx.userId)) }] : [];
+      if (!(await allowed(ctx.userId))) return needsTermsMessage ? [{ text: needsTermsMessage(names(ctx.userId), ctx.chatId) }] : [];
       const parsed = parseBetCommand(text, clock());
       if ("error" in parsed) return [{ text: `❓ ${parsed.error}` }];
       const bet = await store.create(buildBet(parsed, ctx, clock(), { challengeToken }));
@@ -217,6 +219,13 @@ export function commandHandler({ store, engine, names: fallbackNames, namesFor, 
       if (!bet) return [{ text: "no open bet with that id here" }];
       const result = await refereeDecide(store, engine, bet.id, ctx.userId, /^(yes|stands)$/i.test(callMatch[2]));
       return result.ok ? [] : [{ text: `❓ ${result.text}` }];
+    }
+
+    const nameMatch = text.match(/^(?:hey |yo )?(?:@?mushy[,:]?\s*)?(?:!name|call me|i'?m|my name'?s|my name is|it'?s)\s+([A-Za-z][A-Za-z' -]{0,29})\s*[!.]*$/i);
+    if (nameMatch && setName && !/^(in|out|down|good|here|not|so|the|a)$/i.test(nameMatch[1].trim())) {
+      const clean = nameMatch[1].trim().replace(/\s+/g, " ");
+      await setName(ctx.userId, clean);
+      return [{ text: `${clean} it is` }];
     }
 
     // Natural phrasings that map 1:1 to a command never cost a model turn.

@@ -16,7 +16,7 @@ import { MemoryStore } from "@/src/db/memory-store";
 import { namesFor } from "@/src/db/names";
 import { InboundPipeline, type TurnContext } from "@/src/inbound/pipeline";
 import { MemoryLedger } from "@/src/ledger/memory-ledger";
-import { introMessage } from "@/src/onboarding/terms";
+import { introMessage, signUrl } from "@/src/onboarding/terms";
 import { awaitsProof } from "@/src/proof/intake";
 import type { Judge, JudgeOutput } from "@/src/proof/judge";
 import { MemoryMediaStore } from "@/src/proof/media-store";
@@ -126,7 +126,7 @@ export async function world(opts: WorldOptions) {
   await store.setDisplayName(users[HANDLES.jake], "Jake");
   await store.setDisplayName(users[HANDLES.sam], "Sam");
 
-  const engine = new BetEngine({ store: betStore, ledger, post: (c, m, k) => outbox.send(c, m, k), names: (id) => id, namesFor: namesFor(store), clock, settleUp: settleUpFor(store), fundingRequest: fundingHooks(store).fundingRequest });
+  const engine = new BetEngine({ store: betStore, ledger, post: (c, m, k) => outbox.send(c, m, k), names: (id) => id, namesFor: namesFor(store), clock, settleUp: settleUpFor(store, SITE), fundingRequest: fundingHooks(store, SITE).fundingRequest });
   const access = new MemoryAccessStore();
   const toolDeps: ToolDeps = { store, betStore, engine, ledger, siteUrl: SITE, access, clock };
   const files = new Map<string, Buffer>();
@@ -148,7 +148,7 @@ export async function world(opts: WorldOptions) {
       runTurn: fakeModel(toolDeps, opts.cassette, toolLog),
     }),
     botNames: [BOT],
-    introMessage: () => ({ text: introMessage(BOT, SITE) }),
+    introMessage: (chatId) => [{ text: introMessage(BOT, SITE, chatId) }, { text: signUrl(SITE, chatId), link: signUrl(SITE, chatId) }],
     onCardPosted: (betId, id) => betStore.setCardMessageId(betId, id),
     senderHasOpenBet: (chatId, userId) => awaitsProof(betStore, chatId, userId),
   });

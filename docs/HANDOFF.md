@@ -30,6 +30,7 @@ Project: **Mushy** (renamed from Bookie 2026-09-17; `BOT_NAMES=mushy`, wake word
 | E2E cassettes: create-and-lock, proof-and-verdict, on a FakeModel/FakeJudge harness | `tests/e2e/` | done, 6 scenarios green |
 | Settle-up + holder-funded stakes: `!pay` handles, Venmo/Cash App/PayPal links, "$20 each, sam holds it" → pay-the-holder request after LOCKED, `paid`/`got it` (tools + `!paid`/`!got`), holder pays winner after SETTLED. **Frontend:** `bet.state.funding` is new (`Funding` in `src/bets/types.ts`); the flip card could show paid/holder state | `src/settle/`, migration 0012 | done, 8 scenarios green |
 | Zero-token path: templates (bare wake, help, thanks), plain-English twins of !commands (leaderboard, balance, invite), the scripted bet builder ("hey mushy" → what's the bet → how much → by when → card, `bet_drafts` migration 0014), `MODEL_MODE=off` never calls a model, `JUDGE_MODE=confirm` (default) makes the opponent call the result with `call #id yes/no` instead of the vision judge | `src/agent/templates.ts`, `src/bets/draft-flow.ts`, `src/proof/intake.ts` | done, e2e green |
+| Tap-to-pay + sign sheets: `/pay/<bet>` (Apple-style sheet: amount, who→who, Open Venmo/Cash App/PayPal, "I sent it") and `/sign/<chat>` (name + number + typed signature over the full terms + privacy, `signatures` table 0016), each with an OG card image; Linq `link` parts render them as rich cards once `NEXT_PUBLIC_SITE_URL` is public. Custom terms + privacy text lives in `src/onboarding/legal.ts` and feeds /terms, /privacy and the sign sheet. Linq also supports `imessage_app` card parts (GamePigeon-style) but they need a real Messages extension bundle id — a native app, phase 2 | `app/pay`, `app/sign`, `src/settle/pay-page.ts`, `src/onboarding/sign.ts` | done, tests green; cards only show once deployed |
 | Local run tooling: `npm run tick:dev` (pg_cron stand-in), `npm run linq:capture` (redacted Stage-0 fixtures + tee) | `scripts/tick-loop.ts`, `scripts/linq-capture.ts` | done |
 
 ## Live status (2026-09-17 afternoon)
@@ -39,6 +40,10 @@ Project: **Mushy** (renamed from Bookie 2026-09-17; `BOT_NAMES=mushy`, wake word
 - Cloud Supabase: migrations 0001–0013 applied; integration tests 11/11; `/api/join` 429 live.
 - Still needs the phone: 👍 lock, attention window, photo/video verdict. Still needs a deploy: `/app` phone OTP (Send SMS hook needs a public URL).
 - Model credits are Matthew's; do not loop `agent:smoke` — cassette tests are free.
+
+## Deploy is now the blocker
+
+Every link the bot sends (sign sheet, pay sheet, terms) points at `NEXT_PUBLIC_SITE_URL`, which is `http://localhost:3000` until the app is deployed. Deploy to Vercel (Matthew's own account), set `NEXT_PUBLIC_SITE_URL=https://<app>.vercel.app` in Vercel env and in `.env.local`, redeploy; a custom domain can come later and only changes that one value.
 
 ## What has NOT happened (needs Matthew's hands)
 

@@ -61,6 +61,8 @@ export type OutboundAttachment =
 
 export interface OutboundMessage {
   text: string;
+  /** Sent as a rich link preview on providers that support it (Linq: the link is the whole message). */
+  link?: string;
   attachments?: OutboundAttachment[];
   replyToProviderMessageId?: string;
   effect?: "confetti";

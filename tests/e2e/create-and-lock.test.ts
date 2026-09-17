@@ -42,9 +42,10 @@ describe("e2e: create and lock", () => {
 
     // 1. First contact: intro (terms) + the model's reply, both in the group.
     const first = await w.send(HANDLES.matt, "hey mushy");
-    expect(first).toMatchObject({ outcome: "processed", replies: 2 });
-    expect(w.transcript()[0]).toMatch(/mushy/i);
-    expect(w.transcript()[1]).toMatch(/bet/); // canned wake reply, no model turn
+    expect(first).toMatchObject({ outcome: "processed", replies: 3 }); // intro, sign card, canned wake reply
+    expect(w.transcript()[0]).toMatch(/everyone signs once/);
+    expect(w.transcript()[1]).toMatch(/\/sign\//);
+    expect(w.transcript()[2]).toMatch(/bet/); // canned wake reply, no model turn
     expect(w.toolLog).toHaveLength(0);
     const introId = w.transport.sends[0].providerMessageId;
 
@@ -114,6 +115,6 @@ describe("e2e: create and lock", () => {
     const card = w.lastSend()!;
     await w.react(HANDLES.jake, card.providerMessageId);
     expect(w.bet().status).toBe("proposed");
-    expect(w.transcript().at(-1)).toMatch(/accept the terms/);
+    expect(w.transcript().at(-1)).toMatch(/sign first/);
   });
 });
