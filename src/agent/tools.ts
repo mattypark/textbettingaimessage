@@ -9,6 +9,8 @@ import type { BetStore } from "@/src/bets/store";
 import { ACCEPT_WINDOW_HOURS, type Bet } from "@/src/bets/types";
 import type { Store } from "@/src/db/store";
 import { tool } from "@/src/model/types";
+import { inviteLine } from "@/src/access/invite-line";
+import type { AccessStore } from "@/src/access/store";
 import { fundedBetFor } from "@/src/settle/funded-bet";
 import { fundingStatusText } from "@/src/settle/funding";
 import { dollarAmount, PAY_PROVIDERS, PROVIDER_LABEL } from "@/src/settle/pay-links";
@@ -25,6 +27,8 @@ export interface ToolDeps {
   engine: BetEngine;
   ledger: Ledger;
   siteUrl: string;
+  /** Invite codes; absent = no invite tool. */
+  access?: AccessStore;
   clock?: () => Date;
 }
 
@@ -185,6 +189,17 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     },
   });
 
+  const myInvite = tool({
+    name: "my_invite",
+    description: "The sender asks for their invite link ('invite', 'link', 'how do i add someone'). Mints one on first ask. Reply with the link as-is.",
+    inputSchema: z.object({}),
+    run: async () => {
+      if (!deps.access) return "invites are off";
+      const invite = await deps.access.ensureInvite(ctx.userId);
+      return inviteLine(invite, deps.siteUrl);
+    },
+  });
+
   const setPayHandle = tool({
     name: "set_pay_handle",
     description: "Remember where the sender wants to be paid when a social stake settles ('my venmo is @matt'). Mushy only posts a link that opens the payer's own app; it never holds money",
@@ -236,5 +251,5 @@ export function buildTools(deps: ToolDeps, session: ToolSession) {
     run: async ({ bet_id, claim_stands }) => (await refereeDecide(betStore, engine, bet_id, ctx.userId, claim_stands)).text,
   });
 
-  return [createBet, acceptBet, declineBet, markPaid, confirmPot, dispute, refereeCall, getBalance, leaderboard, explainTerms, setName, setPayHandle];
+  return [createBet, acceptBet, declineBet, markPaid, confirmPot, dispute, refereeCall, getBalance, leaderboard, explainTerms, setName, setPayHandle, myInvite];
 }

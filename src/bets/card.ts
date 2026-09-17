@@ -16,6 +16,10 @@ function stakeLine(bet: Bet): string {
 }
 
 /** Deadlines read in the group's zone, not the server's. */
+export function whenIn(iso: string): string {
+  return when(iso);
+}
+
 function when(iso: string): string {
   return new Date(iso).toLocaleString("en-US", { timeZone: BOT_TZ, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }

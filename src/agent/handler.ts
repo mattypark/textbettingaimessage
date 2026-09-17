@@ -1,4 +1,5 @@
 import type { ModelProvider } from "@/src/model/types";
+import { inviteLine } from "@/src/access/invite-line";
 import { commandHandler } from "@/src/bets/commands";
 import { namesFor } from "@/src/db/names";
 import type { TurnContext, TurnHandler } from "@/src/inbound/pipeline";
@@ -34,6 +35,7 @@ export function agentHandler(deps: AgentHandlerDeps): TurnHandler {
     mayStake: (userId) => deps.store.hasAcceptedTerms(userId, TERMS_VERSION),
     needsTermsMessage: (name) => new TermsGate(deps.store, deps.siteUrl).needsTermsMessage(name),
     setPayHandle: (userId, provider, handle) => deps.store.setPayHandle(userId, provider, handle),
+    inviteLink: deps.access ? async (userId) => inviteLine(await deps.access!.ensureInvite(userId), deps.siteUrl) : undefined,
   });
 
   const gate = new TermsGate(deps.store, deps.siteUrl);

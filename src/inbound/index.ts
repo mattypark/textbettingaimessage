@@ -4,6 +4,7 @@ import { MemoryAccessStore, SupabaseAccessStore, type AccessStore } from "@/src/
 import { agentHandler } from "@/src/agent/handler";
 import { modelClassifier } from "@/src/agent/classifier";
 import { BetEngine } from "@/src/bets/engine";
+import { runReminders } from "@/src/bets/reminders";
 import { MemoryBetStore, type BetStore } from "@/src/bets/store";
 import { SupabaseBetStore } from "@/src/bets/supabase-store";
 import { botNames, env } from "@/src/config/env";
@@ -94,7 +95,17 @@ const wirings = new Map<TransportName, Wiring>();
 
 export function tickDeps() {
   const w = wire(env().TRANSPORT);
-  return { store: w.store, betStore: w.betStore, engine: w.engine, outbox: w.outbox, pipeline: w.pipeline, proofStore: w.proofStore, jobRunners: w.jobRunners, promote: () => defaultAccessStore().promote(3) };
+  return {
+    store: w.store,
+    betStore: w.betStore,
+    engine: w.engine,
+    outbox: w.outbox,
+    pipeline: w.pipeline,
+    proofStore: w.proofStore,
+    jobRunners: w.jobRunners,
+    promote: () => defaultAccessStore().promote(3),
+    remind: (now: Date) => runReminders({ store: w.betStore, post: (c, m, k) => w.outbox.send(c, m, k), namesFor: namesFor(w.store) }, now),
+  };
 }
 
 export function pipelineFor(transportName: TransportName): InboundPipeline {
@@ -133,6 +144,7 @@ function wire(transportName: TransportName): Wiring {
       ledger,
       siteUrl: env().NEXT_PUBLIC_SITE_URL,
       botName,
+      access: defaultAccessStore(),
       model,
       classifier: model ? modelClassifier(model) : undefined,
       intake: { proofStore, media },

@@ -94,6 +94,8 @@ export interface Bet {
   verdict?: Verdict;
   /** Present only for dollar-worded social stakes with a named holder. */
   funding?: Funding;
+  /** ISO time the "proof due soon" nudge went out; one per bet. */
+  reminderSentAt?: string;
   disputeWindowEndsAt?: string;
   dispute?: Dispute;
   resolvedAt?: string;

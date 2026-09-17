@@ -11,6 +11,7 @@ import { agentHandler } from "@/src/agent/handler";
 import { buildTools, type ToolDeps } from "@/src/agent/tools";
 import { BetEngine } from "@/src/bets/engine";
 import { MemoryBetStore } from "@/src/bets/store";
+import { MemoryAccessStore } from "@/src/access/store";
 import { MemoryStore } from "@/src/db/memory-store";
 import { namesFor } from "@/src/db/names";
 import { InboundPipeline, type TurnContext } from "@/src/inbound/pipeline";
@@ -123,7 +124,8 @@ export async function world(opts: WorldOptions) {
   await store.setDisplayName(users[HANDLES.sam], "Sam");
 
   const engine = new BetEngine({ store: betStore, ledger, post: (c, m, k) => outbox.send(c, m, k), names: (id) => id, namesFor: namesFor(store), clock, settleUp: settleUpFor(store), fundingRequest: fundingHooks(store).fundingRequest });
-  const toolDeps: ToolDeps = { store, betStore, engine, ledger, siteUrl: SITE, clock };
+  const access = new MemoryAccessStore();
+  const toolDeps: ToolDeps = { store, betStore, engine, ledger, siteUrl: SITE, access, clock };
   const files = new Map<string, Buffer>();
   const judge = opts.judge ?? fakeJudge(() => ({}));
   const renderVideo = async () => [await png(42)];

@@ -114,6 +114,19 @@ export class SupabaseBetStore implements BetStore {
     if (error) fail("bets.setFunding", error);
   }
 
+  async setReminded(betId: string, at: string): Promise<void> {
+    const bet = await this.get(betId);
+    if (!bet) return;
+    const { error } = await this.db.from("bets").update({ state: serialize({ ...bet, reminderSentAt: at }) }).eq("id", betId);
+    if (error) fail("bets.setReminded", error);
+  }
+
+  async lockedBetsDueBefore(now: string, before: string, limit: number): Promise<Bet[]> {
+    const { data, error } = await this.db.from("bets").select("state").eq("status", "locked").gt("deadline_at", now).lte("deadline_at", before).limit(limit);
+    if (error) fail("bets.lockedBetsDueBefore", error);
+    return (data ?? []).map((row) => deserialize(row.state as Record<string, unknown>));
+  }
+
   async findByCard(chatId: string, providerMessageId: string | ""): Promise<Bet | null> {
     const query = this.db.from("bets").select("state").eq("chat_id", chatId);
     const { data, error } = providerMessageId

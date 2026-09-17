@@ -15,6 +15,8 @@ export interface TickDeps {
   proofStore?: ProofStore;
   /** Waitlist promotion (referrals ≥ threshold → active). */
   promote?: () => Promise<number>;
+  /** Proof-due nudges; returns how many went out. */
+  remind?: (now: Date) => Promise<number>;
   /** Job kind → runner. Judge is registered by the wiring; absent kinds wait. */
   jobRunners?: Record<string, (payload: Record<string, unknown>) => Promise<void>>;
   clock?: () => Date;
@@ -39,6 +41,7 @@ export interface TickReport {
   jobsRun: number;
   jobsFailed: number;
   promoted: number;
+  reminders: number;
   timeouts: TimeoutReport;
   ms: number;
 }
@@ -92,6 +95,7 @@ export async function tick(deps: TickDeps): Promise<TickReport> {
 
   const timeouts = await runTimeouts(deps.betStore, deps.engine, now, limits.timeouts);
   const promoted = (await deps.promote?.()) ?? 0;
+  const reminders = (await deps.remind?.(now)) ?? 0;
 
-  return { effectsReplayed, outboxSent, outboxFailed, inboxReprocessed, jobsRun, jobsFailed, promoted, timeouts, ms: Date.now() - started };
+  return { effectsReplayed, outboxSent, outboxFailed, inboxReprocessed, jobsRun, jobsFailed, promoted, reminders, timeouts, ms: Date.now() - started };
 }

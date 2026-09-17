@@ -30,6 +30,8 @@ export interface AccessStore {
   redeemInvite(code: string, phone: string): Promise<string>;
   joinWaitlist(phone: string, referredBy?: string): Promise<WaitlistResult>;
   myInvite(userId: string): Promise<InviteView | null>;
+  /** The member's own code, minted on first ask (chat-unlocked members have none until they ask). */
+  ensureInvite(userId: string): Promise<InviteView>;
   /** Promote waitlisters with enough referrals. Returns how many. */
   promote(threshold?: number): Promise<number>;
   /** Seed/admin: mint a code with no owner. */
@@ -110,6 +112,14 @@ export class MemoryAccessStore implements AccessStore {
     return found ? { code: found[0], maxUses: found[1].maxUses, uses: found[1].uses } : null;
   }
 
+  async ensureInvite(userId: string): Promise<InviteView> {
+    const existing = await this.myInvite(userId);
+    if (existing) return existing;
+    const code = randomCode();
+    this.invites.set(code, { owner: userId, maxUses: 3, uses: 0, redeemed: new Set() });
+    return { code, maxUses: 3, uses: 0 };
+  }
+
   async promote(threshold = 3): Promise<number> {
     const due = this.waitlist.filter((w) => !w.activated && w.referrals >= threshold);
     for (const w of due) this.activate(w.phone);
@@ -177,5 +187,14 @@ export class SupabaseAccessStore implements AccessStore {
   async mint(code: string, maxUses: number): Promise<void> {
     const { error } = await this.db.from("invites").upsert({ code: code.toUpperCase(), max_uses: maxUses }, { onConflict: "code" });
     if (error) fail("mint", error);
+  }
+
+  async ensureInvite(userId: string): Promise<InviteView> {
+    const existing = await this.myInvite(userId);
+    if (existing) return existing;
+    const code = randomCode();
+    const { error } = await this.db.from("invites").insert({ code, owner_user_id: userId, max_uses: 3 });
+    if (error) fail("ensureInvite", error);
+    return { code, maxUses: 3, uses: 0 };
   }
 }

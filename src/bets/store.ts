@@ -33,6 +33,9 @@ export interface BetStore {
   setCardMessageId(betId: string, providerMessageId: string): Promise<void>;
   /** Replaces the funding record (who paid the holder, holder confirmation). No version bump: not a state transition. */
   setFunding(betId: string, funding: Funding): Promise<void>;
+  setReminded(betId: string, at: string): Promise<void>;
+  /** Locked bets whose deadline falls in (now, before], for the proof-due nudge. */
+  lockedBetsDueBefore(now: string, before: string, limit: number): Promise<Bet[]>;
   /** Bet whose card was reacted to; falls back to the newest proposed bet in the chat when the target is unknown. */
   findByCard(chatId: string, providerMessageId: string | ""): Promise<Bet | null>;
   openBetsInChat(chatId: string): Promise<Bet[]>;
@@ -86,6 +89,17 @@ export class MemoryBetStore implements BetStore {
   async setFunding(betId: string, funding: Funding): Promise<void> {
     const bet = this.bets.get(betId);
     if (bet) this.bets.set(betId, { ...bet, funding });
+  }
+
+  async setReminded(betId: string, at: string): Promise<void> {
+    const bet = this.bets.get(betId);
+    if (bet) this.bets.set(betId, { ...bet, reminderSentAt: at });
+  }
+
+  async lockedBetsDueBefore(now: string, before: string, limit: number): Promise<Bet[]> {
+    return [...this.bets.values()]
+      .filter((b) => b.status === "locked" && b.deadlineAt > now && b.deadlineAt <= before)
+      .slice(0, limit);
   }
 
   async findByCard(chatId: string, providerMessageId: string | ""): Promise<Bet | null> {

@@ -27,6 +27,7 @@ const cassette: CassetteStep[] = [
     },
   },
   { match: /leaderboard/i, tool: { name: "leaderboard", input: () => ({}) }, say: "standings above." },
+  { match: /invite/i, tool: { name: "my_invite", input: () => ({}) }, sayToolResult: true },
 ];
 
 describe("e2e: create and lock", () => {
@@ -91,6 +92,16 @@ describe("e2e: create and lock", () => {
     const later = await w.send(HANDLES.sam, "lunch at 1?");
     expect(later).toMatchObject({ outcome: "ignored", reason: "silent" });
     expect(w.transport.sends.length).toBe(sendsBefore);
+  });
+
+  it("hands out a personal invite link on request, by tool or by command", async () => {
+    const w = await world({ cassette });
+    await w.send(HANDLES.matt, "hey mushy");
+    await w.send(HANDLES.matt, "mushy send me an invite");
+    const line = w.transcript().at(-1)!;
+    expect(line).toMatch(/^your link \(3 uses left\): https:\/\/mushy\.test\/join\?ref=[A-Z0-9]{8} — send it to whoever's in$/);
+    await w.send(HANDLES.matt, "!invite");
+    expect(w.transcript().at(-1)).toBe(line); // same code, not a new one each time
   });
 
   it("an unagreed member cannot lock a bet", async () => {

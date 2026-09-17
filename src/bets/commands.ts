@@ -18,6 +18,7 @@ import { ACCEPT_WINDOW_HOURS, type Bet } from "./types";
  *   !cancel
  *   !pay <venmo|cashapp|paypal|applecash> <handle>   (where to be paid when a social stake settles)
  *   !paid [#id]   /   !got [#id]                     (funded bets: bettor sent the stake / holder has the pot)
+ *   !invite                                          (your own invite link)
  * A 👍 on the card from anyone else takes the other side and locks it.
  */
 export interface CommandDeps {
@@ -32,6 +33,8 @@ export interface CommandDeps {
   needsTermsMessage?: (name: string) => string;
   /** Records a payment handle for settle-up links. Absent = `!pay` is off. */
   setPayHandle?: (userId: string, provider: string, handle: string) => Promise<void>;
+  /** The sender's invite link. Absent = `!invite` is off. */
+  inviteLink?: (userId: string) => Promise<string>;
 }
 
 const DAY_MS = 86_400_000;
@@ -154,7 +157,7 @@ export function buildBet(parsed: ParsedBet, ctx: TurnContext, now: Date): Bet {
 }
 
 /** Wraps the engine for the pipeline. Returns replies; the card is posted by the pipeline so its id can be recorded. */
-export function commandHandler({ store, engine, names: fallbackNames, namesFor, clock = () => new Date(), mayStake, needsTermsMessage, setPayHandle }: CommandDeps): TurnHandler {
+export function commandHandler({ store, engine, names: fallbackNames, namesFor, clock = () => new Date(), mayStake, needsTermsMessage, setPayHandle, inviteLink }: CommandDeps): TurnHandler {
   const allowed = async (userId: string) => (mayStake ? mayStake(userId) : true);
 
   return async (ctx): Promise<OutboundMessage[]> => {
@@ -210,6 +213,10 @@ export function commandHandler({ store, engine, names: fallbackNames, namesFor, 
       if (!bet) return [{ text: "no open bet with that id here" }];
       const result = await refereeDecide(store, engine, bet.id, ctx.userId, /^(yes|stands)$/i.test(callMatch[2]));
       return result.ok ? [] : [{ text: `❓ ${result.text}` }];
+    }
+
+    if (/^!invite\b/i.test(text)) {
+      return inviteLink ? [{ text: await inviteLink(ctx.userId) }] : [];
     }
 
     if (/^!pay\b/i.test(text)) {
