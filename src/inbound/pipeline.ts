@@ -127,6 +127,7 @@ export class InboundPipeline {
         botNames,
         recentBotMessageIds: await store.recentOutboundIds(chat.id, 20),
         senderHasOpenBet: (await this.deps.senderHasOpenBet?.(chat.id, user.id)) ?? false,
+        lastBotMessageAt: await store.lastOutboundAt(chat.id),
       });
 
       if (decision.act === false) {

@@ -10,7 +10,7 @@ Tokens in `app/globals.css` under "folk-style system", registered in `@theme inl
 
 - Body text on mist is `sky-ink/70` or darker (5.2:1). Large headings (≥ 24px) may go to `/55`. Placeholders `/55`.
 - Classes: `.card-soft` (translucent card, lifts on hover when it is a link or has `.card-lift`), `.pill-3d`, `.pill-blue`, `.btn-dark`, `.nav-pill`, `.tab-pill`, `.chip`, `.sky-hero`, `.sky-band` (compact header for /app and legal pages), `.tnum` (tabular numerals), `.glass` via `GlassBall`.
-- Brand mark = the black speech-bubble blob in `public/brand/` (`bookie-mark*.png`, black/white/flat + 512px cuts; also `app/icon.png`, `app/apple-icon.png`). `Mascot mood=` wave | zen | cheer | sleep | money | ref only tilts it and adds a small badge; `tone="white"` for dark/sky. `Avatar` = black circle + white mark. Never redraw the mascot in SVG. Status → accent/glyph/mood lives in `src/web/status-theme.ts` (tested). Never pick a colour for a status by hand.
+- Brand mark = the black speech-bubble blob in `public/brand/` (`mushy-mark*.png`, black/white/flat + 512px cuts; also `app/icon.png`, `app/apple-icon.png`). `Mascot mood=` wave | zen | cheer | sleep | money | ref only tilts it and adds a small badge; `tone="white"` for dark/sky. `Avatar` = black circle + white mark. Never redraw the mascot in SVG. Status → accent/glyph/mood lives in `src/web/status-theme.ts` (tested). Never pick a colour for a status by hand.
 - Stickers (`app/(site)/folk/stickers.tsx`) are inline SVG, `aria-hidden`, forward SVG props.
 - `/app` pages are thin server components that call `webData()` (`src/web/data`) and render `app/app/_ui/*` primitives. Never import `supabaseServer` or `src/web/queries` from a page.
 

@@ -26,7 +26,7 @@ export default async function AppHome() {
   const settled = bets.filter((b) => TERMINAL.has(b.bet.status));
   const needsTerms = viewer.live && (wallet?.termsVersionAccepted ?? 0) < TERMS_VERSION;
   const mood = portfolioMood(bets.map((b) => b.bet), viewer.userId);
-  const textBot = { href: `sms:${BOT_NUMBER}&body=${encodeURIComponent("bookie ")}`, label: "text bookie a bet" };
+  const textBot = { href: `sms:${BOT_NUMBER}&body=${encodeURIComponent("mushy ")}`, label: "text mushy a bet" };
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-5 pb-24 sm:px-8">

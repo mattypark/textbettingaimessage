@@ -1,6 +1,6 @@
 # HANDOFF — read this first in the next session
 
-Project: **Bookie** — an iMessage bot you add to a friend group chat; text it a bet, everyone 👍 to lock, proof goes in the thread, Claude judges, points settle. Invite-only like Instinct; landing copies folk.com's layout with our own mascot/stickers.
+Project: **Mushy** (renamed from Bookie 2026-09-17; `BOT_NAMES=mushy`, wake word "hey mushy") — an iMessage bot you add to a friend group chat; text it a bet, everyone 👍 to lock, proof goes in the thread, Claude judges, points settle. Invite-only like Instinct; landing copies folk.com's layout with our own mascot/stickers.
 
 - Folder: `~/Downloads/current-projects/textbettingaimessage` · Repo: `mattypark/textbettingaimessage` (main, pushed once; later commits are local — Matthew pushes)
 - Plan of record with all research + citations: `~/.claude/plans/me-and-my-friend-hazy-turtle.md`
@@ -11,7 +11,7 @@ Project: **Bookie** — an iMessage bot you add to a friend group chat; text it 
 | Area | Where | Status |
 |---|---|---|
 | Transport adapters (Linq primary, Sendblue secondary, fake) | `src/transport/` | done, fixtures from docs (not yet from a live line) |
-| Inbound pipeline: verify → claim → media download → identity → **invite gate** → intro/terms → mention gate → handler → outbox | `src/inbound/` | done |
+| Inbound pipeline: verify → claim → media download → identity → **invite gate** → intro/terms → mention gate (name, reply, reaction, command, proof, **2-minute attention window after the bot speaks → classifier**) → handler → outbox | `src/inbound/` | done |
 | Points ledger (double-entry, DB-enforced) + cash stub | `src/ledger/`, migration 0002 | done |
 | Bet state machine + engine + `!bet`/`!cancel`/`!dispute`/`call` commands | `src/bets/` | done |
 | Claude agent (opus-5 tools, sonnet-5 classifier) | `src/agent/` | done, **never run against real Claude yet** |
@@ -29,7 +29,7 @@ Project: **Bookie** — an iMessage bot you add to a friend group chat; text it 
 ## What has NOT happened (needs Matthew's hands)
 
 1. **`linq login`** — CLI token expired. Then `npm run dev` + `npm run webhooks:dev` (no ngrok) and do the Stage 0 spike in `docs/providers.md`: add +1 (205) 396-8556 to a real group, send text / 👍 / photo / video, save raw payloads into `tests/fixtures/linq/`. Parser guesses to confirm: `chat.created` participants shape, reaction target ids.
-2. **`ANTHROPIC_API_KEY` in `.env.local`** → `npm run agent:smoke "bookie 20 says I make this shot by friday, jake you in?"` and tune `src/agent/prompts/system.ts` + tool descriptions.
+2. **`ANTHROPIC_API_KEY` in `.env.local`** → `npm run agent:smoke "mushy 20 says I make this shot by friday, jake you in?"` and tune `src/agent/prompts/system.ts` + tool descriptions.
 3. **Supabase project** → `supabase db push`, Auth phone + Send-SMS hook, `app.tick_url` / `app.cron_secret` settings (all in `docs/DEPLOY.md`). Local stack works on ports 553xx (`supabase start`) but needs Docker — keep Docker off otherwise, it pegs CPU with other projects' stacks.
 4. **Seed invite codes**: `insert into invites (code, max_uses) values ('MATT0001', 50);` then share `/join?ref=MATT0001`. Set `INVITE_ONLY=0` locally to bypass the gate.
 5. **Vercel deploy** (Matthew deploys; not the "old projects" Vercel account).

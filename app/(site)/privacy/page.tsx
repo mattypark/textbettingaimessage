@@ -4,7 +4,7 @@ export const metadata = { title: "Privacy", description: "What the group-chat be
 
 export default function PrivacyPage() {
   return (
-    <LegalShell eyebrow="privacy" title="What bookie keeps" updated="September 16, 2026" mood="zen">
+    <LegalShell eyebrow="privacy" title="What mushy keeps" updated="September 16, 2026" mood="zen">
       <h2>what we store</h2>
       <ul>
         <li>Your phone number and the name you tell the bot to call you.</li>

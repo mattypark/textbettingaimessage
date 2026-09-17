@@ -11,25 +11,25 @@ const BET_CARDS: Array<{
 }> = [
   {
     title: "half-court shot",
-    by: "bookie team",
+    by: "mushy team",
     desc: "video proof, ball leaves your hands from half court. no edits.",
     mood: "cheer",
   },
   {
     title: "no doordash this week",
-    by: "bookie team",
+    by: "mushy team",
     desc: "loser buys dinner. bank screenshot friday or it's on you.",
     mood: "money",
   },
   {
     title: "5k by sunday",
-    by: "bookie team",
+    by: "mushy team",
     desc: "watch screenshot, 5.00 km or more, this week's date in frame.",
     mood: "wave",
   },
   {
     title: "in bed by 1am",
-    by: "bookie team",
+    by: "mushy team",
     desc: "screen time screenshot every morning. streaks pay double.",
     mood: "sleep",
   },
@@ -51,7 +51,7 @@ const FEATURED: Array<{ title: string; by: string; desc: string; mood: Mood }> =
     {
       title: "fantasy loser tattoo",
       by: "@raymond_wang",
-      desc: "the classic. bookie tracks the season, calls the loser, posts the receipt…",
+      desc: "the classic. mushy tracks the season, calls the loser, posts the receipt…",
       mood: "ref",
     },
     {
@@ -62,7 +62,7 @@ const FEATURED: Array<{ title: string; by: string; desc: string; mood: Mood }> =
     },
     {
       title: "who calls it right",
-      by: "bookie team",
+      by: "mushy team",
       desc: "pick the score before tipoff. closest wins the pot, ties push.",
       mood: "zen",
     },
@@ -96,7 +96,7 @@ export function BetsSection() {
           bets
         </p>
         <h2 className="mt-3 text-center font-round text-4xl font-semibold text-[#1f2a2f] sm:text-[38px]">
-          give bookie a bet. it starts scoring today.
+          give mushy a bet. it starts scoring today.
         </h2>
       </Reveal>
 
@@ -175,7 +175,7 @@ export function BetsSection() {
 
       <Row
         title="featured"
-        sub="made by bookie + the community"
+        sub="made by mushy + the community"
         more="browse all →"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -253,7 +253,7 @@ export function StatementSection() {
     <section className="mx-auto max-w-5xl px-5 pb-6 pt-16 sm:pt-24 lg:pt-28">
       <Reveal y={24} amount={0.4}>
         <h2 className="text-center font-round text-4xl font-semibold leading-[1.08] text-[#1f2a2f] sm:text-6xl lg:text-[74px] lg:leading-[1.1]">
-          meet bookie,{" "}
+          meet mushy,{" "}
           <span className="text-[#1f2a2f]/70">
             the friend in your group chat
           </span>
@@ -289,7 +289,7 @@ export function MoreSection() {
           <Mascot mood="zen" size={90} />
         </div>
         <h2 className="mt-2 text-center font-round text-4xl font-semibold text-[#1f2a2f] sm:text-[48px]">
-          bookie does more for you.
+          mushy does more for you.
         </h2>
       </Reveal>
 
@@ -365,7 +365,7 @@ export function MoreSection() {
             <span className="text-7xl">🛡️</span>
           </div>
           <p className="font-round text-2xl font-semibold text-[#1f2a2f] sm:text-[32px]">
-            only acts when you say its name.
+            wakes up to &ldquo;hey mushy&rdquo;, then follows the thread.
           </p>
         </Bento>
         <Bento
@@ -436,7 +436,7 @@ export function MoneySection() {
           it settles the bet.
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center font-round text-[17px] leading-relaxed text-[#1f2a2f]/70">
-          group chats count on nobody following up. bookie remembers every bet,
+          group chats count on nobody following up. mushy remembers every bet,
           chases the proof, and posts the verdict where everyone can see it. you
           just react.
         </p>
@@ -468,11 +468,11 @@ export function MoneySection() {
               href="/terms"
               className="mt-8 inline-block border-b-2 border-[#1f2a2f]/30 text-[16px] font-semibold text-[#1f2a2f]"
             >
-              see everything bookie enforces →
+              see everything mushy enforces →
             </Link>
             <p className="mt-6 max-w-sm text-[13px] text-[#1f2a2f]/70">
               🔒 points have no cash value and can&apos;t be bought. social
-              stakes are between you and your friends — bookie only keeps score.
+              stakes are between you and your friends — mushy only keeps score.
             </p>
           </div>
           <ol className="flex flex-col gap-2 font-round text-[15px]">
@@ -512,25 +512,25 @@ export function FooterCta() {
             <Mascot mood="wave" size={150} />
           </div>
           <h2 className="mx-auto mt-2 max-w-3xl font-round text-4xl font-semibold leading-[1.02] text-[#1f2a2f] sm:text-6xl lg:text-[74px]">
-            meet the bookie that keeps you honest.
+            meet the mushy that keeps you honest.
           </h2>
           <p className="mx-auto mt-5 max-w-md font-round text-[17px] text-[#1f2a2f]/70">
-            bookie lives in your group chat, remembers every bet, and calls it
+            mushy lives in your group chat, remembers every bet, and calls it
             so nobody has to.
           </p>
           <Link
             href="/join"
             className="btn-dark mt-8 inline-flex items-center gap-2 px-6 py-3.5 font-round text-[15px]"
           >
-            meet bookie →
+            meet mushy →
           </Link>
         </Reveal>
       </div>
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 font-round sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <p className="text-2xl font-bold text-[#1f2a2f]">bookie</p>
+          <p className="text-2xl font-bold text-[#1f2a2f]">mushy</p>
           <p className="mt-2 max-w-xs text-[14px] text-[#1f2a2f]/70">
-            a bookie that lives in your group chat. on iMessage today.
+            a mushy that lives in your group chat. on iMessage today.
           </p>
         </div>
         <FooterCol
@@ -559,7 +559,7 @@ export function FooterCta() {
         />
       </div>
       <p className="pb-10 text-center font-round text-[13px] text-[#1f2a2f]/70">
-        © 2026 bookie. points, not money.
+        © 2026 mushy. points, not money.
       </p>
     </footer>
   );

@@ -29,7 +29,7 @@ async function world() {
     store,
     transport,
     handler: commandHandler({ store: betStore, engine, names: (id) => id, clock: () => now.value }),
-    botNames: ["bookie"],
+    botNames: ["mushy"],
     onCardPosted: (betId, id) => betStore.setCardMessageId(betId, id),
   });
   const msg = (id: string, from: string, text: string, extra: Record<string, unknown> = {}) =>
@@ -99,7 +99,7 @@ describe("tick", () => {
 
   it("reprocesses an inbox row that was claimed but never finished", async () => {
     const w = await world();
-    const res = await w.pipeline.handle(w.msg("m1", "+1matt", "bookie hi"), {});
+    const res = await w.pipeline.handle(w.msg("m1", "+1matt", "mushy hi"), {});
     expect(res.outcome).toBe("processed");
     const row = [...w.store.inbox.values()][0];
     row.status = "processing";

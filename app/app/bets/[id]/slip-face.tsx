@@ -14,7 +14,7 @@ export function SlipFace({ bet, chatName, names, viewerId }: { bet: Bet; chatNam
   const theme = statusTheme(bet.status, outcome);
   const forSide = bet.participants.filter((p) => p.side === "for");
   const against = bet.participants.filter((p) => p.side === "against");
-  const judge = bet.judgeKind === "referee" && bet.refereeUserId ? name(bet.refereeUserId) : "bookie";
+  const judge = bet.judgeKind === "referee" && bet.refereeUserId ? name(bet.refereeUserId) : "mushy";
 
   return (
     <article className="card-soft relative overflow-hidden p-5 sm:p-7">

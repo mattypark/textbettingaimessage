@@ -27,6 +27,6 @@ Everything below is one-time setup; the code needs no changes between local and 
 
 ## 4. Smoke checks after deploy
 1. `curl -X POST https://<site>/api/cron/tick -H "authorization: Bearer $CRON_SECRET"` → JSON report.
-2. Add the line to a 3-person group, text "hey bookie" → intro; 👍 it; `!bet thing ; 5 ; tomorrow`; a friend 👍 → LOCKED.
+2. Add the line to a 3-person group, text "hey mushy" → intro; 👍 it; `!bet thing ; 5 ; tomorrow`; a friend 👍 → LOCKED.
 3. Send a photo → verdict inside a minute (`jobs` table shows the judge job done).
 4. Sign in on the web with your phone → code arrives from the bot → dashboard shows the bet.

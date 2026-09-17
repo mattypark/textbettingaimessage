@@ -15,7 +15,7 @@ export function AppNav({ signedIn }: { signedIn: boolean }) {
     <header className="relative z-10 mx-auto flex w-full max-w-3xl items-center justify-between px-5 py-4 sm:px-8 sm:py-5">
       <Link href={signedIn ? "/app" : "/"} className="flex items-center gap-2 font-round text-[26px] font-bold text-sky-ink">
         <Avatar size={34} />
-        Bookie
+        Mushy
       </Link>
       <nav className="flex items-center font-round text-[14px] font-medium text-sky-ink/75">
         <div className="nav-pill hidden items-center gap-1 rounded-2xl p-1.5 sm:flex">

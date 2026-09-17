@@ -9,7 +9,7 @@ export const echoHandler: TurnHandler = async ({ event, decision }) => {
     return [{ text: `${event.reaction.kind === "affirm" ? "👍" : "👀"} noted, ${event.senderHandle}` }];
   }
   if (event.participantAdded) {
-    return [{ text: "I'm in. Text \"bookie\" plus a bet to get started." }];
+    return [{ text: "I'm in. Text \"mushy\" plus a bet to get started." }];
   }
   const what = event.attachments.length ? `${event.attachments.length} attachment(s)` : `"${event.text.slice(0, 60)}"`;
   return [{ text: `got it, ${event.senderHandle} — ${what} (${decision.reason})` }];

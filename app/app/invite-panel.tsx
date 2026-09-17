@@ -12,7 +12,7 @@ export function InvitePanel({ code, uses, maxUses, siteUrl }: { code: string; us
           {left} of {maxUses} left
         </span>
       </div>
-      <p className="mt-1 text-[14px] text-sky-ink/70">bookie is invite-only. each member gets {maxUses} invites; the link adds them straight to the line.</p>
+      <p className="mt-1 text-[14px] text-sky-ink/70">mushy is invite-only. each member gets {maxUses} invites; the link adds them straight to the line.</p>
       <ShareLink url={url} />
     </section>
   );

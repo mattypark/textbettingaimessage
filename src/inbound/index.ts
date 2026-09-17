@@ -107,7 +107,7 @@ function wire(transportName: TransportName): Wiring {
   });
   const ledger = createLedger();
   const client = env().ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env().ANTHROPIC_API_KEY }) : undefined;
-  const botName = botNames()[0] ?? "bookie";
+  const botName = botNames()[0] ?? "mushy";
   const pipeline = new InboundPipeline({
     store,
     transport,

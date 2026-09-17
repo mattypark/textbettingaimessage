@@ -38,7 +38,7 @@ async function world() {
   const chat = await store.upsertChat(chatEvent);
   for (const handle of Object.keys(users)) await store.upsertMember(chat.id, users[handle], handle);
   const engine = new BetEngine({ store: betStore, ledger, post: (c, m, k) => outbox.send(c, m, k), names: (id) => id, clock: () => NOW });
-  const deps = { store, betStore, engine, ledger, siteUrl: "https://example.test", clock: () => NOW, botName: "bookie" };
+  const deps = { store, betStore, engine, ledger, siteUrl: "https://example.test", clock: () => NOW, botName: "mushy" };
   const ctx = (text: string, from = "+1matt", extra: Partial<TurnContext["event"]> = {}): TurnContext => ({
     event: { ...chatEvent, providerMessageId: `m-${Math.random()}`, senderHandle: from, text, ...extra },
     chatId: chat.id,
@@ -53,7 +53,7 @@ async function world() {
 describe("agent tools", () => {
   it("create_bet posts a card via the side channel and names the opponent", async () => {
     const w = await world();
-    const c = w.ctx("bookie: 20 says I make this shot by friday, jake you in?");
+    const c = w.ctx("mushy: 20 says I make this shot by friday, jake you in?");
     const snap = await snapshot(c, w.store, w.betStore, w.ledger, NOW);
     const session = { ctx: c, snap, replies: [] as { text: string; idempotencyKey?: string }[] };
     const create = tool(buildTools(w.deps, session), "create_bet");
@@ -141,7 +141,7 @@ describe("agentHandler routing", () => {
   it("explains itself when no Claude client is configured", async () => {
     const w = await world();
     const handler = agentHandler({ ...w.deps });
-    const out = await handler(w.ctx("bookie set up a bet"));
+    const out = await handler(w.ctx("mushy set up a bet"));
     expect(out[0].text).toMatch(/not configured/);
   });
 
@@ -151,12 +151,12 @@ describe("agentHandler routing", () => {
       store: w.store,
       transport: w.transport,
       handler: agentHandler({ ...w.deps, runTurn: async () => [{ text: "sure, card coming" }] }),
-      botNames: ["bookie"],
-      introMessage: () => ({ text: "hi i'm bookie" }),
+      botNames: ["mushy"],
+      introMessage: () => ({ text: "hi i'm mushy" }),
     });
-    const res = await pipeline.handle(JSON.stringify({ providerMessageId: "z1", providerChatId: "g1", senderHandle: "+1matt", text: "bookie 20 says i make it", isGroup: true }), {});
+    const res = await pipeline.handle(JSON.stringify({ providerMessageId: "z1", providerChatId: "g1", senderHandle: "+1matt", text: "mushy 20 says i make it", isGroup: true }), {});
     expect(res).toMatchObject({ outcome: "processed", replies: 2 });
-    expect(w.transport.transcript("g1")).toEqual(["hi i'm bookie", "sure, card coming"]);
+    expect(w.transport.transcript("g1")).toEqual(["hi i'm mushy", "sure, card coming"]);
   });
 });
 
@@ -170,13 +170,13 @@ describe("terms gate", () => {
     const handler = agentHandler({ ...w.deps, runTurn: async () => [{ text: "agent ran" }] });
     const as = (text: string, extra: Partial<TurnContext["event"]> = {}): TurnContext => ({ ...w.ctx(text), userId: newbie.id, event: { ...w.ctx(text).event, senderHandle: "+1newb", ...extra } });
 
-    expect((await handler(as("bookie 10 says i can do 20 pushups")))[0].text).toMatch(/accept the terms/);
+    expect((await handler(as("mushy 10 says i can do 20 pushups")))[0].text).toMatch(/accept the terms/);
     expect((await handler(as("!bet pushups ; 10 ; friday")))[0].text).toMatch(/accept the terms/);
     expect(await handler(as("", { reaction: { targetProviderMessageId: "some-other-msg", kind: "affirm", removed: false } }))).toEqual([]);
 
     expect((await handler(as("I agree")))[0].text).toMatch(/you're in/);
     expect(await w.store.hasAcceptedTerms(newbie.id, 1)).toBe(true);
-    expect(await handler(as("bookie 10 says i can do 20 pushups"))).toEqual([{ text: "agent ran" }]);
+    expect(await handler(as("mushy 10 says i can do 20 pushups"))).toEqual([{ text: "agent ran" }]);
 
     const other = await w.store.upsertUser("+1other");
     await w.store.upsertMember(w.chat.id, other.id, "+1other");

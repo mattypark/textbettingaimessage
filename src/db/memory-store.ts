@@ -10,7 +10,7 @@ export class MemoryStore implements Store {
   readonly terms = new Set<string>();
   readonly termsVia = new Map<string, string>();
   readonly termsMessages = new Map<string, string>();
-  readonly outbox: Array<OutboxRow & { status: string; providerMessageId?: string; error?: string; attempts: number }> = [];
+  readonly outbox: Array<OutboxRow & { status: string; providerMessageId?: string; error?: string; attempts: number; sentAt?: string }> = [];
   private seq = 0;
 
   private nextId(prefix: string): string {
@@ -113,6 +113,12 @@ export class MemoryStore implements Store {
     row.providerMessageId = providerMessageId;
     row.error = error;
     row.attempts += 1;
+    if (status === "sent") row.sentAt = new Date().toISOString();
+  }
+
+  async lastOutboundAt(chatId: string): Promise<string | null> {
+    const sent = this.outbox.filter((row) => row.chatId === chatId && row.status === "sent" && row.sentAt);
+    return sent.length ? (sent[sent.length - 1].sentAt as string) : null;
   }
 
   async queuedOutbound(limit: number, maxAttempts: number): Promise<OutboxRow[]> {

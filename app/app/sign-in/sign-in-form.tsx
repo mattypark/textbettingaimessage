@@ -32,7 +32,7 @@ export function SignInForm() {
   async function verify(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!/^\d{6}$/.test(code)) return setError("six digits, the ones bookie just texted you");
+    if (!/^\d{6}$/.test(code)) return setError("six digits, the ones mushy just texted you");
     setBusy(true);
     const { error: verifyError } = await supabaseBrowser().auth.verifyOtp({ phone, token: code, type: "sms" });
     setBusy(false);
@@ -46,7 +46,7 @@ export function SignInForm() {
   return (
     <main className="flex flex-1 flex-col items-center px-5 pb-24 pt-6 text-center">
       <Mascot mood={stage === "phone" ? "wave" : "zen"} size={120} />
-      <span className="-mt-2 rounded-2xl bg-sky-ink px-4 py-2 text-[15px] font-semibold text-white">{stage === "phone" ? "hi, i&apos;m bookie!" : "check your texts"}</span>
+      <span className="-mt-2 rounded-2xl bg-sky-ink px-4 py-2 text-[15px] font-semibold text-white">{stage === "phone" ? "hi, i&apos;m mushy!" : "check your texts"}</span>
 
       {stage === "phone" ? (
         <form onSubmit={sendCode} className="flex w-full max-w-sm flex-1 flex-col items-center" noValidate>

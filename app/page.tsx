@@ -136,7 +136,7 @@ export default function Landing() {
               } as React.CSSProperties
             }
           >
-            the <span className="text-white/70">bookie</span>
+            the <span className="text-white/70">mushy</span>
             <span className="mx-2 inline-block -translate-y-2 align-middle">
               <Mascot mood="wave" size={72} />
             </span>
@@ -150,7 +150,7 @@ export default function Landing() {
               href="/join"
               className="pill-3d px-8 py-3 font-round text-[15px] font-semibold"
             >
-              text bookie
+              text mushy
             </Link>
             <Link
               href="/app"

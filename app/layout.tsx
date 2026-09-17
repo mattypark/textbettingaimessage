@@ -9,10 +9,10 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  applicationName: "Bookie",
-  title: { default: "Bookie — bets in your group chat", template: "%s · Bookie" },
+  applicationName: "Mushy",
+  title: { default: "Mushy — bets in your group chat", template: "%s · Mushy" },
   description: "Add one number to your group chat. Text it a bet, everyone 👍 to lock it, send proof in the thread, it calls it. Points, not money.",
-  openGraph: { type: "website", siteName: "Bookie" },
+  openGraph: { type: "website", siteName: "Mushy" },
   twitter: { card: "summary_large_image" },
 };
 

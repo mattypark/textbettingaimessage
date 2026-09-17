@@ -47,7 +47,7 @@ describe("pipeline access gate", () => {
     const access = new MemoryAccessStore();
     await access.mint("FRIEND01", 3);
     const handled: string[] = [];
-    const gate = accessGate(access, "https://bookie.test");
+    const gate = accessGate(access, "https://mushy.test");
     const pipeline = new InboundPipeline({
       store,
       transport,
@@ -55,7 +55,7 @@ describe("pipeline access gate", () => {
         handled.push(event.text);
         return [{ text: `handled: ${event.text}` }];
       },
-      botNames: ["bookie"],
+      botNames: ["mushy"],
       introMessage: () => ({ text: "intro" }),
       accessGate: async (chatId, userId, phone, text) => {
         // Memory store learns users as the pipeline creates them.
@@ -68,17 +68,17 @@ describe("pipeline access gate", () => {
 
   it("nudges an uninvited sender once, then stays silent; a code unlocks them", async () => {
     const w = await world();
-    expect(await w.pipeline.handle(msg("m1", "+1stranger", "bookie make a bet"), {})).toMatchObject({ outcome: "ignored", reason: "not_invited" });
+    expect(await w.pipeline.handle(msg("m1", "+1stranger", "mushy make a bet"), {})).toMatchObject({ outcome: "ignored", reason: "not_invited" });
     // No intro for strangers — just the one nudge.
-    expect(w.transport.transcript("g1")).toEqual(["bookie is invite-only right now. grab a spot at https://bookie.test/join — or reply \"code XXXXXXXX\" if a friend gave you one."]);
-    expect(await w.pipeline.handle(msg("m2", "+1stranger", "bookie pls"), {})).toMatchObject({ outcome: "ignored" });
+    expect(w.transport.transcript("g1")).toEqual(["mushy is invite-only right now. grab a spot at https://mushy.test/join — or reply \"code XXXXXXXX\" if a friend gave you one."]);
+    expect(await w.pipeline.handle(msg("m2", "+1stranger", "mushy pls"), {})).toMatchObject({ outcome: "ignored" });
     expect(w.transport.sends).toHaveLength(1);
     expect(w.handled).toEqual([]);
 
     expect(await w.pipeline.handle(msg("m3", "+1stranger", "code friend01"), {})).toMatchObject({ outcome: "processed" });
     expect(w.transport.transcript("g1").at(-1)).toMatch(/you're in. your own invite link/);
-    expect(await w.pipeline.handle(msg("m4", "+1stranger", "bookie 20 says"), {})).toMatchObject({ outcome: "processed" });
-    expect(w.handled).toEqual(["bookie 20 says"]);
+    expect(await w.pipeline.handle(msg("m4", "+1stranger", "mushy 20 says"), {})).toMatchObject({ outcome: "processed" });
+    expect(w.handled).toEqual(["mushy 20 says"]);
   });
 
   it("a wrong code gets a pointer to the waitlist", async () => {

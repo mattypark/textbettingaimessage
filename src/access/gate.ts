@@ -31,6 +31,6 @@ export function accessGate(store: AccessStore, siteUrl: string) {
     const key = `${chatId}:${userId}`;
     if (nudged.has(key)) return { allowed: false };
     nudged.add(key);
-    return { allowed: false, reply: `bookie is invite-only right now. grab a spot at ${site}/join — or reply "code XXXXXXXX" if a friend gave you one.` };
+    return { allowed: false, reply: `mushy is invite-only right now. grab a spot at ${site}/join — or reply "code XXXXXXXX" if a friend gave you one.` };
   };
 }

@@ -7,7 +7,7 @@ const VERB: Record<string, string> = {
   propose: "bet proposed",
   accept: "everyone tapped 👍, locked",
   proof_received: "proof landed in the thread",
-  judge_start: "bookie started judging",
+  judge_start: "mushy started judging",
   verdict: "verdict posted",
   dispute: "dispute opened",
   settle: "settled, points moved",

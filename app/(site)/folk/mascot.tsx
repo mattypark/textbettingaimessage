@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 /**
- * Bookie's mark: the black speech-bubble blob (public/brand). One face, so
+ * Mushy's mark: the black speech-bubble blob (public/brand). One face, so
  * `mood` only tilts it and pins a small sticker badge (coin, whistle, zzz)
  * where the old drawn mascot changed expression. `tone` picks the black or
  * white cut-out; white is for dark or sky backgrounds.
@@ -25,7 +25,7 @@ const BADGE: Partial<Record<Mood, { className: string; label: string }>> = {
 };
 
 export function Mascot({ mood = "wave", size = 96, tone = "black", className = "" }: { mood?: Mood; size?: number; tone?: Tone; className?: string }) {
-  const src = tone === "white" ? "/brand/bookie-mark-white-512.png" : "/brand/bookie-mark-512.png";
+  const src = tone === "white" ? "/brand/mushy-mark-white-512.png" : "/brand/mushy-mark-512.png";
   const badge = BADGE[mood];
   const badgeSize = Math.max(14, Math.round(size * 0.26));
   return (

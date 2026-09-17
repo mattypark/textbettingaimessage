@@ -11,7 +11,7 @@ export interface PhoneMessage {
 }
 
 export const HERO_THREAD: PhoneMessage[] = [
-  { side: "out", text: "bookie 20 says I make a half-court shot by friday. jake u in?" },
+  { side: "out", text: "mushy 20 says I make a half-court shot by friday. jake u in?" },
   { side: "in", text: "🎯 BET #a41f0c\nMatt: \"I make a half-court shot\"\n20 pts each · due Fri 11:59 PM\nproof: video, ball leaves your hands from half court and goes in\n👍 this to lock" },
   { side: "out", text: "no shot lol 👍" },
   { side: "in", text: "🔒 LOCKED. 20 pts each held. show the word \"walrus-42\" in the video." },
@@ -26,7 +26,7 @@ const TYPING = 700;
  * bubbles spring in, incoming ones wait behind typing dots first. Reduced
  * motion shows the whole thread at once.
  */
-export function Phone({ messages = HERO_THREAD, name = "Bookie", className = "" }: { messages?: PhoneMessage[]; name?: string; className?: string }) {
+export function Phone({ messages = HERO_THREAD, name = "Mushy", className = "" }: { messages?: PhoneMessage[]; name?: string; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const [shown, setShown] = useState(0);

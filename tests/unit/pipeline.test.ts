@@ -11,8 +11,8 @@ function build(overrides: Partial<ConstructorParameters<typeof InboundPipeline>[
     store,
     transport,
     handler: echoHandler,
-    botNames: ["bookie"],
-    introMessage: () => ({ text: "hi, I'm bookie. terms: /terms" }),
+    botNames: ["mushy"],
+    introMessage: () => ({ text: "hi, I'm mushy. terms: /terms" }),
     ...overrides,
   });
   return { store, transport, pipeline };
@@ -24,12 +24,12 @@ const msg = (id: string, text: string, extra: Record<string, unknown> = {}) =>
 describe("InboundPipeline", () => {
   it("introduces itself once, then replies when named", async () => {
     const { pipeline, transport } = build();
-    const first = await pipeline.handle(msg("m1", "hey bookie"), {});
+    const first = await pipeline.handle(msg("m1", "hey mushy"), {});
     expect(first).toMatchObject({ outcome: "processed", replies: 2 });
-    expect(transport.transcript("g1")[0]).toContain("I'm bookie");
+    expect(transport.transcript("g1")[0]).toContain("I'm mushy");
     expect(transport.transcript("g1")[1]).toContain("got it");
 
-    const second = await pipeline.handle(msg("m2", "bookie again"), {});
+    const second = await pipeline.handle(msg("m2", "mushy again"), {});
     expect(second).toMatchObject({ outcome: "processed", replies: 1 });
     expect(transport.transcript("g1")).toHaveLength(3);
   });
@@ -43,15 +43,15 @@ describe("InboundPipeline", () => {
 
   it("dedupes a replayed webhook", async () => {
     const { pipeline, transport } = build({ introMessage: () => null });
-    await pipeline.handle(msg("m1", "bookie hi"), {});
-    const replay = await pipeline.handle(msg("m1", "bookie hi"), {});
+    await pipeline.handle(msg("m1", "mushy hi"), {});
+    const replay = await pipeline.handle(msg("m1", "mushy hi"), {});
     expect(replay).toEqual({ outcome: "duplicate" });
     expect(transport.sends).toHaveLength(1);
   });
 
   it("treats a reaction on a bot message as addressed", async () => {
     const { pipeline, transport } = build({ introMessage: () => null });
-    await pipeline.handle(msg("m1", "bookie hi"), {});
+    await pipeline.handle(msg("m1", "mushy hi"), {});
     const botMessageId = transport.sends[0].providerMessageId;
     const reaction = msg("r1", "", { reaction: { targetProviderMessageId: botMessageId, kind: "affirm", removed: false } });
     const result = await pipeline.handle(reaction, {});
@@ -72,7 +72,7 @@ describe("InboundPipeline", () => {
         throw new Error("boom");
       },
     });
-    const result = await pipeline.handle(msg("m1", "bookie hi"), {});
+    const result = await pipeline.handle(msg("m1", "mushy hi"), {});
     expect(result).toMatchObject({ outcome: "failed", error: "boom" });
     expect([...store.inbox.values()][0].status).toBe("failed");
     expect(transport.sends).toHaveLength(0);

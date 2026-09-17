@@ -55,7 +55,7 @@ export function JoinFlow({ botNumber }: { botNumber: string }) {
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-[#eef1f5] px-5 py-8 font-round text-[#1f2a2f]">
-      <Link href="/" className="flex items-center gap-2 text-3xl font-bold"><Avatar size={36} />Bookie</Link>
+      <Link href="/" className="flex items-center gap-2 text-3xl font-bold"><Avatar size={36} />Mushy</Link>
 
       {step !== "welcome" && (
         <div className="mt-6 flex w-full max-w-md items-center gap-4">
@@ -69,7 +69,7 @@ export function JoinFlow({ botNumber }: { botNumber: string }) {
       {step === "welcome" && (
         <section className="flex w-full max-w-md flex-1 flex-col items-center pt-10">
           <Avatar size={72} />
-          <p className="mt-2 text-[15px] text-[#1f2a2f]/70">bookie</p>
+          <p className="mt-2 text-[15px] text-[#1f2a2f]/70">mushy</p>
           <ol className="mt-8 flex w-full flex-col gap-2.5">
             {DEMO.map(([side, text], i) => (
               <li key={i} className={`flex ${side === "out" ? "justify-end" : "justify-start"}`}>
@@ -77,7 +77,7 @@ export function JoinFlow({ botNumber }: { botNumber: string }) {
               </li>
             ))}
           </ol>
-          <h1 className="mt-16 text-center text-[32px] font-semibold leading-tight">the bookie in your group chat<br />that actually settles it</h1>
+          <h1 className="mt-16 text-center text-[32px] font-semibold leading-tight">the mushy in your group chat<br />that actually settles it</h1>
           <button type="button" onClick={() => setStep("phone")} className="pill-blue mt-8 w-full py-4 text-[18px] font-semibold">
             {ref ? "use my invite" : "get started"}
           </button>
@@ -88,8 +88,8 @@ export function JoinFlow({ botNumber }: { botNumber: string }) {
       {step === "phone" && (
         <form onSubmit={submit} className="relative flex w-full max-w-md flex-1 flex-col items-center pt-16" noValidate>
           <Mascot mood="wave" size={120} />
-          <span className="-mt-2 rounded-2xl bg-[#1f2a2f] px-4 py-2 text-[15px] font-semibold text-white">hi, i&apos;m bookie!</span>
-          <h1 className="mt-8 text-center text-[32px] font-semibold leading-tight">{ref ? "a friend let you in." : "bookie is invite-only."}</h1>
+          <span className="-mt-2 rounded-2xl bg-[#1f2a2f] px-4 py-2 text-[15px] font-semibold text-white">hi, i&apos;m mushy!</span>
+          <h1 className="mt-8 text-center text-[32px] font-semibold leading-tight">{ref ? "a friend let you in." : "mushy is invite-only."}</h1>
           <p className="mt-3 max-w-sm text-center text-[15px] text-[#1f2a2f]/70">
             {ref ? "drop your number and you're in — you'll get your own invites too." : "no link? put your number down, share yours, three referrals and you're in."}
           </p>
@@ -112,8 +112,8 @@ export function JoinFlow({ botNumber }: { botNumber: string }) {
           {result.status === "active" ? (
             <>
               <h1 className="mt-6 text-[32px] font-semibold leading-tight">you&apos;re in.</h1>
-              <p className="mt-3 text-[15px] text-[#1f2a2f]/70">text the number, then add it to any group chat. it only speaks when you say its name.</p>
-              <a href={`sms:${botNumber}&body=${encodeURIComponent("hey bookie")}`} className="pill-blue mt-8 w-full py-4 text-[18px] font-semibold">text {pretty}</a>
+              <p className="mt-3 text-[15px] text-[#1f2a2f]/70">text the number, then add it to any group chat. say &ldquo;hey mushy&rdquo; once and it follows the conversation from there.</p>
+              <a href={`sms:${botNumber}&body=${encodeURIComponent("hey mushy")}`} className="pill-blue mt-8 w-full py-4 text-[18px] font-semibold">text {pretty}</a>
               <div className="mt-8 w-full rounded-2xl bg-white p-4 text-left shadow">
                 <p className="text-[12px] uppercase tracking-wider text-[#1f2a2f]/70">your invite link · 3 uses</p>
                 <ShareLink url={`${site}/join?ref=${result.ownCode}`} />
@@ -127,7 +127,7 @@ export function JoinFlow({ botNumber }: { botNumber: string }) {
                 <p className="text-[12px] uppercase tracking-wider text-[#1f2a2f]/70">your link</p>
                 <ShareLink url={`${site}/join?ref=${result.referralCode}`} />
               </div>
-              <a href={`sms:&body=${encodeURIComponent(`bookie settles bets in the group chat. get in with my link: ${site}/join?ref=${result.referralCode}`)}`} className="pill-blue mt-6 w-full py-4 text-[18px] font-semibold">text it to the group</a>
+              <a href={`sms:&body=${encodeURIComponent(`mushy settles bets in the group chat. get in with my link: ${site}/join?ref=${result.referralCode}`)}`} className="pill-blue mt-6 w-full py-4 text-[18px] font-semibold">text it to the group</a>
             </>
           )}
         </section>

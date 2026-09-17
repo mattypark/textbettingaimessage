@@ -9,7 +9,7 @@ Twenty items, each marked **done**, **n/a** (with the reason), or **backend/depl
 | 3 | Secrets off the frontend | **done** | Only `NEXT_PUBLIC_*` reaches client code (`grep -rn process.env app src/web src/db/browser.ts`); service-role, Anthropic, Linq keys are server-only; `WEB_DEMO` cannot enable on Vercel |
 | 4 | Force HTTPS | **deploy** | Vercel serves HTTPS and redirects HTTP by default; nothing to do in code |
 | 5 | Cookie consent banner | **n/a** | Only strictly-necessary Supabase auth cookies on `/app`; no analytics or ad cookies. Disclosed under "cookies" on `/privacy`. Revisit if #19 adds a tracker |
-| 6 | Meta titles + descriptions | **done** | Root template `%s · Bookie`; per-route titles on `/join`, `/terms`, `/privacy`, `/app`, `/app/bets/[id]`, `/app/chats/[id]`, `/app/sign-in`; `/app/*` are `noindex` |
+| 6 | Meta titles + descriptions | **done** | Root template `%s · Mushy`; per-route titles on `/join`, `/terms`, `/privacy`, `/app`, `/app/bets/[id]`, `/app/chats/[id]`, `/app/sign-in`; `/app/*` are `noindex` |
 | 7 | Social preview image | **done** | `app/opengraph-image.tsx` (sky hero, 1200×630); dangling `/og.png` reference removed |
 | 8 | Favicon | **done** | `app/favicon.ico` + new `app/icon.svg` (mascot) |
 | 9 | Sitemap + robots.txt | **done** | `app/sitemap.ts` (`/`, `/join`, `/terms`, `/privacy`), `app/robots.ts` disallows `/app`, `/api` |
@@ -23,7 +23,7 @@ Twenty items, each marked **done**, **n/a** (with the reason), or **backend/depl
 | 17 | Form validation | **done** | Sign-in: E.164 + 6 digits; join: E.164 + code; errors `role="alert"` and wired with `aria-describedby` / `aria-invalid` |
 | 18 | Spam protection on forms | **partial** | Honeypot field on `/join` (frontend). **Backend:** `/api/join` has no rate limit and Supabase OTP throttling is not configured — see `nextsessions/backend.md` |
 | 19 | Analytics | **open (owner call)** | Nothing wired. `@vercel/analytics` is a new dependency; adding it flips #5 to "disclose in privacy" |
-| 20 | One clear call to action | **done** | Landing: "text bookie" / "Start now" → `/join`; `/join` one button per step; `/app` empty state → text the bot |
+| 20 | One clear call to action | **done** | Landing: "text mushy" / "Start now" → `/join`; `/join` one button per step; `/app` empty state → text the bot |
 
 ## Lighthouse (mobile, dev server, 2026-09-16)
 

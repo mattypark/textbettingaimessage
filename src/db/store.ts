@@ -57,6 +57,8 @@ export interface Store {
   chatProviderId(chatId: string): Promise<{ provider: string; providerChatId: string } | null>;
   /** Provider ids of messages we sent into a chat, newest first. */
   recentOutboundIds(chatId: string, limit: number): Promise<string[]>;
+  /** When we last successfully sent into a chat (ISO), or null. Drives the follow-up attention window. */
+  lastOutboundAt(chatId: string): Promise<string | null>;
   /** Outbox rows still queued (or failed under the retry cap) whose not_before has passed. */
   queuedOutbound(limit: number, maxAttempts: number): Promise<OutboxRow[]>;
   /** Inbox rows stuck in pending/processing longer than `staleMs`, under the retry cap. */

@@ -78,8 +78,8 @@ async function world(judge: Judge) {
     transport,
     media,
     fetcher: async (url) => ({ ok: files.has(url), status: files.has(url) ? 200 : 404, body: files.get(url) ?? Buffer.alloc(0) }),
-    handler: agentHandler({ store, betStore, engine, ledger, siteUrl: "https://x.test", botName: "bookie", clock: () => now.value, intake: { proofStore, media, clock: () => now.value }, runTurn: async () => [] }),
-    botNames: ["bookie"],
+    handler: agentHandler({ store, betStore, engine, ledger, siteUrl: "https://x.test", botName: "mushy", clock: () => now.value, intake: { proofStore, media, clock: () => now.value }, runTurn: async () => [] }),
+    botNames: ["mushy"],
     onCardPosted: (betId, id) => betStore.setCardMessageId(betId, id),
     senderHasOpenBet: (chatId, userId) => awaitsProof(betStore, chatId, userId),
   });

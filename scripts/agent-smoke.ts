@@ -12,7 +12,7 @@ import { MemoryLedger } from "@/src/ledger/memory-ledger";
 import { FakeTransport } from "@/src/transport/fake/fake-transport";
 import { Outbox } from "@/src/transport/outbox";
 
-const text = process.argv.slice(2).join(" ") || "bookie, 20 says I make a half court shot by friday. jake you in?";
+const text = process.argv.slice(2).join(" ") || "mushy, 20 says I make a half court shot by friday. jake you in?";
 
 const store = new MemoryStore();
 const betStore = new MemoryBetStore();
@@ -40,7 +40,7 @@ const replies = await runAgentTurn(
     firstContact: false,
     attachments: [],
   },
-  { store, betStore, engine, ledger, siteUrl: "https://example.test", botName: "bookie", client: new Anthropic() }
+  { store, betStore, engine, ledger, siteUrl: "https://example.test", botName: "mushy", client: new Anthropic() }
 );
 
 console.log("--- replies ---");

@@ -38,8 +38,8 @@ async function world(judge: Judge) {
   const pipeline = new InboundPipeline({
     store,
     transport,
-    handler: agentHandler({ store, betStore, engine, ledger, siteUrl: "https://x.test", botName: "bookie", clock: () => now.value, runTurn: async () => [] }),
-    botNames: ["bookie"],
+    handler: agentHandler({ store, betStore, engine, ledger, siteUrl: "https://x.test", botName: "mushy", clock: () => now.value, runTurn: async () => [] }),
+    botNames: ["mushy"],
     onCardPosted: (betId, id) => betStore.setCardMessageId(betId, id),
   });
   const msg = (id: string, from: string, text: string) => JSON.stringify({ providerMessageId: id, providerChatId: "g1", senderHandle: from, text, isGroup: true });

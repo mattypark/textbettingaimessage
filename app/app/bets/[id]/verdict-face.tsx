@@ -18,7 +18,7 @@ export function VerdictFace({ bet, verdict }: { bet: Bet; verdict?: VerdictView 
         <Mascot mood="zen" size={120} />
         <p className="mt-4 text-[20px] font-bold">no verdict yet</p>
         <p className="mt-1 max-w-xs text-[14px] text-sky-ink/70">
-          {bet.status === "proposed" ? "the bet has to lock first." : bet.status === "locked" ? "waiting on proof in the thread." : "bookie is looking at the proof."}
+          {bet.status === "proposed" ? "the bet has to lock first." : bet.status === "locked" ? "waiting on proof in the thread." : "mushy is looking at the proof."}
         </p>
       </article>
     );

@@ -63,7 +63,7 @@ describe("!bet through the pipeline", () => {
       store,
       transport,
       handler: commandHandler({ store: betStore, engine, names, clock: () => NOW }),
-      botNames: ["bookie"],
+      botNames: ["mushy"],
       onCardPosted: (betId, id) => betStore.setCardMessageId(betId, id),
     });
     return { store, betStore, ledger, transport, pipeline };

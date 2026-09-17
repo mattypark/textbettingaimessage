@@ -6,7 +6,7 @@ import { Avatar } from "./mascot";
 
 /**
  * Fixed glass nav. Hides while scrolling down, returns on scroll up; while
- * hidden a small "text bookie" pill takes its place in the corner, like folk's.
+ * hidden a small "text mushy" pill takes its place in the corner, like folk's.
  */
 export function FolkNav({ dark = false }: { dark?: boolean }) {
   void dark; // kept for call-site compatibility; the wordmark is dark everywhere now
@@ -41,7 +41,7 @@ export function FolkNav({ dark = false }: { dark?: boolean }) {
       >
         <Link href="/" className={`pointer-events-auto flex items-center gap-2 font-round text-3xl font-bold ${ink}`}>
           <Avatar size={34} />
-          Bookie
+          Mushy
         </Link>
         <nav className="nav-pill pointer-events-auto hidden items-center gap-1 rounded-2xl p-1.5 font-round text-[14.5px] font-medium text-sky-ink/75 md:flex">
           <Link href="/#bets" className="rounded-[10px] px-3.5 py-2 hover:bg-white/70">Bets</Link>
@@ -59,7 +59,7 @@ export function FolkNav({ dark = false }: { dark?: boolean }) {
         tabIndex={hidden ? 0 : -1}
         className={`pill-3d fixed right-4 top-4 z-40 px-5 py-2.5 font-round text-[14px] font-semibold ${move} ${hidden ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-[160%] opacity-0"}`}
       >
-        text bookie
+        text mushy
       </Link>
     </>
   );

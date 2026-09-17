@@ -21,7 +21,7 @@ usable webhooks. Fill each cell from a real run, not from docs.
 1. `linq login` → `linq doctor` all green.
 2. `npm run dev` in one pane, `npm run webhooks:dev` in another.
 3. From a personal iPhone: create a group with two friends, then add
-   +1 (205) 396-8556 to it. Send "hey bookie", 👍 the reply, a photo, a
+   +1 (205) 396-8556 to it. Send "hey mushy", 👍 the reply, a photo, a
    5-second video.
 4. Save each raw payload the CLI prints into `tests/fixtures/linq/` (redact
    phone numbers to the fixture set already in use) and fill the table.

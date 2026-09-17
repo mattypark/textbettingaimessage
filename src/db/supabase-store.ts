@@ -197,4 +197,18 @@ export class SupabaseStore implements Store {
     if (error) fail("recentOutboundIds", error);
     return (data ?? []).map((row) => row.provider_message_id as string);
   }
+
+  async lastOutboundAt(chatId: string): Promise<string | null> {
+    const { data, error } = await this.db
+      .from("outbound_messages")
+      .select("sent_at")
+      .eq("chat_id", chatId)
+      .eq("status", "sent")
+      .not("sent_at", "is", null)
+      .order("sent_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) fail("lastOutboundAt", error);
+    return (data?.sent_at as string | undefined) ?? null;
+  }
 }
