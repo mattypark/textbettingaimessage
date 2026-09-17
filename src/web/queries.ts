@@ -62,15 +62,29 @@ export async function chatById(db: SupabaseClient, chatId: string): Promise<{ id
   return data ? { id: data.id as string, name: (data.name as string | null) ?? null } : null;
 }
 
-export async function chatBets(db: SupabaseClient, chatId: string): Promise<Bet[]> {
-  const { data, error } = await db.from("bets").select("state").eq("chat_id", chatId).order("created_at", { ascending: false }).limit(500);
-  if (error) throw new Error(`chat bets: ${error.message}`);
-  return (data ?? []).map((row) => deserialize(row.state as Record<string, unknown>));
+export interface LeaderboardRpcRow {
+  userId: string;
+  displayName: string | null;
+  phone: string;
+  honor: number;
+  netPoints: bigint;
+  wins: number;
+  losses: number;
+  available: bigint;
 }
 
-/** Everyone RLS lets this member see (self + co-members), with honor. */
-export async function coMembers(db: SupabaseClient): Promise<Array<{ id: string; displayName: string | null; phone: string; honorScore: number }>> {
-  const { data, error } = await db.from("users").select("id, phone, display_name, honor_score");
-  if (error) throw new Error(`users: ${error.message}`);
-  return (data ?? []).map((u) => ({ id: u.id as string, displayName: (u.display_name as string | null) ?? null, phone: String(u.phone), honorScore: Number(u.honor_score ?? 100) }));
+/** Ranked members of one chat (migration 0011). Empty when the caller is not a member. */
+export async function chatLeaderboard(db: SupabaseClient, chatId: string): Promise<LeaderboardRpcRow[]> {
+  const { data, error } = await db.rpc("chat_leaderboard", { p_chat_id: chatId });
+  if (error) throw new Error(`chat_leaderboard: ${error.message}`);
+  return ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    userId: String(r.user_id),
+    displayName: (r.display_name as string | null) ?? null,
+    phone: String(r.phone),
+    honor: Number(r.honor ?? 100),
+    netPoints: BigInt((r.net_points as string | number) ?? 0),
+    wins: Number(r.wins ?? 0),
+    losses: Number(r.losses ?? 0),
+    available: BigInt((r.available as string | number) ?? 0),
+  }));
 }

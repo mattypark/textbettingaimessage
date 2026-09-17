@@ -64,6 +64,8 @@ export interface LeaderboardRow {
   netPoints: bigint;
   wins: number;
   losses: number;
+  /** Spendable balance; only the live RPC can read it for co-members (demo mode leaves it out). */
+  available?: bigint;
   isViewer: boolean;
 }
 

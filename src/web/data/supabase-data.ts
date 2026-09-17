@@ -1,8 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { defaultAccessStore } from "@/src/inbound";
 import { firstName } from "@/src/web/format";
-import { rankChat } from "@/src/web/leaderboard";
-import { betDetail, chatBets, chatById, coMembers, myBets, myChats, myWallet } from "@/src/web/queries";
+import { betDetail, chatById, chatLeaderboard, myBets, myChats, myWallet } from "@/src/web/queries";
 import type { BetDetailView, ChatLeaderboard, ChatSummary, EventView, ProofView, VerdictView, WebData } from "./types";
 
 /** Live implementation: every read goes through the signed-in user's client so RLS scopes it. */
@@ -62,9 +61,20 @@ export class SupabaseWebData implements WebData {
   }
 
   async leaderboard(chatId: string): Promise<ChatLeaderboard | null> {
-    const [chat, bets, users] = await Promise.all([chatById(this.db, chatId), chatBets(this.db, chatId), coMembers(this.db)]);
+    const [chat, rows] = await Promise.all([chatById(this.db, chatId), chatLeaderboard(this.db, chatId)]);
     if (!chat) return null;
-    const members = users.map((u) => ({ id: u.id, name: firstName(u.displayName, u.phone), honor: u.honorScore }));
-    return { chat, rows: rankChat(bets, members, this.userId) };
+    return {
+      chat,
+      rows: rows.map((r) => ({
+        userId: r.userId,
+        name: firstName(r.displayName, r.phone),
+        honor: r.honor,
+        netPoints: r.netPoints,
+        wins: r.wins,
+        losses: r.losses,
+        available: r.available,
+        isViewer: r.userId === this.userId,
+      })),
+    };
   }
 }
