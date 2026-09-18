@@ -63,15 +63,39 @@ Logs shows `GET /api/cron/tick 200`.
 
 ## 4. Who can text it
 
-The free Linq tier is a **shared** line: it only routes numbers you register.
+The free Linq tier is a **shared** line: it only routes numbers on its contact
+list. A friend who isn't on it is invisible — their texts are dropped before
+our webhook ever sees them. That's Linq's routing, not our code. Three ways
+out, best first.
+
+**a. A dedicated line — the real fix.** `linq upgrade`. No contact list at
+all; anyone who texts the number is heard. Needed before real users anyway.
+
+**b. The bot registers people itself.** Set `LINQ_ORG_ID` and the sign sheet
+adds each person to the line the moment they sign, because the sheet collects
+their number over the web instead of over iMessage. Nobody types a command.
 
 ```bash
-linq contacts add +1XXXXXXXXXX     # each friend, once
-linq contacts list
+python3 -c "import json,os;print(json.load(open(os.path.expanduser('~/.linq/config.json')))['profiles']['default']['orgId'])"
 ```
 
-`linq upgrade` buys a dedicated line that hears anyone — needed before real
-users, not before this test.
+Put that value in `.env.local` and in Vercel as `LINQ_ORG_ID`. To register
+everyone the bot already knows, or specific numbers:
+
+```bash
+npm run linq:contacts                    # everyone in the database
+npm run linq:contacts -- +17135550100    # specific numbers
+```
+
+This calls the same endpoint `linq contacts add` calls. It is not a
+documented API, so treat it as a convenience that may stop working, not as
+the plan for real users.
+
+**c. By hand.** `linq contacts add +1XXXXXXXXXX`, once per person.
+
+Either way there is one thing nobody can skip: **a new contact has to text
+the line before the line can start a thread with them.** In a group chat that
+happens naturally the first time they say anything.
 
 ## 5. Web sign-in (optional, only for /app)
 

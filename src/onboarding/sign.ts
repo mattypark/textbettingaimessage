@@ -42,7 +42,7 @@ export async function loadSignPage(store: Store, chatId: string): Promise<SignPa
   return { chatId, members: rows, termsVersion: TERMS_VERSION };
 }
 
-export async function signFromWeb(store: Store, outbox: Outbox, chatId: string, input: SignInput): Promise<SignResult> {
+export async function signFromWeb(store: Store, outbox: Outbox, chatId: string, input: SignInput, registerContact?: (phone: string) => Promise<void>): Promise<SignResult> {
   const fullName = input.fullName.trim().replace(/\s+/g, " ");
   const phone = normalizePhone(input.phone);
   const signature = input.signature.trim();
@@ -53,6 +53,9 @@ export async function signFromWeb(store: Store, outbox: Outbox, chatId: string, 
   if (!input.agreeTerms || !input.agreePrivacy) return { ok: false, error: "you have to accept both to sign" };
   const members = await store.chatMembers(chatId);
   if (!members.length) return { ok: false, error: "this link isn't for a chat i'm in" };
+
+  // Shared line: register them before anything else, or their texts never reach the webhook.
+  await registerContact?.(phone);
 
   const user = await store.upsertUser(phone);
   await store.setDisplayName(user.id, fullName.split(" ")[0]);

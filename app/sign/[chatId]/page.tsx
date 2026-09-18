@@ -5,6 +5,7 @@ import { tickDeps } from "@/src/inbound";
 import { LEGAL_UPDATED, PRIVACY_SECTIONS, TERMS_SECTIONS } from "@/src/onboarding/legal";
 import { loadSignPage, signFromWeb } from "@/src/onboarding/sign";
 import { TERMS_SUMMARY } from "@/src/onboarding/terms";
+import { tryRegisterContact } from "@/src/transport/linq/contacts";
 
 /**
  * The sign sheet Mushy drops in a chat on first contact. Everyone types
@@ -35,7 +36,7 @@ export default async function SignPage({ params, searchParams }: Params) {
       agreePrivacy: formData.get("agreePrivacy") === "on",
       ip: h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined,
       userAgent: h.get("user-agent") ?? undefined,
-    });
+    }, (phone) => tryRegisterContact(phone, (line) => console.info(`[sign] ${line}`)));
     redirect(result.ok ? `/sign/${chatId}?done=${encodeURIComponent(result.name)}` : `/sign/${chatId}?error=${encodeURIComponent(result.error)}`);
   }
 
